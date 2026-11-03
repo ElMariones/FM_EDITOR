@@ -1,0 +1,11 @@
+{
+  "name": "Rich owner",
+  "description": "Raises balance to €500M, transfer budget to €200M and wage budget to €5M per week, never lowers them.",
+  "target": "Club", "category": "Clubs", "order": 1, "quick": true,
+  "actions": [
+    { "property": "Finance.Balance", "op": "AtLeast", "value": 500000000 },
+    { "property": "Finance.TransferBudget", "op": "AtLeast", "value": 200000000 },
+    { "property": "Finance.WageBudget", "op": "AtLeast", "value": 5000000 },
+    { "property": "Finance.MaxWage", "op": "AtLeast", "value": 500000 }
+  ]
+}

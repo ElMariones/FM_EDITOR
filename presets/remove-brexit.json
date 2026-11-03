@@ -1,0 +1,8 @@
+{
+  "name": "Remove Brexit",
+  "description": "England, Scotland, Wales and Northern Ireland rejoin EU free movement, so EU players no longer need work permits there.",
+  "target": "Nation", "category": "Nations", "order": 1, "quick": true,
+  "scope": "All",
+  "where": [ { "property": "Name", "op": "OneOf", "value": "England|Scotland|Wales|Northern Ireland" } ],
+  "actions": [ { "property": "Rules.EuFreeMovement", "value": true } ]
+}

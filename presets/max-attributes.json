@@ -1,0 +1,10 @@
+{
+  "name": "Max visible attributes",
+  "description": "Sets every technical, mental and physical attribute to 20.",
+  "target": "Player", "category": "Players", "order": 10,
+  "actions": [
+    { "property": "Attr.*", "category": "Technical", "value": 20 },
+    { "property": "Attr.*", "category": "Mental", "value": 20 },
+    { "property": "Attr.*", "category": "Physical", "value": 20 }
+  ]
+}

@@ -1,0 +1,36 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FMOpenEditor.App.ViewModels"
+        x:Class="FMOpenEditor.App.Views.CompareWindow"
+        x:DataType="vm:CompareViewModel"
+        Title="Compare" Width="760" Height="820" WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock.better">
+      <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+      <Setter Property="FontWeight" Value="Bold" />
+    </Style>
+  </Window.Styles>
+  <DockPanel Margin="16">
+    <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="0,0,0,10">
+      <TextBlock Classes="h2" Text="Attribute" />
+      <TextBlock Grid.Column="1" Classes="h2" Text="{Binding NameA}" TextTrimming="CharacterEllipsis" />
+      <TextBlock Grid.Column="2" Classes="h2" Text="{Binding NameB}" TextTrimming="CharacterEllipsis" />
+    </Grid>
+    <ScrollViewer>
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate x:DataType="vm:CompareRow">
+            <Grid ColumnDefinitions="2*,*,*" Margin="0,3">
+              <TextBlock>
+                <Run Text="{Binding Label}" />
+                <Run Text="{Binding Category, StringFormat='  {0}'}" Foreground="{StaticResource MutedBrush}" FontSize="11" />
+              </TextBlock>
+              <TextBlock Grid.Column="1" Text="{Binding A}" Classes.better="{Binding ABetter}" />
+              <TextBlock Grid.Column="2" Text="{Binding B}" Classes.better="{Binding BBetter}" />
+            </Grid>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DockPanel>
+</Window>

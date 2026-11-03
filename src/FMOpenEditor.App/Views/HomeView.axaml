@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             x:Class="FMOpenEditor.App.Views.HomeView"
+             x:DataType="vm:MainWindowViewModel">
+  <ScrollViewer>
+    <StackPanel MaxWidth="760" Spacing="18" Margin="0,40,0,20" HorizontalAlignment="Center">
+      <TextBlock Classes="h1" FontSize="30" Text="Your save, your rules." />
+      <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="15"
+                 Text="FM OpenEditor reads Football Manager while you play. Browse every player, staff member, club and competition, change what you like, and save the changes straight into the running game. Free and open source, forever." />
+
+      <Border Classes="card">
+        <StackPanel Spacing="12">
+          <TextBlock Classes="h2" Text="1. Start Football Manager and load your save" />
+          <TextBlock Classes="h2" Text="2. Connect" />
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Classes="accent" Content="Connect to Football Manager" Command="{Binding ConnectGameCommand}" Padding="18,10" />
+            <Button Content="Try the demo save" Command="{Binding OpenDemoCommand}" Padding="18,10"
+                    ToolTip.Tip="A generated, fictional database. Everything works, nothing touches the game." />
+          </StackPanel>
+          <TextBlock Text="{Binding ConnectMessage}" IsVisible="{Binding ConnectMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                     TextWrapping="Wrap" Foreground="{StaticResource PendingBrush}" />
+          <ItemsControl ItemsSource="{Binding ConnectDetails}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Text="{Binding}" Classes="muted" TextWrapping="Wrap" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <UniformGrid Columns="2">
+        <Border Classes="card" Margin="0,0,6,6">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="One-click presets" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Heal, Inspire, Remove bans, Make WonderKid, Rich owner, Top facilities, Remove Brexit. Write your own as JSON and share them." />
+          </StackPanel>
+        </Border>
+        <Border Classes="card" Margin="6,0,0,6">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Edit anything" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Names, nationality, looks, attributes, positions, contracts, wages, reputation, finances, facilities, kits, standings and nation rules." />
+          </StackPanel>
+        </Border>
+        <Border Classes="card" Margin="0,6,6,0">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Advanced search and mass edit" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Filter by any field, then change a whole squad or search result at once. Compare two players side by side." />
+          </StackPanel>
+        </Border>
+        <Border Classes="card" Margin="6,6,0,0">
+          <StackPanel Spacing="4">
+            <TextBlock Classes="h2" Text="Freeze or only-up" />
+            <TextBlock Classes="muted" TextWrapping="Wrap" Text="Lock a player's attributes, or let them improve but never decline, while the game runs." />
+          </StackPanel>
+        </Border>
+      </UniformGrid>
+
+      <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="12"
+                 Text="Back up your save before editing. FM OpenEditor is a fan project, not affiliated with Sports Interactive or SEGA. Licensed under GPL-3.0." />
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

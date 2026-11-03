@@ -1,0 +1,141 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             xmlns:views="using:FMOpenEditor.App.Views"
+             xmlns:presets="using:FMOpenEditor.Core.Presets"
+             xmlns:model="using:FMOpenEditor.Core.Model"
+             x:Class="FMOpenEditor.App.Views.BrowserView"
+             x:DataType="vm:BrowserViewModel"
+             x:Name="Root">
+
+  <UserControl.DataTemplates>
+    <DataTemplate DataType="vm:EntityEditorViewModel"><views:EntityEditorView /></DataTemplate>
+  </UserControl.DataTemplates>
+
+  <Grid ColumnDefinitions="*,6,500">
+    <DockPanel>
+      <!-- Header + search -->
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,8">
+        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+          <TextBlock Classes="h1" Text="{Binding Title}" />
+          <TextBlock Classes="muted" Text="{Binding Summary}" />
+        </StackPanel>
+        <TextBox Grid.Column="1" Watermark="Search by name…" Text="{Binding SearchText}" VerticalAlignment="Center" />
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="8,0,0,0" VerticalAlignment="Center">
+          <ToggleButton Content="Advanced search" IsChecked="{Binding ShowFilters}" />
+          <ToggleButton Content="Mass edit" IsChecked="{Binding ShowMassEdit}" />
+          <Button Content="Compare" Command="{Binding CompareCommand}" ToolTip.Tip="Select two rows" />
+        </StackPanel>
+      </Grid>
+
+      <!-- Presets -->
+      <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+        <TextBlock Text="Presets" Classes="muted" VerticalAlignment="Center" Margin="0,0,10,0" />
+        <ItemsControl ItemsSource="{Binding QuickPresets}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="presets:Preset">
+              <Button Classes="preset" Content="{Binding Name}" ToolTip.Tip="{Binding Description}"
+                      Command="{Binding #Root.((vm:BrowserViewModel)DataContext).ApplyPresetCommand}"
+                      CommandParameter="{Binding}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Button Classes="preset" Content="More ▾" IsVisible="{Binding HasOtherPresets}">
+          <Button.Flyout>
+            <Flyout Placement="BottomEdgeAlignedLeft">
+              <ItemsControl ItemsSource="{Binding OtherPresets}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="presets:Preset">
+                    <Button Content="{Binding Name}" ToolTip.Tip="{Binding Description}" HorizontalAlignment="Stretch"
+                            Background="Transparent" Margin="0,1"
+                            Command="{Binding #Root.((vm:BrowserViewModel)DataContext).ApplyPresetCommand}"
+                            CommandParameter="{Binding}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </Flyout>
+          </Button.Flyout>
+        </Button>
+      </WrapPanel>
+
+      <!-- Advanced search -->
+      <Border DockPanel.Dock="Top" Classes="card" Padding="12" Margin="0,0,0,8" IsVisible="{Binding ShowFilters}">
+        <StackPanel Spacing="6">
+          <ItemsControl ItemsSource="{Binding Filters}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:FilterRowViewModel">
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
+                  <ComboBox ItemsSource="{Binding Properties}" SelectedItem="{Binding SelectedProperty}" Width="230">
+                    <ComboBox.ItemTemplate>
+                      <DataTemplate x:DataType="model:PropertyDef">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><TextBlock Text="{Binding Label}" /><TextBlock Text="{Binding Category}" Foreground="{StaticResource MutedBrush}" /></StackPanel>
+                      </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                  </ComboBox>
+                  <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" />
+                  <TextBox Text="{Binding Value}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsValue}" />
+                  <TextBlock Text="and" VerticalAlignment="Center" IsVisible="{Binding NeedsSecondValue}" />
+                  <TextBox Text="{Binding Value2}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsSecondValue}" />
+                  <Button Content="✕" Command="{Binding #Root.((vm:BrowserViewModel)DataContext).RemoveFilterCommand}"
+                          CommandParameter="{Binding}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <Button Content="+ Add condition" Command="{Binding AddFilterCommand}" />
+            <Button Classes="accent" Content="Search" Command="{Binding SearchCommand}" IsDefault="True" />
+            <Button Content="Clear" Command="{Binding ClearFiltersCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- Mass edit -->
+      <Border DockPanel.Dock="Top" Classes="card" Padding="12" Margin="0,0,0,8" IsVisible="{Binding ShowMassEdit}">
+        <StackPanel Orientation="Horizontal" Spacing="6">
+          <TextBlock Text="For the selected rows:" VerticalAlignment="Center" />
+          <ComboBox ItemsSource="{Binding EditableProperties}" SelectedItem="{Binding MassProperty}" Width="230">
+            <ComboBox.ItemTemplate>
+              <DataTemplate x:DataType="model:PropertyDef">
+                <StackPanel Orientation="Horizontal" Spacing="6"><TextBlock Text="{Binding Label}" /><TextBlock Text="{Binding Category}" Foreground="{StaticResource MutedBrush}" /></StackPanel>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <ComboBox ItemsSource="{Binding MassOps}" SelectedItem="{Binding MassOp}" Width="160" />
+          <TextBox Text="{Binding MassValue}" Width="140" Watermark="value" />
+          <Button Classes="accent" Command="{Binding ApplyMassEditCommand}"
+                  Content="{Binding SelectedCount, StringFormat='Apply to {0}'}" />
+        </StackPanel>
+      </Border>
+
+      <DataGrid x:Name="Grid" ItemsSource="{Binding Rows}" IsReadOnly="True" SelectionMode="Extended"
+                CanUserReorderColumns="True" CanUserResizeColumns="True" CanUserSortColumns="True"
+                GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+        <DataGrid.ContextMenu>
+          <ContextMenu>
+            <MenuItem Header="Release on a free" Command="{Binding ReleaseOnFreeCommand}" />
+            <Separator />
+            <MenuItem Header="❄ Freeze attributes" Command="{Binding FreezeCommand}" />
+            <MenuItem Header="⬆ Attributes can only go up" Command="{Binding OnlyUpCommand}" />
+            <MenuItem Header="Remove freeze / only-up" Command="{Binding UnwatchCommand}" />
+            <Separator />
+            <MenuItem Header="Compare the two selected" Command="{Binding CompareCommand}" />
+          </ContextMenu>
+        </DataGrid.ContextMenu>
+      </DataGrid>
+    </DockPanel>
+
+    <GridSplitter Grid.Column="1" Background="Transparent" ResizeDirection="Columns" />
+
+    <Border Grid.Column="2" Classes="card" Padding="0">
+      <Panel>
+        <TextBlock Text="Select someone to edit them." Classes="muted" HorizontalAlignment="Center" VerticalAlignment="Center"
+                   IsVisible="{Binding Editor, Converter={x:Static ObjectConverters.IsNull}}" />
+        <ContentControl Content="{Binding Editor}" />
+      </Panel>
+    </Border>
+  </Grid>
+</UserControl>

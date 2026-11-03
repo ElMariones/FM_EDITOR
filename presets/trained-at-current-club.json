@@ -1,0 +1,6 @@
+{
+  "name": "Trained at current club",
+  "description": "Counts as club-grown (homegrown rules).",
+  "target": "Player", "category": "Players", "order": 11,
+  "actions": [ { "property": "TrainedAtClub", "fromProperty": "Contract.Club" } ]
+}

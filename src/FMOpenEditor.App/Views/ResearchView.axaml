@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             x:Class="FMOpenEditor.App.Views.ResearchView"
+             x:DataType="vm:ResearchViewModel">
+  <ScrollViewer>
+    <StackPanel Spacing="12" MaxWidth="900" HorizontalAlignment="Left">
+      <TextBlock Classes="h1" Text="Research: map a new game version" />
+      <TextBlock Classes="muted" TextWrapping="Wrap"
+                 Text="Help support every FM patch. Find a value you can see in the game (a club balance, a wage), scan for it, change it in the game, scan again until a few addresses remain. Subtract the record base to get the field offset, and add it to the definition file. Step-by-step guide: docs/DEFINITIONS.md." />
+      <TextBlock Text="{Binding ModuleInfo}" Classes="muted" />
+
+      <Border Classes="card" IsVisible="{Binding !IsAvailable}">
+        <TextBlock TextWrapping="Wrap" Text="Connect to the running game from the Home page to use the scanner. It isn't available for the demo save." />
+      </Border>
+
+      <Border Classes="card" IsVisible="{Binding IsAvailable}">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="h2" Text="Value scanner" />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding Value}" Watermark="value" Width="160" />
+            <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" Width="110" />
+            <Button Classes="accent" Content="First scan" Command="{Binding FirstScanCommand}" IsEnabled="{Binding !IsBusy}" />
+            <ComboBox ItemsSource="{Binding Compares}" SelectedItem="{Binding Compare}" Width="130" />
+            <Button Content="Next scan" Command="{Binding NextScanCommand}" IsEnabled="{Binding !IsBusy}" />
+            <Button Content="Reset" Command="{Binding ResetCommand}" />
+          </StackPanel>
+          <TextBlock Text="{Binding ResultText}" />
+          <ListBox ItemsSource="{Binding Hits}" SelectedItem="{Binding SelectedHit}" MaxHeight="300">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:ScanHit">
+                <Grid ColumnDefinitions="200,*">
+                  <TextBlock Text="{Binding AddressText}" FontFamily="Consolas,monospace" />
+                  <TextBlock Grid.Column="1" Text="{Binding Value}" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding WriteValue}" Watermark="new value" Width="160" />
+            <Button Content="Write to selected address" Command="{Binding WriteCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="8">
+          <TextBlock Classes="h2" Text="Offset calculator" />
+          <TextBlock Classes="muted" TextWrapping="Wrap"
+                     Text="The record base is shown under a person's name in the editor once their list is mapped." />
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBox Text="{Binding RecordBase}" Watermark="record base (hex)" Width="200" />
+            <TextBox Text="{Binding FieldAddress}" Watermark="field address (hex)" Width="200" />
+            <SelectableTextBlock Text="{Binding OffsetResult}" VerticalAlignment="Center" FontFamily="Consolas,monospace" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

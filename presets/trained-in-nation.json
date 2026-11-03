@@ -1,0 +1,6 @@
+{
+  "name": "Trained in nation",
+  "description": "Counts as association-grown for the player's nationality.",
+  "target": "Player", "category": "Players", "order": 12,
+  "actions": [ { "property": "TrainedInNation", "fromProperty": "Nation" } ]
+}

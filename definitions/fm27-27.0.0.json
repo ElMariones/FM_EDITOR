@@ -1,0 +1,1461 @@
+{
+  "game": "Football Manager 2027",
+  "version": "27.0.0",
+  "module": "game_plugin.dll",
+  "moduleVersions": [
+    "27.0.0+2493426"
+  ],
+  "verified": false,
+  "notes": "Unmapped. Every field is listed with offset null; fill offsets in as they are found and verified in-game (see docs/DEFINITIONS.md). Attributes default to scale 5 (stored 1-100, shown 1-20) - confirm per field.",
+  "roots": {
+    "People": {
+      "pattern": null,
+      "dispOffset": 3,
+      "instructionLength": 7,
+      "moduleOffset": null,
+      "deref": [],
+      "description": "Global list of every person (players + staff)."
+    },
+    "Clubs": {
+      "pattern": null,
+      "dispOffset": 3,
+      "instructionLength": 7,
+      "moduleOffset": null,
+      "deref": [],
+      "description": "Global list of clubs."
+    },
+    "Competitions": {
+      "pattern": null,
+      "dispOffset": 3,
+      "instructionLength": 7,
+      "moduleOffset": null,
+      "deref": [],
+      "description": "Global list of competitions."
+    },
+    "Nations": {
+      "pattern": null,
+      "dispOffset": 3,
+      "instructionLength": 7,
+      "moduleOffset": null,
+      "deref": [],
+      "description": "Global list of nations."
+    }
+  },
+  "collections": {
+    "Player": {
+      "root": "People",
+      "layout": "pointerRange",
+      "beginOffset": "0x0",
+      "endOffset": "0x8",
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Staff": {
+      "root": "People",
+      "layout": "pointerRange",
+      "beginOffset": "0x0",
+      "endOffset": "0x8",
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Club": {
+      "root": "Clubs",
+      "layout": "pointerRange",
+      "beginOffset": "0x0",
+      "endOffset": "0x8",
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Competition": {
+      "root": "Competitions",
+      "layout": "pointerRange",
+      "beginOffset": "0x0",
+      "endOffset": "0x8",
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Nation": {
+      "root": "Nations",
+      "layout": "pointerRange",
+      "beginOffset": "0x0",
+      "endOffset": "0x8",
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    }
+  },
+  "structs": {
+    "Player": {
+      "Id": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "FirstName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LastName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CommonName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateOfBirth": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SecondNation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Height": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Weight": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LeftFoot": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "RightFoot": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CurrentAbility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PotentialAbility": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.Current": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.Home": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.World": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Value": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrainedAtClub": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrainedInNation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Looks.SkinTone": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Looks.HairColour": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Looks.HairLength": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Corners": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Crossing": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Dribbling": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Finishing": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.FirstTouch": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.FreeKicks": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Heading": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.LongShots": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.LongThrows": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Marking": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Passing": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.PenaltyTaking": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Tackling": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Technique": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Aggression": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Anticipation": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Bravery": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Composure": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Concentration": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Decisions": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Determination": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Flair": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Leadership": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.OffTheBall": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Positioning": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Teamwork": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Vision": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.WorkRate": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Acceleration": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Agility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Balance": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.JumpingReach": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.NaturalFitness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Pace": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Stamina": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Strength": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.AerialReach": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.CommandOfArea": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Communication": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Eccentricity": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Handling": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Kicking": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.OneOnOnes": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Punching": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Reflexes": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.RushingOut": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Throwing": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Adaptability": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Ambition": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Consistency": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Controversy": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Dirtiness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.ImportantMatches": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.InjuryProneness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Loyalty": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Pressure": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Professionalism": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Sportsmanship": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Temperament": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attr.Versatility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.GK": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.DL": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.DC": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.DR": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.WBL": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.WBR": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.DM": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.ML": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.MC": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.MR": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.AML": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.AMC": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.AMR": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pos.ST": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Condition": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MatchSharpness": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Jadedness": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Morale": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "IsInjured": {
+        "offset": null,
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "IsBanned": {
+        "offset": null,
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "IsRetiredFromInternational": {
+        "offset": null,
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Club": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Wage": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Start": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Expiry": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.SquadStatus": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.ReleaseClause": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Happiness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.PlayingTimeHappiness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.UnhappinessReasons": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Transfer.FutureClub": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Transfer.FutureDate": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Transfer.FutureFee": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Staff": {
+      "Id": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "FirstName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LastName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateOfBirth": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Role": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CurrentAbility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PotentialAbility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.Current": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.Home": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation.World": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Attacking": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Defending": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Fitness": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.GKDistribution": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.GKHandling": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.GKShotStopping": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Mental": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Tactical": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.Technical": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Coach.WorkingWithYoungsters": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Mental.Adaptability": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Mental.Determination": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Mental.LevelOfDiscipline": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Mental.Motivating": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Mental.PeopleManagement": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.JudgingPlayerAbility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.JudgingPlayerPotential": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.JudgingStaffAbility": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.Negotiating": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.TacticalKnowledge": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.Physiotherapy": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Knowledge.SportsScience": {
+        "offset": null,
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Club": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Wage": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Contract.Expiry": {
+        "offset": null,
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Club": {
+      "Id": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "League": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TeamCohesion": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.Balance": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.TransferBudget": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.WageBudget": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.MaxWage": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.TicketPrice": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Finance.SeasonTicketPrice": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Facilities.Training": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Facilities.Youth": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Facilities.Corporate": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Facilities.YouthRecruitment": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Facilities.JuniorCoaching": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Kit.PrimaryColour": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Kit.SecondaryColour": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Stadium.Name": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Stadium.Capacity": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Position": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Played": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Won": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Drawn": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Lost": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.GoalsFor": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.GoalsAgainst": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Standing.Points": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Competition": {
+      "Id": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortName": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": null,
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PrizeMoney": {
+        "offset": null,
+        "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Nation": {
+      "Id": {
+        "offset": null,
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": null,
+        "type": "utf16Ptr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Continent": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation": {
+        "offset": null,
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Rules.EuFreeMovement": {
+        "offset": null,
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Rules.WorkPermitsForNonEu": {
+        "offset": null,
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Rules.MaxNonEuInSquad": {
+        "offset": null,
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    }
+  }
+}

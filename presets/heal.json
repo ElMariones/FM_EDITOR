@@ -1,0 +1,11 @@
+{
+  "name": "Heal",
+  "description": "Full fitness and sharpness, no fatigue, injuries cleared.",
+  "target": "Player", "category": "Players", "order": 1, "quick": true,
+  "actions": [
+    { "property": "Condition", "value": 10000 },
+    { "property": "MatchSharpness", "value": 10000 },
+    { "property": "Jadedness", "value": 0 },
+    { "property": "IsInjured", "value": false }
+  ]
+}

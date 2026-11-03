@@ -1,0 +1,13 @@
+{
+  "name": "Inspire",
+  "description": "Superb morale, fully rested, happy with contract and playing time, and better team cohesion.",
+  "target": "Player", "category": "Players", "order": 2, "quick": true,
+  "actions": [
+    { "property": "Morale", "value": 20 },
+    { "property": "Jadedness", "value": 0 },
+    { "property": "Contract.Happiness", "value": 100 },
+    { "property": "Contract.PlayingTimeHappiness", "value": 100 },
+    { "property": "Contract.UnhappinessReasons", "value": 0 },
+    { "custom": "ImproveTeamCohesion" }
+  ]
+}

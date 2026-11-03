@@ -1,0 +1,18 @@
+{
+  "name": "Make WonderKid",
+  "description": "World-class potential and the hidden personality to reach it. Current ability is untouched, so they still have to develop.",
+  "target": "Player", "category": "Players", "order": 4, "quick": true,
+  "actions": [
+    { "property": "PotentialAbility", "op": "AtLeast", "value": 190 },
+    { "property": "Attr.Determination", "op": "AtLeast", "value": 20 },
+    { "property": "Attr.Professionalism", "op": "AtLeast", "value": 20 },
+    { "property": "Attr.Ambition", "op": "AtLeast", "value": 18 },
+    { "property": "Attr.Adaptability", "op": "AtLeast", "value": 16 },
+    { "property": "Attr.Consistency", "op": "AtLeast", "value": 18 },
+    { "property": "Attr.ImportantMatches", "op": "AtLeast", "value": 18 },
+    { "property": "Attr.Pressure", "op": "AtLeast", "value": 18 },
+    { "property": "Attr.NaturalFitness", "op": "AtLeast", "value": 18 },
+    { "property": "Attr.InjuryProneness", "op": "AtMost", "value": 2 },
+    { "property": "Attr.Temperament", "op": "AtLeast", "value": 16 }
+  ]
+}

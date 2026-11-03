@@ -1,0 +1,6 @@
+{
+  "name": "Release on a free",
+  "description": "Cancel the contract; they become a free agent.",
+  "target": "Player", "category": "Players", "order": 20,
+  "actions": [ { "custom": "ReleaseOnFree" } ]
+}

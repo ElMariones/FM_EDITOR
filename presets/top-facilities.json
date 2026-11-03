@@ -1,0 +1,6 @@
+{
+  "name": "Top facilities",
+  "description": "State-of-the-art training, youth and corporate facilities, and the best youth recruitment.",
+  "target": "Club", "category": "Clubs", "order": 2, "quick": true,
+  "actions": [ { "property": "Facilities.*", "value": 20 } ]
+}

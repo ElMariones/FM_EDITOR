@@ -1,0 +1,125 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             x:Class="FMOpenEditor.App.Views.EntityEditorView"
+             x:DataType="vm:EntityEditorViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="ItemsControl > ContentPresenter">
+      <Setter Property="Margin" Value="0,3,10,3" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+    </Style>
+    <Style Selector="TextBlock.label.pending">
+      <Setter Property="Foreground" Value="{StaticResource PendingBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.error">
+      <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+  </UserControl.Styles>
+
+  <UserControl.DataTemplates>
+    <DataTemplate DataType="vm:NumberEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+          <NumericUpDown Value="{Binding Value}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
+                         Increment="{Binding Increment}" FormatString="{Binding FormatString}"
+                         IsEnabled="{Binding IsEditable}" Width="{Binding EditorWidth}" ClipValueToMinMax="True" />
+          <TextBlock Text="{Binding MoneyText}" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding IsMoney}" />
+        </StackPanel>
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="error" Text="{Binding Error}"
+                   IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:BoolEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <ToggleSwitch Grid.Column="1" IsChecked="{Binding IsChecked}" IsEnabled="{Binding IsEditable}"
+                      OnContent="Yes" OffContent="No" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:TextEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <TextBox Grid.Column="1" Text="{Binding Text}" IsEnabled="{Binding IsEditable}" />
+        <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="error" Text="{Binding Error}"
+                   IsVisible="{Binding Error, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:DateEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding Date}" IsEnabled="{Binding IsEditable}"
+                            SelectedDateFormat="Custom" CustomDateFormatString="dd MMM yyyy" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:ChoiceEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <ComboBox Grid.Column="1" ItemsSource="{Binding Choices}" SelectedIndex="{Binding SelectedIndex}"
+                  IsEnabled="{Binding IsEditable}" HorizontalAlignment="Stretch" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:ReferenceEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label" Classes.pending="{Binding IsPending}" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <ComboBox Grid.Column="1" ItemsSource="{Binding Options}" SelectedItem="{Binding Selected}"
+                  IsEnabled="{Binding IsEditable}" HorizontalAlignment="Stretch" IsTextSearchEnabled="True" />
+      </Grid>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:ReadOnlyEditorViewModel">
+      <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
+        <TextBlock Classes="label muted" Text="{Binding Label}" Width="{Binding LabelWidth}" />
+        <TextBlock Grid.Column="1" Text="{Binding Display}" VerticalAlignment="Center" />
+      </Grid>
+    </DataTemplate>
+  </UserControl.DataTemplates>
+
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Margin="16,14,16,6" Spacing="2">
+      <TextBlock Classes="h1" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+      <TextBlock Classes="muted" Text="{Binding Subtitle}" />
+      <TextBlock Text="{Binding WatchState}" Foreground="{StaticResource AccentBrush}"
+                 IsVisible="{Binding WatchState, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <TextBlock Classes="muted" FontSize="11" Text="{Binding UnsupportedText}"
+                 IsVisible="{Binding UnsupportedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      <SelectableTextBlock FontSize="11" Foreground="{StaticResource MutedBrush}" Text="{Binding AddressText}"
+                           IsVisible="{Binding AddressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+    </StackPanel>
+
+    <TabControl ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" Padding="8,0">
+      <TabControl.ItemTemplate>
+        <DataTemplate x:DataType="vm:PropertyGroupViewModel">
+          <TextBlock Text="{Binding Name}" FontSize="14" />
+        </DataTemplate>
+      </TabControl.ItemTemplate>
+      <TabControl.ContentTemplate>
+        <DataTemplate x:DataType="vm:PropertyGroupViewModel">
+          <ScrollViewer Padding="8,8,12,8">
+            <Panel>
+              <!-- Attribute groups sit two to a row; other groups one per row. -->
+              <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding IsAttributeGrid}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate><WrapPanel ItemWidth="222" /></ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+              </ItemsControl>
+              <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding !IsAttributeGrid}" />
+            </Panel>
+          </ScrollViewer>
+        </DataTemplate>
+      </TabControl.ContentTemplate>
+    </TabControl>
+  </DockPanel>
+</UserControl>

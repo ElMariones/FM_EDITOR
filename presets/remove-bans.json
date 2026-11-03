@@ -1,0 +1,6 @@
+{
+  "name": "Remove bans",
+  "description": "Lift suspensions.",
+  "target": "Player", "category": "Players", "order": 3, "quick": true,
+  "actions": [ { "property": "IsBanned", "value": false } ]
+}
