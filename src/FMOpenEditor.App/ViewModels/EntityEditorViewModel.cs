@@ -22,6 +22,12 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     [ObservableProperty] private string? _watchState;
     [ObservableProperty] private PropertyGroupViewModel? _selectedGroup;
 
+    /// <summary>The face or badge shown in the header; hidden when the user has none.</summary>
+    public EntityPicture Picture { get; }
+
+    public bool IsFrozen => _session.Watcher.ModeOf(Entity) == WatchMode.Freeze;
+    public bool IsOnlyUp => _session.Watcher.ModeOf(Entity) == WatchMode.OnlyUp;
+
     public int UnsupportedCount { get; }
     public string? UnsupportedText => UnsupportedCount > 0 ? $"{UnsupportedCount} fields not mapped for this game version yet" : null;
 
@@ -32,6 +38,7 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     {
         _session = session;
         Entity = entity;
+        Picture = new EntityPicture(entity, FMOpenEditor.Core.Graphics.GraphicSize.Large);
 
         var all = PropertyCatalog.For(entity.Kind);
         var supported = all.Where(p => session.IsSupported(entity.Kind, p.Key)).ToList();
@@ -70,10 +77,12 @@ public sealed partial class EntityEditorViewModel : ObservableObject
         };
         WatchState = _session.Watcher.ModeOf(Entity) switch
         {
-            WatchMode.Freeze => "❄ Attributes frozen",
-            WatchMode.OnlyUp => "⬆ Attributes can only go up",
+            WatchMode.Freeze => "Attributes frozen",
+            WatchMode.OnlyUp => "Attributes can only go up",
             _ => null,
         };
+        OnPropertyChanged(nameof(IsFrozen));
+        OnPropertyChanged(nameof(IsOnlyUp));
     }
 
     private string Fmt(string key) =>

@@ -1,32 +1,57 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             xmlns:c="using:FMOpenEditor.App.Controls"
              x:Class="FMOpenEditor.App.Views.WatchListView"
              x:DataType="vm:WatchListViewModel"
              x:Name="Root">
-  <DockPanel>
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-      <StackPanel>
-        <TextBlock Classes="h1" Text="Watch list" />
-        <TextBlock Classes="muted" TextWrapping="Wrap"
-                   Text="Frozen attributes are restored whenever the game changes them. Only-up keeps improvements and undoes declines. Checked every 2 seconds while connected. Add people with a right-click in any list." />
-      </StackPanel>
-      <Button Grid.Column="1" Content="Remove all" Command="{Binding ClearCommand}" VerticalAlignment="Top" />
-    </Grid>
-    <ItemsControl ItemsSource="{Binding Items}">
-      <ItemsControl.ItemTemplate>
-        <DataTemplate x:DataType="vm:WatchedEntity">
-          <Border Classes="card" Padding="12,8" Margin="0,0,0,6">
-            <Grid ColumnDefinitions="*,140,140,Auto">
-              <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="1" Text="{Binding Mode}" VerticalAlignment="Center" />
-              <TextBlock Grid.Column="2" Text="{Binding Count, StringFormat='{}{0} attributes'}" Classes="muted" VerticalAlignment="Center" />
-              <Button Grid.Column="3" Content="Remove" Command="{Binding #Root.((vm:WatchListViewModel)DataContext).RemoveCommand}"
-                      CommandParameter="{Binding}" />
-            </Grid>
-          </Border>
-        </DataTemplate>
-      </ItemsControl.ItemTemplate>
-    </ItemsControl>
-  </DockPanel>
+  <Border Classes="glass" Padding="20,18">
+    <DockPanel>
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,16">
+        <Border Classes="tile" Margin="0,2,14,0" VerticalAlignment="Top"><c:Icon Kind="snow" Size="19" /></Border>
+        <StackPanel Grid.Column="1" Spacing="4">
+          <TextBlock Classes="h1" Text="Watch list" />
+          <TextBlock Classes="muted" TextWrapping="Wrap" MaxWidth="720" HorizontalAlignment="Left"
+                     Text="Frozen attributes are restored whenever the game changes them. Only-up keeps improvements and undoes declines. Checked every 2 seconds while connected. Add people with a right-click in any list." />
+        </StackPanel>
+        <Button Grid.Column="2" Command="{Binding ClearCommand}" VerticalAlignment="Top">
+          <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="discard" Size="15" /><TextBlock Text="Remove all" /></StackPanel>
+        </Button>
+      </Grid>
+
+      <Panel>
+        <StackPanel IsVisible="{Binding !Items.Count}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+          <c:Mascot Width="110" Height="110" HorizontalAlignment="Center" />
+          <TextBlock Classes="h2" Text="Nobody is being watched yet" HorizontalAlignment="Center" />
+          <TextBlock Classes="muted" Text="Right-click a player in any list and choose Freeze attributes." HorizontalAlignment="Center" />
+        </StackPanel>
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Items}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:WatchedEntity">
+              <Border Classes="inset lift" Padding="14,10" Margin="0,0,0,8">
+                <Grid ColumnDefinitions="Auto,*,150,150,Auto">
+                  <Border Width="34" Height="34" CornerRadius="17" ClipToBounds="True" Margin="0,0,12,0"
+                          Background="{DynamicResource FieldBrush}" IsVisible="{Binding Picture.HasImage}">
+                    <Image Source="{Binding Picture.Image}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" FontWeight="SemiBold" />
+                  <Border Grid.Column="2" Classes="pill" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="6" TextElement.Foreground="{DynamicResource AccentBrush}">
+                      <c:Icon Kind="{Binding Icon}" Size="13" />
+                      <TextBlock Text="{Binding Mode}" FontSize="12" FontWeight="Medium" />
+                    </StackPanel>
+                  </Border>
+                  <TextBlock Grid.Column="3" Text="{Binding Count, StringFormat='{}{0} attributes'}" Classes="muted num" VerticalAlignment="Center" />
+                  <Button Grid.Column="4" Classes="ghost" Content="Remove" Command="{Binding #Root.((vm:WatchListViewModel)DataContext).RemoveCommand}"
+                          CommandParameter="{Binding}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+      </Panel>
+    </DockPanel>
+  </Border>
 </UserControl>

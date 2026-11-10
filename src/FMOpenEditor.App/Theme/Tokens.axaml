@@ -1,0 +1,320 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    FM OpenEditor design tokens. See DESIGN.md for the thinking behind them.
+
+    Two themes share one structure:
+      Night ("Floodlit")  - ink-navy stadium at night, light pooled into glass.
+      Day   ("Matchday")  - pale morning sky, frosted white glass.
+
+    The brand gradient is "Chroma" (lime > turquoise > blue): the mascot's skin.
+    "Sunset" (amber > coral > pink) is reserved for unsaved changes, so warm always means "not saved yet".
+  -->
+
+  <ResourceDictionary.ThemeDictionaries>
+
+    <!-- ============================== NIGHT ============================== -->
+    <ResourceDictionary x:Key="Dark">
+      <!-- Fluent accent ramp -->
+      <Color x:Key="SystemAccentColor">#2CE8B5</Color>
+      <Color x:Key="SystemAccentColorDark1">#22C79B</Color>
+      <Color x:Key="SystemAccentColorDark2">#19A681</Color>
+      <Color x:Key="SystemAccentColorDark3">#118567</Color>
+      <Color x:Key="SystemAccentColorLight1">#5DF0C8</Color>
+      <Color x:Key="SystemAccentColorLight2">#8AF5D8</Color>
+      <Color x:Key="SystemAccentColorLight3">#B7FAE8</Color>
+
+      <Color x:Key="InkColor">#EEF3FF</Color>
+      <Color x:Key="OrbAColor">#7A2CE8B5</Color>
+      <Color x:Key="OrbBColor">#804B5BFF</Color>
+      <Color x:Key="OrbCColor">#5CB9FF3D</Color>
+      <Color x:Key="OrbDColor">#52FF3D9A</Color>
+
+      <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#070A18" />
+        <GradientStop Offset="0.55" Color="#0A1228" />
+        <GradientStop Offset="1" Color="#07091A" />
+      </LinearGradientBrush>
+
+      <SolidColorBrush x:Key="InkBrush" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="MutedBrush" Color="#9AA6C6" />
+      <SolidColorBrush x:Key="FaintBrush" Color="#66728F" />
+
+      <!-- Glass: a lit top-left edge fading away, over a faint fill -->
+      <LinearGradientBrush x:Key="GlassBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#21FFFFFF" />
+        <GradientStop Offset="1" Color="#0BFFFFFF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="GlassEdgeBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#52FFFFFF" />
+        <GradientStop Offset="0.5" Color="#14FFFFFF" />
+        <GradientStop Offset="1" Color="#24FFFFFF" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="GlassBarBrush" Color="#990A1024" />
+      <SolidColorBrush x:Key="GlassInsetBrush" Color="#33050814" />
+      <SolidColorBrush x:Key="HairlineBrush" Color="#1FFFFFFF" />
+      <BoxShadows x:Key="GlassShadow">0 18 48 -12 #99000000</BoxShadows>
+      <BoxShadows x:Key="GlassShadowHover">0 24 56 -12 #B3000000</BoxShadows>
+      <BoxShadows x:Key="GlowShadow">0 8 28 -6 #802CE8B5</BoxShadows>
+      <BoxShadows x:Key="WarmGlowShadow">0 8 28 -6 #80FF7A45</BoxShadows>
+
+      <SolidColorBrush x:Key="FieldBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="FieldHoverBrush" Color="#21FFFFFF" />
+      <SolidColorBrush x:Key="FieldFocusBrush" Color="#0DFFFFFF" />
+      <SolidColorBrush x:Key="FieldEdgeBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="PopupBrush" Color="#F2101830" />
+
+      <SolidColorBrush x:Key="HoverBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="PressBrush" Color="#0AFFFFFF" />
+      <LinearGradientBrush x:Key="SelectedBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#472CE8B5" />
+        <GradientStop Offset="1" Color="#1F3F8CFF" />
+      </LinearGradientBrush>
+
+      <LinearGradientBrush x:Key="ChromaBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#C6FF4D" />
+        <GradientStop Offset="0.5" Color="#2CE8B5" />
+        <GradientStop Offset="1" Color="#3F8CFF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ChromaHoverBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#D8FF7A" />
+        <GradientStop Offset="0.5" Color="#5DF0C8" />
+        <GradientStop Offset="1" Color="#6AA6FF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SunsetBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#FFC53D" />
+        <GradientStop Offset="0.5" Color="#FF7A45" />
+        <GradientStop Offset="1" Color="#FF3D8B" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OnChromaBrush" Color="#04130D" />
+
+      <SolidColorBrush x:Key="AccentBrush" Color="#3DEBB8" />
+      <SolidColorBrush x:Key="PendingBrush" Color="#FFB938" />
+      <SolidColorBrush x:Key="ErrorBrush" Color="#FF6B81" />
+      <SolidColorBrush x:Key="PanelBrush" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="SidebarBrush" Color="#990A1024" />
+
+      <!-- Fluent control resources, re-pointed at the glass palette -->
+      <SolidColorBrush x:Key="TextControlBackground" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#21FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#4D050814" />
+      <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#08FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#4DFFFFFF" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#2CE8B5" />
+      <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#66728F" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#7C88A6" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#66728F" />
+
+      <SolidColorBrush x:Key="ButtonBackground" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#0DFFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#08FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBorderBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#592CE8B5" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#0FFFFFFF" />
+      <SolidColorBrush x:Key="ButtonForeground" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#C9D2EA" />
+      <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#5A6585" />
+
+      <SolidColorBrush x:Key="ToggleButtonBackground" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="#0DFFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="#592CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonForeground" Color="#EEF3FF" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#402CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#592CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#332CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="#992CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="#2CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="#992CE8B5" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#E9FFF8" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#E9FFF8" />
+
+      <SolidColorBrush x:Key="ComboBoxBackground" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#21FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#0DFFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#4DFFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#2CE8B5" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#F2101830" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#33FFFFFF" />
+
+      <SolidColorBrush x:Key="CalendarDatePickerBackground" Color="#14FFFFFF" />
+      <SolidColorBrush x:Key="CalendarDatePickerBackgroundPointerOver" Color="#21FFFFFF" />
+      <SolidColorBrush x:Key="CalendarDatePickerBorderBrush" Color="#26FFFFFF" />
+      <SolidColorBrush x:Key="CalendarDatePickerBorderBrushPointerOver" Color="#4DFFFFFF" />
+
+      <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#F2101830" />
+      <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#33FFFFFF" />
+      <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F2101830" />
+      <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#33FFFFFF" />
+      <SolidColorBrush x:Key="ToolTipBackground" Color="#F2101830" />
+      <SolidColorBrush x:Key="ToolTipBorderBrush" Color="#33FFFFFF" />
+      <SolidColorBrush x:Key="ToolTipForeground" Color="#EEF3FF" />
+    </ResourceDictionary>
+
+    <!-- ============================== DAY ============================== -->
+    <ResourceDictionary x:Key="Light">
+      <Color x:Key="SystemAccentColor">#0C9C7A</Color>
+      <Color x:Key="SystemAccentColorDark1">#0A8769</Color>
+      <Color x:Key="SystemAccentColorDark2">#087258</Color>
+      <Color x:Key="SystemAccentColorDark3">#065D48</Color>
+      <Color x:Key="SystemAccentColorLight1">#22B892</Color>
+      <Color x:Key="SystemAccentColorLight2">#4FD0AE</Color>
+      <Color x:Key="SystemAccentColorLight3">#8BE3CB</Color>
+
+      <Color x:Key="InkColor">#0B1330</Color>
+      <Color x:Key="OrbAColor">#A66EE7D8</Color>
+      <Color x:Key="OrbBColor">#99A5B4FF</Color>
+      <Color x:Key="OrbCColor">#99D2F77E</Color>
+      <Color x:Key="OrbDColor">#8CFFBFD0</Color>
+
+      <LinearGradientBrush x:Key="AppBackgroundBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#EAF1FB" />
+        <GradientStop Offset="0.55" Color="#F5F2FB" />
+        <GradientStop Offset="1" Color="#E8F6F2" />
+      </LinearGradientBrush>
+
+      <SolidColorBrush x:Key="InkBrush" Color="#0B1330" />
+      <SolidColorBrush x:Key="MutedBrush" Color="#4F5B7C" />
+      <SolidColorBrush x:Key="FaintBrush" Color="#8590AD" />
+
+      <LinearGradientBrush x:Key="GlassBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#C7FFFFFF" />
+        <GradientStop Offset="1" Color="#80FFFFFF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="GlassEdgeBrush" StartPoint="0%,0%" EndPoint="100%,100%">
+        <GradientStop Offset="0" Color="#FFFFFFFF" />
+        <GradientStop Offset="0.5" Color="#99FFFFFF" />
+        <GradientStop Offset="1" Color="#CCFFFFFF" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="GlassBarBrush" Color="#A6FFFFFF" />
+      <SolidColorBrush x:Key="GlassInsetBrush" Color="#66FFFFFF" />
+      <SolidColorBrush x:Key="HairlineBrush" Color="#1F0B1330" />
+      <BoxShadows x:Key="GlassShadow">0 16 40 -14 #402B3A6B</BoxShadows>
+      <BoxShadows x:Key="GlassShadowHover">0 22 48 -14 #592B3A6B</BoxShadows>
+      <BoxShadows x:Key="GlowShadow">0 8 24 -6 #7319CFA6</BoxShadows>
+      <BoxShadows x:Key="WarmGlowShadow">0 8 24 -6 #73FF7A45</BoxShadows>
+
+      <SolidColorBrush x:Key="FieldBrush" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="FieldHoverBrush" Color="#E6FFFFFF" />
+      <SolidColorBrush x:Key="FieldFocusBrush" Color="#FFFFFFFF" />
+      <SolidColorBrush x:Key="FieldEdgeBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="PopupBrush" Color="#F7FFFFFF" />
+
+      <SolidColorBrush x:Key="HoverBrush" Color="#0F0B1330" />
+      <SolidColorBrush x:Key="PressBrush" Color="#1A0B1330" />
+      <LinearGradientBrush x:Key="SelectedBrush" StartPoint="0%,50%" EndPoint="100%,50%">
+        <GradientStop Offset="0" Color="#4D19CFA6" />
+        <GradientStop Offset="1" Color="#263A80FF" />
+      </LinearGradientBrush>
+
+      <LinearGradientBrush x:Key="ChromaBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#B4F23A" />
+        <GradientStop Offset="0.5" Color="#22D6AC" />
+        <GradientStop Offset="1" Color="#4C8DFF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="ChromaHoverBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#C4F760" />
+        <GradientStop Offset="0.5" Color="#45E2BD" />
+        <GradientStop Offset="1" Color="#6FA4FF" />
+      </LinearGradientBrush>
+      <LinearGradientBrush x:Key="SunsetBrush" StartPoint="0%,100%" EndPoint="100%,0%">
+        <GradientStop Offset="0" Color="#FFC53D" />
+        <GradientStop Offset="0.5" Color="#FF7A45" />
+        <GradientStop Offset="1" Color="#FF3D8B" />
+      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OnChromaBrush" Color="#04130D" />
+
+      <SolidColorBrush x:Key="AccentBrush" Color="#067A5B" />
+      <SolidColorBrush x:Key="PendingBrush" Color="#A85800" />
+      <SolidColorBrush x:Key="ErrorBrush" Color="#C8203F" />
+      <SolidColorBrush x:Key="PanelBrush" Color="#99FFFFFF" />
+      <SolidColorBrush x:Key="SidebarBrush" Color="#A6FFFFFF" />
+
+      <SolidColorBrush x:Key="TextControlBackground" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#E6FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBackgroundDisabled" Color="#66FFFFFF" />
+      <SolidColorBrush x:Key="TextControlBorderBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="#590B1330" />
+      <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="#0C9C7A" />
+      <SolidColorBrush x:Key="TextControlBorderBrushDisabled" Color="#1A0B1330" />
+      <SolidColorBrush x:Key="TextControlForeground" Color="#0B1330" />
+      <SolidColorBrush x:Key="TextControlForegroundPointerOver" Color="#0B1330" />
+      <SolidColorBrush x:Key="TextControlForegroundFocused" Color="#0B1330" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForeground" Color="#8590AD" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundPointerOver" Color="#6F7B9A" />
+      <SolidColorBrush x:Key="TextControlPlaceholderForegroundFocused" Color="#8590AD" />
+
+      <SolidColorBrush x:Key="ButtonBackground" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#99FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="#59FFFFFF" />
+      <SolidColorBrush x:Key="ButtonBorderBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPointerOver" Color="#990C9C7A" />
+      <SolidColorBrush x:Key="ButtonBorderBrushPressed" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="ButtonBorderBrushDisabled" Color="#140B1330" />
+      <SolidColorBrush x:Key="ButtonForeground" Color="#0B1330" />
+      <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#0B1330" />
+      <SolidColorBrush x:Key="ButtonForegroundPressed" Color="#2A3558" />
+      <SolidColorBrush x:Key="ButtonForegroundDisabled" Color="#9AA3BC" />
+
+      <SolidColorBrush x:Key="ToggleButtonBackground" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundPointerOver" Color="#FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundPressed" Color="#99FFFFFF" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushPointerOver" Color="#990C9C7A" />
+      <SolidColorBrush x:Key="ToggleButtonForeground" Color="#0B1330" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundPointerOver" Color="#0B1330" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundChecked" Color="#4D19CFA6" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPointerOver" Color="#6619CFA6" />
+      <SolidColorBrush x:Key="ToggleButtonBackgroundCheckedPressed" Color="#4019CFA6" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushChecked" Color="#0C9C7A" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPointerOver" Color="#0C9C7A" />
+      <SolidColorBrush x:Key="ToggleButtonBorderBrushCheckedPressed" Color="#0C9C7A" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundChecked" Color="#053B2D" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPointerOver" Color="#053B2D" />
+      <SolidColorBrush x:Key="ToggleButtonForegroundCheckedPressed" Color="#053B2D" />
+
+      <SolidColorBrush x:Key="ComboBoxBackground" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPointerOver" Color="#E6FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBackgroundPressed" Color="#99FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPointerOver" Color="#590B1330" />
+      <SolidColorBrush x:Key="ComboBoxBorderBrushPressed" Color="#0C9C7A" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#F7FFFFFF" />
+      <SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#260B1330" />
+
+      <SolidColorBrush x:Key="CalendarDatePickerBackground" Color="#B3FFFFFF" />
+      <SolidColorBrush x:Key="CalendarDatePickerBackgroundPointerOver" Color="#E6FFFFFF" />
+      <SolidColorBrush x:Key="CalendarDatePickerBorderBrush" Color="#2E0B1330" />
+      <SolidColorBrush x:Key="CalendarDatePickerBorderBrushPointerOver" Color="#590B1330" />
+
+      <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#F7FFFFFF" />
+      <SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#260B1330" />
+      <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F7FFFFFF" />
+      <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#260B1330" />
+      <SolidColorBrush x:Key="ToolTipBackground" Color="#F7FFFFFF" />
+      <SolidColorBrush x:Key="ToolTipBorderBrush" Color="#260B1330" />
+      <SolidColorBrush x:Key="ToolTipForeground" Color="#0B1330" />
+    </ResourceDictionary>
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Shape and type, shared by both themes -->
+  <CornerRadius x:Key="ControlCornerRadius">10</CornerRadius>
+  <CornerRadius x:Key="OverlayCornerRadius">14</CornerRadius>
+  <CornerRadius x:Key="CardRadius">20</CornerRadius>
+  <FontFamily x:Key="MonoFont">Cascadia Mono,Consolas,Menlo,monospace</FontFamily>
+</ResourceDictionary>

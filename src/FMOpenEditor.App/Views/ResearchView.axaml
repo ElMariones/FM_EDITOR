@@ -7,14 +7,14 @@
 
   <UserControl.Styles>
     <Style Selector="TextBlock.mono, SelectableTextBlock.mono">
-      <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,monospace" />
+      <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,Menlo,monospace" />
     </Style>
     <Style Selector="TextBlock.changed">
-      <Setter Property="Foreground" Value="{StaticResource PendingBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PendingBrush}" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="TextBlock.hint">
-      <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
     <Style Selector="ListBox.dense ListBoxItem">
@@ -26,13 +26,14 @@
     </Style>
   </UserControl.Styles>
 
+  <Border Classes="glass" Padding="20,18,20,12">
   <DockPanel>
     <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
       <TextBlock Classes="h1" Text="Research: map a new game version" />
       <TextBlock Classes="hint"
                  Text="Find one record (a club, a player), work out where each field sits in it, then find a stable path to it from the game module. Step-by-step guide: docs/DEFINITIONS.md." />
       <TextBlock Text="{Binding ModuleInfo}" Classes="muted" />
-      <Border Classes="card" IsVisible="{Binding !IsAvailable}">
+      <Border Classes="inset" IsVisible="{Binding !IsAvailable}">
         <TextBlock TextWrapping="Wrap" Text="Connect to the running game from the Home page to use these tools. They aren't available for the demo save." />
       </Border>
     </StackPanel>
@@ -43,7 +44,7 @@
       <TabItem Header="Value scan">
         <ScrollViewer>
           <StackPanel Spacing="12" Margin="0,8">
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="hint" Text="Scan for a number you can see in the game, change it in the game, and scan again until a few addresses remain. Money: set the game's currency to pounds first and try Int32, Int64 and Double." />
                 <WrapPanel>
@@ -73,7 +74,7 @@
               </StackPanel>
             </Border>
 
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Offset calculator" />
                 <TextBlock Classes="hint" Text="Field address minus record base. Selecting a scan hit fills the field address; the other tools fill the record base." />
@@ -92,7 +93,7 @@
       <TabItem Header="Strings &amp; pointers">
         <ScrollViewer>
           <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Search}" x:DataType="r:MemorySearchViewModel">
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Find a string" />
                 <TextBlock Classes="hint" Text="Search for an unusual player's or club's name, exactly as the game shows it. Then find pointers to the hit: one of them is usually a name field inside the record." />
@@ -103,7 +104,7 @@
                 </WrapPanel>
               </StackPanel>
             </Border>
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="What points here?" />
                 <TextBlock Classes="hint" Text="Lists 8-byte pointers to the target. A max offset above 0 also finds pointers to just before it, i.e. to the start of the record that contains your field. Repeat on each hit to climb towards a pointer inside the module (★): that's a root candidate." />
@@ -114,7 +115,7 @@
                 </WrapPanel>
               </StackPanel>
             </Border>
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
                 <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding Selected}" MaxHeight="360">
@@ -141,7 +142,7 @@
       <TabItem Header="Classes (RTTI)">
         <ScrollViewer>
           <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Rtti}" x:DataType="r:RttiViewModel">
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="hint" Text="Lists the C++ classes in game_plugin.dll from their run-time type information, with each one's vtable. Every object of a class starts with a pointer to its vtable, so counting those pointers in the heap finds every player, club or nation and gives each one's base address, without needing a root." />
                 <TextBlock Classes="hint" Text="The module address isn't known, so this tool can't run." IsVisible="{Binding !HasModule}" />
@@ -165,7 +166,7 @@
                 </ListBox>
               </StackPanel>
             </Border>
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Objects" />
                 <TextBlock Classes="hint" Text="Objects of the selected class (first 1,000) after counting it on its own." />
@@ -191,7 +192,7 @@
       <TabItem Header="Record diff">
         <ScrollViewer>
           <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Diff}" x:DataType="r:RecordDiffViewModel">
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="hint" Text="Take a snapshot, change exactly one thing in the game (sign a contract, injure a player, use the in-game editor), and take another. The bytes that changed are the field." />
                 <WrapPanel>
@@ -205,7 +206,7 @@
               </StackPanel>
             </Border>
 
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Changes" />
                 <ListBox ItemsSource="{Binding Changes}" MaxHeight="240">
@@ -227,7 +228,7 @@
               </StackPanel>
             </Border>
 
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Hex dump" />
                 <ListBox Classes="dense" ItemsSource="{Binding Rows}" MaxHeight="420">
@@ -244,7 +245,7 @@
               </StackPanel>
             </Border>
 
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Pointers in this record" />
                 <TextBlock Classes="hint" Text="Offset 0x0 pointing into the module is usually the vtable. Strings are names. Other heap pointers are sub-records (contract, finances): follow one and its fields go in the definition with a &quot;path&quot;." />
@@ -270,11 +271,11 @@
       <TabItem Header="Correlator">
         <ScrollViewer>
           <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Correlator}" x:DataType="r:CorrelatorViewModel">
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="hint" Text="Finds a field by comparing many records at once. List several records (e.g. players from the Classes tab) and the value the game shows for each, such as their Finishing. Every offset and number type is tried; the ones that explain all the values are kept, with their scale." />
                 <TextBox Text="{Binding SamplesText}" AcceptsReturn="True" TextWrapping="NoWrap" Height="200"
-                         FontFamily="Cascadia Mono,Consolas,monospace"
+                         FontFamily="Cascadia Mono,Consolas,Menlo,monospace"
                          Watermark="0x1F2A3B40 15&#x0a;0x1F2A4C80 7&#x0a;0x1F2A5DC0 18" />
                 <WrapPanel>
                   <TextBox Text="{Binding Length}" Watermark="record length" Width="120" Margin="0,0,6,6" />
@@ -283,7 +284,7 @@
                 <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
-            <Border Classes="card">
+            <Border Classes="inset">
               <StackPanel Spacing="8">
                 <TextBlock Classes="h2" Text="Matches" />
                 <ListBox ItemsSource="{Binding Candidates}" SelectedItem="{Binding Selected}" MaxHeight="360">
@@ -311,4 +312,5 @@
       </TabItem>
     </TabControl>
   </DockPanel>
+  </Border>
 </UserControl>

@@ -2,9 +2,11 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMOpenEditor.App.Services;
 using FMOpenEditor.Core.Data;
 using FMOpenEditor.Core.Definitions;
 using FMOpenEditor.Core.Editing;
+using FMOpenEditor.Core.Graphics;
 using FMOpenEditor.Core.Memory;
 using FMOpenEditor.Core.Model;
 using FMOpenEditor.Core.Presets;
@@ -36,6 +38,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty] private bool _autoSave;
     [ObservableProperty] private string? _connectMessage;
     [ObservableProperty] private IReadOnlyList<string> _connectDetails = [];
+    [ObservableProperty] private bool _isNight = true;
+    [ObservableProperty] private bool _isBusy;
+    [ObservableProperty] private bool _isIndexingGraphics;
+    [ObservableProperty] private string? _graphicsStatus;
+
+    private string? _edition;
+
+    /// <summary>Appearance and graphics preferences (the gear in the top bar).</summary>
+    public SettingsViewModel Settings { get; }
 
     /// <summary>Raised when the user asks to compare two entities; the view opens a window.</summary>
     public event Action<CompareViewModel>? CompareRequested;
@@ -55,7 +66,57 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _watchTimer.Tick += (_, _) => Session?.Watcher.Tick();
         _watchTimer.Start();
 
+        Settings = new SettingsViewModel(StartGraphics);
+        ImageService.Instance.Changed += OnGraphicsChanged;
+        IsNight = AppServices.IsNight;
+        if (Avalonia.Application.Current is { } app)
+            app.ActualThemeVariantChanged += (_, _) => IsNight = AppServices.IsNight;
+
         ShowHome();
+    }
+
+    /// <summary>Flips between Day and Night from the top bar.</summary>
+    [RelayCommand]
+    private void ToggleTheme()
+    {
+        var settings = AppServices.Settings;
+        settings.Theme = IsNight ? ThemeChoice.Day : ThemeChoice.Night;
+        settings.Save();
+        AppServices.ApplyTheme(settings.Theme);
+        IsNight = AppServices.IsNight;
+        Settings.SyncTheme();
+    }
+
+    /// <summary>
+    /// (Re)indexes the FM graphics folder for the open save. Pictures only make sense for a real
+    /// save, whose ids match the packs; otherwise the UI shows names alone.
+    /// </summary>
+    private void StartGraphics()
+    {
+        var images = ImageService.Instance;
+        var settings = AppServices.Settings;
+        var usable = Session is { } s && (s.Database.IsLive || AppServices.PicturesForDemo);
+        if (!usable || !settings.ShowPictures)
+        {
+            images.Disable();
+            return;
+        }
+
+        var roots = GraphicsLocator.Find(_edition, settings.GraphicsFolder);
+        if (roots.Count == 0)
+        {
+            images.Disable();
+            return;
+        }
+        _ = images.IndexAsync(roots);
+    }
+
+    private void OnGraphicsChanged()
+    {
+        var images = ImageService.Instance;
+        IsIndexingGraphics = images.IsIndexing;
+        GraphicsStatus = images.IsIndexing ? "Reading graphics packs…"
+            : images.Active && !images.Library.IsEmpty ? $"{images.Library.Count:N0} pictures" : null;
     }
 
     private void ShowHome()
@@ -83,36 +144,52 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void OpenDemo() => Open(new DemoDatabase(), null, null);
 
     [RelayCommand]
-    private void ConnectGame()
+    private async Task ConnectGame()
     {
         ConnectDetails = [];
+        ConnectMessage = null;
         if (!OperatingSystem.IsWindows())
         {
             ConnectMessage = "Connecting to the game is only supported on Windows for now.";
             return;
         }
 
-        var game = GameProcess.FindRunning();
-        if (game is null)
-        {
-            ConnectMessage = "Football Manager isn't running. Start the game and load your save, then try again. " +
-                             "If the game is running as administrator, run FM OpenEditor as administrator too.";
-            return;
-        }
-
-        var def = Definitions.Match(game.ModuleVersion);
-        if (def is null)
-        {
-            ConnectMessage = $"No game definition matches FM build {game.ModuleVersion}. " +
-                             "Copy definitions/_template.json to start mapping it (docs/DEFINITIONS.md).";
-            return;
-        }
-
+        IsBusy = true;
         try
         {
-            var memory = new ProcessMemory(game.ProcessId);
-            var db = new LiveDatabase(memory, def, game.ModuleBase, game.ModuleSize,
-                $"FM {def.Version} · live (build {game.ModuleVersion})", owner: memory);
+            // Finding the process and walking the game's lists can take a moment on a big save;
+            // doing it off the UI thread keeps the loading animation moving.
+            var game = await Task.Run(() => GameProcess.FindRunning());
+            if (game is null)
+            {
+                ConnectMessage = "Football Manager isn't running. Start the game and load your save, then try again. " +
+                                 "If the game is running as administrator, run FM OpenEditor as administrator too.";
+                return;
+            }
+
+            var def = Definitions.Match(game.ModuleVersion);
+            if (def is null)
+            {
+                ConnectMessage = $"No game definition matches FM build {game.ModuleVersion}. " +
+                                 "Copy definitions/_template.json to start mapping it (docs/DEFINITIONS.md).";
+                return;
+            }
+
+            var (memory, db) = await Task.Run<(ProcessMemory, LiveDatabase)>(() =>
+            {
+                var m = new ProcessMemory(game.ProcessId);
+                try
+                {
+                    return (m, new LiveDatabase(m, def, game.ModuleBase, game.ModuleSize,
+                        $"FM {def.Version} · live (build {game.ModuleVersion})", owner: m));
+                }
+                catch
+                {
+                    m.Dispose();
+                    throw;
+                }
+            });
+            _edition = def.Version.Split('.')[0];
 
             var mapped = def.Structs.Values.Sum(f => f.Values.Count(x => x.IsMapped));
             var total = def.Structs.Values.Sum(f => f.Count);
@@ -133,6 +210,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         {
             ConnectMessage = $"Couldn't attach to the game: {ex.Message}";
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void Open(IGameDatabase db, IMemoryAccess? memory, string? moduleInfo, nint moduleBase = 0, long moduleSize = 0)
@@ -145,16 +226,18 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var session = new EditorSession(db) { AutoSave = AutoSave };
         session.Changes.Changed += UpdatePending;
         Session = session;
+        if (!db.IsLive) _edition = null;
+        StartGraphics();
 
         Nav.Clear();
         _pages.Clear();
-        Nav.Add(new NavItem("Players", "⚽", () => NewBrowser(EntityKind.Player)));
-        Nav.Add(new NavItem("Staff", "📋", () => NewBrowser(EntityKind.Staff)));
-        Nav.Add(new NavItem("Clubs", "🏟", () => NewBrowser(EntityKind.Club)));
-        Nav.Add(new NavItem("Competitions", "🏆", () => NewBrowser(EntityKind.Competition)));
-        Nav.Add(new NavItem("Nations", "🌍", () => NewBrowser(EntityKind.Nation)));
-        Nav.Add(new NavItem("Watch list", "❄", () => new WatchListViewModel(session)));
-        Nav.Add(new NavItem("Research", "🔬", () => new ResearchViewModel(_liveMemory, _liveModuleInfo, _liveModuleBase, _liveModuleSize)));
+        Nav.Add(new NavItem("Players", "player", () => NewBrowser(EntityKind.Player)));
+        Nav.Add(new NavItem("Staff", "staff", () => NewBrowser(EntityKind.Staff)));
+        Nav.Add(new NavItem("Clubs", "club", () => NewBrowser(EntityKind.Club)));
+        Nav.Add(new NavItem("Competitions", "trophy", () => NewBrowser(EntityKind.Competition)));
+        Nav.Add(new NavItem("Nations", "globe", () => NewBrowser(EntityKind.Nation)));
+        Nav.Add(new NavItem("Watch list", "snow", () => new WatchListViewModel(session)));
+        Nav.Add(new NavItem("Research", "flask", () => new ResearchViewModel(_liveMemory, _liveModuleInfo, _liveModuleBase, _liveModuleSize)));
         SelectedNav = Nav[0];
         UpdatePending();
         Status = $"Opened {db.DisplayName}: {db.GetAll(EntityKind.Player).Count:N0} players, {db.GetAll(EntityKind.Club).Count:N0} clubs.";
@@ -217,6 +300,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             s.Dispose();
         }
         Session = null;
+        ImageService.Instance.Disable();
         _liveMemory = null;
         SelectedNav = null;
         UpdatePending();

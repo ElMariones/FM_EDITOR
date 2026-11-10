@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:FMOpenEditor.App.Controls"
+             x:Class="FMOpenEditor.App.Controls.TourOverlay"
+             IsVisible="False" Focusable="True">
+  <!--
+    Tiki's guided tour. The screen dims except for the thing being explained, a ring glides from
+    one stop to the next, and Tiki looks at whatever it is talking about.
+  -->
+  <Panel>
+    <!-- The dim, with a hole over the current stop. It also swallows clicks meant for the app. -->
+    <Path x:Name="Dim" Fill="#B8040712" />
+
+    <Border x:Name="Ring" HorizontalAlignment="Left" VerticalAlignment="Top" IsHitTestVisible="False"
+            CornerRadius="18" BorderThickness="2" BorderBrush="{DynamicResource ChromaBrush}"
+            BoxShadow="{DynamicResource GlowShadow}">
+      <Border.Transitions>
+        <Transitions>
+          <ThicknessTransition Property="Margin" Duration="0:0:0.38" Easing="CubicEaseInOut" />
+          <DoubleTransition Property="Width" Duration="0:0:0.38" Easing="CubicEaseInOut" />
+          <DoubleTransition Property="Height" Duration="0:0:0.38" Easing="CubicEaseInOut" />
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+
+    <Border x:Name="Bubble" Width="400" HorizontalAlignment="Left" VerticalAlignment="Top"
+            Background="{DynamicResource PopupBrush}" BorderBrush="{DynamicResource GlassEdgeBrush}" BorderThickness="1"
+            CornerRadius="22" Padding="18" BoxShadow="{DynamicResource GlassShadowHover}">
+      <Border.Transitions>
+        <Transitions>
+          <ThicknessTransition Property="Margin" Duration="0:0:0.38" Easing="CubicEaseInOut" />
+        </Transitions>
+      </Border.Transitions>
+      <Grid ColumnDefinitions="Auto,*">
+        <c:Mascot x:Name="Guide" Width="64" Height="64" VerticalAlignment="Top" Margin="0,0,14,0" FollowPointer="False" />
+        <StackPanel Grid.Column="1" Spacing="6">
+          <TextBlock x:Name="StepLabel" Classes="eyebrow" />
+          <TextBlock x:Name="TitleText" Classes="h2" FontSize="17" TextWrapping="Wrap" />
+          <TextBlock x:Name="BodyText" Classes="muted" TextWrapping="Wrap" LineHeight="20" />
+          <Grid ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,10,0,0">
+            <Button x:Name="SkipButton" Classes="ghost" Content="Skip" Click="OnSkip" />
+            <Button x:Name="BackButton" Grid.Column="2" Content="Back" Click="OnBack" Margin="0,0,6,0" />
+            <Button x:Name="NextButton" Grid.Column="3" Classes="accent" Content="Next" Click="OnNext" />
+          </Grid>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Panel>
+</UserControl>

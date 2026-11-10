@@ -15,6 +15,9 @@ public sealed class EntityRow(Entity entity) : INotifyPropertyChanged
     public Entity Entity { get; } = entity;
     public bool HasPending { get; private set; }
 
+    /// <summary>Faces and badges per column; see <see cref="RowImages"/>.</summary>
+    public RowImages Images { get; } = new();
+
     public string this[string key] => _text.GetValueOrDefault(key) ?? "";
     public object? Raw(string key) => _raw.GetValueOrDefault(key);
 
@@ -28,9 +31,13 @@ public sealed class EntityRow(Entity entity) : INotifyPropertyChanged
             var v = session.TryRead(Entity, c.Key);
             _raw[c.Key] = def.Kind == ValueKind.Reference && v is int id && def.RefKind is { } k ? session.NameOf(k, id) : v;
             _text[c.Key] = Values.Format(def, v, session.NameOf);
+
+            if (c.Key == PropertyCatalog.DisplayName) Images.Target(c.Key, Entity.Kind, Entity.Id);
+            else if (def.Kind == ValueKind.Reference) Images.Target(c.Key, v is int refId ? def.RefKind : null, v as int? ?? 0);
         }
         HasPending = session.Changes.Pending.Any(p => p.Entity == Entity);
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+        // Avalonia's indexer bindings refresh on the indexer property's CLR name, "Item".
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item"));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasPending)));
     }
 }

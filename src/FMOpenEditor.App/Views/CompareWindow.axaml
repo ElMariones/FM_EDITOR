@@ -1,36 +1,75 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FMOpenEditor.App.ViewModels"
+        xmlns:c="using:FMOpenEditor.App.Controls"
         x:Class="FMOpenEditor.App.Views.CompareWindow"
         x:DataType="vm:CompareViewModel"
-        Title="Compare" Width="760" Height="820" WindowStartupLocation="CenterOwner">
+        Title="Compare" Icon="/Assets/icon.ico" Width="780" Height="840" WindowStartupLocation="CenterOwner">
   <Window.Styles>
     <Style Selector="TextBlock.better">
-      <Setter Property="Foreground" Value="{StaticResource AccentBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
       <Setter Property="FontWeight" Value="Bold" />
     </Style>
+    <Style Selector="Grid.row">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border.rowbg">
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Transitions">
+        <Transitions><BrushTransition Property="Background" Duration="0:0:0.12" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Border.rowbg:pointerover">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+    </Style>
   </Window.Styles>
-  <DockPanel Margin="16">
-    <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="0,0,0,10">
-      <TextBlock Classes="h2" Text="Attribute" />
-      <TextBlock Grid.Column="1" Classes="h2" Text="{Binding NameA}" TextTrimming="CharacterEllipsis" />
-      <TextBlock Grid.Column="2" Classes="h2" Text="{Binding NameB}" TextTrimming="CharacterEllipsis" />
-    </Grid>
-    <ScrollViewer>
-      <ItemsControl ItemsSource="{Binding Rows}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:CompareRow">
-            <Grid ColumnDefinitions="2*,*,*" Margin="0,3">
-              <TextBlock>
-                <Run Text="{Binding Label}" />
-                <Run Text="{Binding Category, StringFormat='  {0}'}" Foreground="{StaticResource MutedBrush}" FontSize="11" />
-              </TextBlock>
-              <TextBlock Grid.Column="1" Text="{Binding A}" Classes.better="{Binding ABetter}" />
-              <TextBlock Grid.Column="2" Text="{Binding B}" Classes.better="{Binding BBetter}" />
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
-  </DockPanel>
+
+  <Panel>
+    <c:Aurora />
+    <Border Classes="glass" Margin="14" Padding="20,18">
+      <DockPanel>
+        <!-- The two sides, face to face -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="2*,*,*" Margin="0,0,0,14">
+          <StackPanel VerticalAlignment="Bottom" Spacing="2">
+            <TextBlock Classes="eyebrow" Text="SIDE BY SIDE" />
+            <TextBlock Classes="h1" Text="Compare" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Spacing="8">
+            <Border Width="64" Height="64" CornerRadius="32" ClipToBounds="True" HorizontalAlignment="Left"
+                    Background="{DynamicResource FieldBrush}" IsVisible="{Binding PictureA.HasImage}">
+              <Image Source="{Binding PictureA.Image}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+            </Border>
+            <TextBlock Classes="h2" Text="{Binding NameA}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <StackPanel Grid.Column="2" Spacing="8">
+            <Border Width="64" Height="64" CornerRadius="32" ClipToBounds="True" HorizontalAlignment="Left"
+                    Background="{DynamicResource FieldBrush}" IsVisible="{Binding PictureB.HasImage}">
+              <Image Source="{Binding PictureB.Image}" Stretch="UniformToFill" RenderOptions.BitmapInterpolationMode="HighQuality" />
+            </Border>
+            <TextBlock Classes="h2" Text="{Binding NameB}" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+        </Grid>
+        <Rectangle DockPanel.Dock="Top" Height="1" Fill="{DynamicResource HairlineBrush}" Margin="0,0,0,6" />
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Rows}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:CompareRow">
+                <Border Classes="rowbg" Padding="8,5">
+                  <Grid ColumnDefinitions="2*,*,*">
+                    <TextBlock>
+                      <Run Text="{Binding Label}" />
+                      <Run Text="{Binding Category, StringFormat='  {0}'}" Foreground="{DynamicResource FaintBrush}" FontSize="11" />
+                    </TextBlock>
+                    <TextBlock Grid.Column="1" Classes="num" Text="{Binding A}" Classes.better="{Binding ABetter}" />
+                    <TextBlock Grid.Column="2" Classes="num" Text="{Binding B}" Classes.better="{Binding BBetter}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </Panel>
 </Window>

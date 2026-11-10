@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMOpenEditor.App.Services;
 using FMOpenEditor.Core.Editing;
 using FMOpenEditor.Core.Model;
 using FMOpenEditor.Core.Presets;
@@ -50,6 +51,7 @@ public sealed partial class BrowserViewModel : ObservableObject
     [ObservableProperty] private bool _showFilters;
     [ObservableProperty] private bool _showMassEdit;
     [ObservableProperty] private int _selectedCount;
+    [ObservableProperty] private bool _isEmpty;
 
     [ObservableProperty] private PropertyDef? _massProperty;
     [ObservableProperty] private PresetOpOption _massOp = PresetOpOption.All[0];
@@ -79,6 +81,7 @@ public sealed partial class BrowserViewModel : ObservableObject
         OtherPresets = forKind.Where(p => !p.Quick).ToList();
 
         session.ValuesChanged += QueueRefresh;
+        ImageService.Instance.Changed += OnPicturesChanged;
         Search();
     }
 
@@ -150,6 +153,7 @@ public sealed partial class BrowserViewModel : ObservableObject
 
         Rows.Clear();
         foreach (var r in rows) Rows.Add(r);
+        IsEmpty = Rows.Count == 0;
 
         var total = _session.GetAll(Kind).Count;
         Summary = found.Count >= query.Limit
@@ -302,5 +306,16 @@ public sealed partial class BrowserViewModel : ObservableObject
         return s;
     }
 
-    public void Detach() => _session.ValuesChanged -= QueueRefresh;
+    /// <summary>The graphics index finished loading (or was switched off): re-ask for every picture.</summary>
+    private void OnPicturesChanged()
+    {
+        foreach (var r in Rows) r.Images.Reset();
+        Editor?.Picture.Reload();
+    }
+
+    public void Detach()
+    {
+        _session.ValuesChanged -= QueueRefresh;
+        ImageService.Instance.Changed -= OnPicturesChanged;
+    }
 }

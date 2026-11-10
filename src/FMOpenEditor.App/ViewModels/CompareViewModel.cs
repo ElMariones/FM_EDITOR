@@ -10,12 +10,16 @@ public sealed class CompareViewModel
 {
     public string NameA { get; }
     public string NameB { get; }
+    public EntityPicture PictureA { get; }
+    public EntityPicture PictureB { get; }
     public IReadOnlyList<CompareRow> Rows { get; }
 
     public CompareViewModel(EditorSession session, Entity a, Entity b)
     {
         NameA = session.TryRead(a, PropertyCatalog.DisplayName) as string ?? a.ToString();
         NameB = session.TryRead(b, PropertyCatalog.DisplayName) as string ?? b.ToString();
+        PictureA = new EntityPicture(a, FMOpenEditor.Core.Graphics.GraphicSize.Large);
+        PictureB = new EntityPicture(b, FMOpenEditor.Core.Graphics.GraphicSize.Large);
 
         Rows = PropertyCatalog.For(a.Kind)
             .Where(p => p.Key != PropertyCatalog.DisplayName && session.IsSupported(a.Kind, p.Key))

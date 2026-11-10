@@ -2,10 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:FMOpenEditor.App.ViewModels"
         xmlns:views="using:FMOpenEditor.App.Views"
+        xmlns:c="using:FMOpenEditor.App.Controls"
+        xmlns:s="using:FMOpenEditor.App.Services"
         x:Class="FMOpenEditor.App.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="FM OpenEditor"
-        Width="1440" Height="880" MinWidth="1000" MinHeight="600"
+        Icon="/Assets/icon.ico"
+        Width="1440" Height="880" MinWidth="1040" MinHeight="620"
         WindowStartupLocation="CenterScreen">
 
   <Window.DataTemplates>
@@ -15,57 +18,160 @@
     <DataTemplate DataType="vm:ResearchViewModel"><views:ResearchView /></DataTemplate>
   </Window.DataTemplates>
 
-  <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="200,*">
+  <Panel>
+    <!-- Light behind the glass -->
+    <c:Aurora />
 
-    <!-- Top bar -->
-    <Border Grid.ColumnSpan="2" Background="{StaticResource SidebarBrush}" Padding="14,10">
-      <Grid ColumnDefinitions="Auto,*,Auto">
-        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-          <TextBlock Text="FM OpenEditor" Classes="h2" Foreground="{StaticResource AccentBrush}" />
-          <TextBlock Text="{Binding AppVersion}" Classes="muted" VerticalAlignment="Center" />
-        </StackPanel>
-        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" VerticalAlignment="Center">
-          <Ellipse Width="9" Height="9" Fill="{StaticResource AccentBrush}" IsVisible="{Binding IsConnected}" />
-          <TextBlock Text="{Binding ConnectionLabel}" VerticalAlignment="Center" />
-        </StackPanel>
-        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsConnected}">
-          <Button Content="⟳ Re-read" Command="{Binding RefreshCommand}" ToolTip.Tip="Re-read the game's lists (new players, transfers)" />
-          <Button Content="Disconnect" Command="{Binding DisconnectCommand}" />
-        </StackPanel>
-      </Grid>
-    </Border>
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="Auto,*" Margin="12">
 
-    <!-- Sidebar -->
-    <Border Grid.Row="1" Background="{StaticResource SidebarBrush}">
-      <ListBox Classes="nav" ItemsSource="{Binding Nav}" SelectedItem="{Binding SelectedNav}" Background="Transparent" Margin="0,8">
-        <ListBox.ItemTemplate>
-          <DataTemplate x:DataType="vm:NavItem">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <TextBlock Text="{Binding Icon}" Width="20" />
-              <TextBlock Text="{Binding Title}" />
+      <!-- ===== Top bar ===== -->
+      <Border Grid.ColumnSpan="2" Classes="bar" Padding="14,8" Margin="0,0,0,12">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <!-- Tiki turns warm while there are unsaved changes -->
+            <c:Mascot x:Name="TopMascot" Width="36" Height="36" IsWarm="{Binding HasPending}"
+                      ToolTip.Tip="Tiki turns warm while you have unsaved changes" />
+            <StackPanel VerticalAlignment="Center" Spacing="-2">
+              <TextBlock FontSize="16" FontWeight="Bold" LetterSpacing="-0.4">
+                <Run Text="FM" /><Run Text=" Open" Foreground="{DynamicResource AccentBrush}" /><Run Text="Editor" />
+              </TextBlock>
+              <TextBlock Text="{Binding AppVersion}" Classes="muted num" FontSize="10" />
             </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </Border>
+          </StackPanel>
 
-    <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding CurrentPage}" Margin="12" />
+          <!-- Connection state -->
+          <Border Grid.Column="1" Classes="pill" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="12,5">
+            <StackPanel Orientation="Horizontal" Spacing="9">
+              <Panel Width="10" Height="10" VerticalAlignment="Center" IsVisible="{Binding IsConnected}">
+                <Ellipse Classes="beacon" s:Motion.Loop="pulse" Fill="{DynamicResource AccentBrush}" RenderTransformOrigin="50%,50%" />
+                <Ellipse Fill="{DynamicResource AccentBrush}" />
+              </Panel>
+              <Ellipse Width="8" Height="8" Fill="{DynamicResource FaintBrush}" VerticalAlignment="Center" IsVisible="{Binding !IsConnected}" />
+              <TextBlock Text="{Binding ConnectionLabel}" VerticalAlignment="Center" FontWeight="Medium" FontSize="12.5" />
+              <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding IsIndexingGraphics}" VerticalAlignment="Center">
+                <Rectangle Width="1" Height="14" Fill="{DynamicResource HairlineBrush}" />
+                <Arc Classes="spinner" s:Motion.Loop="spin" Width="13" Height="13" StrokeThickness="2" />
+                <TextBlock Text="{Binding GraphicsStatus}" Classes="muted" FontSize="12" VerticalAlignment="Center" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
 
-    <!-- Bottom bar: pending changes -->
-    <Border Grid.Row="2" Grid.ColumnSpan="2" Background="{StaticResource SidebarBrush}" Padding="14,8">
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsConnected}">
-          <CheckBox Content="Save instantly" IsChecked="{Binding AutoSave}"
-                    ToolTip.Tip="Write every edit to the game as you make it, instead of collecting them for Save changes" />
-          <TextBlock VerticalAlignment="Center" Foreground="{StaticResource PendingBrush}"
-                     IsVisible="{Binding HasPending}" Text="{Binding PendingCount, StringFormat='{}{0} pending'}" />
-          <Button Content="Discard" Command="{Binding DiscardCommand}" IsEnabled="{Binding HasPending}" />
-          <Button Content="↶ Undo last save" Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}" />
-          <Button Classes="accent" Content="Save changes" Command="{Binding SaveCommand}" IsEnabled="{Binding HasPending}"
-                  HotKey="Ctrl+S" />
+          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Button Command="{Binding RefreshCommand}" IsVisible="{Binding IsConnected}"
+                    ToolTip.Tip="Re-read the game's lists (new players, transfers)">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="refresh" Size="15" />
+                <TextBlock Text="Re-read" />
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding DisconnectCommand}" IsVisible="{Binding IsConnected}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="power" Size="15" />
+                <TextBlock Text="Disconnect" />
+              </StackPanel>
+            </Button>
+
+            <StackPanel x:Name="TourAppearance" Orientation="Horizontal" Spacing="6">
+              <!-- Day / night -->
+              <Button Classes="icon" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="Switch between day and night">
+                <Panel x:Name="ThemeIcon" RenderTransformOrigin="50%,50%">
+                  <c:Icon Kind="sun" IsVisible="{Binding IsNight}" />
+                  <c:Icon Kind="moon" IsVisible="{Binding !IsNight}" />
+                </Panel>
+              </Button>
+
+              <!-- Settings -->
+              <Button Classes="icon" ToolTip.Tip="Appearance and graphics" x:Name="SettingsButton">
+                <c:Icon Kind="settings" />
+                <Button.Flyout>
+                  <Flyout Placement="BottomEdgeAlignedRight">
+                    <views:SettingsPanel DataContext="{Binding Settings}" Width="380" />
+                  </Flyout>
+                </Button.Flyout>
+              </Button>
+
+              <!-- Replay Tiki's tour -->
+              <Button Classes="icon" ToolTip.Tip="Show me around" Click="OnHelp">
+                <c:Icon Kind="help" />
+              </Button>
+            </StackPanel>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- ===== Sidebar (only once a save is open) ===== -->
+      <Border x:Name="TourSidebar" Grid.Row="1" Classes="bar" Width="208" Margin="0,0,12,0" Padding="0,10" IsVisible="{Binding IsConnected}">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Classes="eyebrow" Text="DATABASE" Margin="20,6,0,8" />
+          <ListBox Classes="nav" ItemsSource="{Binding Nav}" SelectedItem="{Binding SelectedNav}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NavItem">
+                <Grid ColumnDefinitions="Auto,Auto,*" Height="42">
+                  <Border Classes="pip" Margin="0,0,10,0" />
+                  <Panel Grid.Column="1" Classes="navicon" Width="20" Height="20" VerticalAlignment="Center" Margin="2,0,12,0">
+                    <c:Icon Kind="{Binding Icon}" Size="19" />
+                  </Panel>
+                  <TextBlock Grid.Column="2" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Medium" />
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Border>
+
+      <ContentControl x:Name="PageHost" Grid.Row="1" Grid.Column="1" Content="{Binding CurrentPage}" />
+
+      <!-- ===== Bottom bar: status and pending changes ===== -->
+      <Border x:Name="TourSaveBar" Grid.Row="2" Grid.ColumnSpan="2" Classes="bar" Padding="14,8" Margin="0,12,0,0">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <c:Icon Kind="sparkle" Size="14" TextElement.Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <TextBlock x:Name="StatusText" Text="{Binding Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsConnected}">
+            <CheckBox Content="Save instantly" IsChecked="{Binding AutoSave}"
+                      ToolTip.Tip="Write every edit to the game as you make it, instead of collecting them for Save changes" />
+            <Border x:Name="PendingPill" Classes="pill pending" VerticalAlignment="Center" IsVisible="{Binding HasPending}">
+              <TextBlock FontWeight="Bold" FontSize="12" Text="{Binding PendingCount, StringFormat='{}{0} pending'}" />
+            </Border>
+            <Button Command="{Binding DiscardCommand}" IsEnabled="{Binding HasPending}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="discard" Size="15" />
+                <TextBlock Text="Discard" />
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding UndoCommand}" IsEnabled="{Binding CanUndo}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="undo" Size="15" />
+                <TextBlock Text="Undo last save" />
+              </StackPanel>
+            </Button>
+            <Button Classes="accent" Command="{Binding SaveCommand}" IsEnabled="{Binding HasPending}" HotKey="Ctrl+S">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="save" Size="15" />
+                <TextBlock Text="Save changes" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+
+    <!-- ===== Connecting overlay ===== -->
+    <Border Background="#99050814" IsVisible="{Binding IsBusy}">
+      <Border Classes="glass" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="36,28">
+        <StackPanel Spacing="14" HorizontalAlignment="Center">
+          <Panel Width="96" Height="96">
+            <Arc Classes="spinner" s:Motion.Loop="spin" Width="96" Height="96" StrokeThickness="4" />
+            <c:Mascot Width="60" Height="60" FollowPointer="False" />
+          </Panel>
+          <TextBlock Classes="h2" Text="Reading your save…" HorizontalAlignment="Center" />
+          <TextBlock Classes="muted" Text="Finding Football Manager and walking its database." HorizontalAlignment="Center" />
         </StackPanel>
-      </Grid>
+      </Border>
     </Border>
-  </Grid>
+
+    <!-- ===== Tiki's guided tour ===== -->
+    <c:TourOverlay x:Name="Tour" />
+  </Panel>
 </Window>

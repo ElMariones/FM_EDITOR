@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             xmlns:c="using:FMOpenEditor.App.Controls"
              x:Class="FMOpenEditor.App.Views.EntityEditorView"
              x:DataType="vm:EntityEditorViewModel">
 
@@ -13,14 +14,18 @@
       <Setter Property="TextTrimming" Value="CharacterEllipsis" />
     </Style>
     <Style Selector="TextBlock.label.pending">
-      <Setter Property="Foreground" Value="{StaticResource PendingBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource PendingBrush}" />
       <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
     <Style Selector="TextBlock.error">
-      <Setter Property="Foreground" Value="{StaticResource ErrorBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
       <Setter Property="FontSize" Value="11" />
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
+    <Style Selector="Border.round"><Setter Property="CornerRadius" Value="42" /></Style>
+    <Style Selector="Border.badge"><Setter Property="CornerRadius" Value="18" /><Setter Property="Padding" Value="10" /></Style>
+    <Style Selector="Image.fill"><Setter Property="Stretch" Value="UniformToFill" /></Style>
+    <Style Selector="Image.fit"><Setter Property="Stretch" Value="Uniform" /></Style>
   </UserControl.Styles>
 
   <UserControl.DataTemplates>
@@ -88,21 +93,43 @@
   </UserControl.DataTemplates>
 
   <DockPanel>
-    <StackPanel DockPanel.Dock="Top" Margin="16,14,16,6" Spacing="2">
-      <TextBlock Classes="h1" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
-      <TextBlock Classes="muted" Text="{Binding Subtitle}" />
-      <TextBlock Text="{Binding WatchState}" Foreground="{StaticResource AccentBrush}"
-                 IsVisible="{Binding WatchState, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-      <TextBlock Classes="muted" FontSize="11" Text="{Binding UnsupportedText}"
-                 IsVisible="{Binding UnsupportedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-      <SelectableTextBlock FontSize="11" Foreground="{StaticResource MutedBrush}" Text="{Binding AddressText}"
-                           IsVisible="{Binding AddressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-    </StackPanel>
-
-    <TabControl ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" Padding="8,0">
+    <!-- Header: who this is, with their face or badge when the user's packs have one -->
+    <Panel DockPanel.Dock="Top">
+      <Border Height="92" VerticalAlignment="Top" Background="{DynamicResource ChromaBrush}" Opacity="0.16" />
+      <Grid ColumnDefinitions="Auto,*" Margin="18,18,18,8">
+        <Border Width="84" Height="84" Margin="0,0,16,0" VerticalAlignment="Top"
+                IsVisible="{Binding Picture.HasImage}"
+                BorderBrush="{DynamicResource GlassEdgeBrush}" BorderThickness="1"
+                Background="{DynamicResource GlassInsetBrush}"
+                BoxShadow="{DynamicResource GlassShadow}"
+                Classes.round="{Binding Picture.IsPerson}" Classes.badge="{Binding !Picture.IsPerson}" ClipToBounds="True">
+          <Image Source="{Binding Picture.Image}" RenderOptions.BitmapInterpolationMode="HighQuality"
+                 Classes.fill="{Binding Picture.IsPerson}" Classes.fit="{Binding !Picture.IsPerson}" />
+        </Border>
+        <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+          <TextBlock Classes="h1" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="muted" Text="{Binding Subtitle}" TextTrimming="CharacterEllipsis" />
+          <Border Classes="pill" HorizontalAlignment="Left" Margin="0,4,0,0"
+                  IsVisible="{Binding WatchState, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+            <StackPanel Orientation="Horizontal" Spacing="6" TextElement.Foreground="{DynamicResource AccentBrush}">
+              <Panel>
+                <c:Icon Kind="snow" Size="13" IsVisible="{Binding IsFrozen}" />
+                <c:Icon Kind="up" Size="13" IsVisible="{Binding IsOnlyUp}" />
+              </Panel>
+              <TextBlock Text="{Binding WatchState}" FontSize="12" FontWeight="Medium" />
+            </StackPanel>
+          </Border>
+          <TextBlock Classes="muted" FontSize="11" Text="{Binding UnsupportedText}"
+                     IsVisible="{Binding UnsupportedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+          <SelectableTextBlock FontSize="10.5" Classes="num" Foreground="{DynamicResource FaintBrush}" Text="{Binding AddressText}"
+                               IsVisible="{Binding AddressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+        </StackPanel>
+      </Grid>
+    </Panel>
+    <TabControl x:Name="Tabs" ItemsSource="{Binding Groups}" SelectedItem="{Binding SelectedGroup}" Padding="10,0">
       <TabControl.ItemTemplate>
         <DataTemplate x:DataType="vm:PropertyGroupViewModel">
-          <TextBlock Text="{Binding Name}" FontSize="14" />
+          <TextBlock Text="{Binding Name}" />
         </DataTemplate>
       </TabControl.ItemTemplate>
       <TabControl.ContentTemplate>

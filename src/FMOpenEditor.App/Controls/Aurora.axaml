@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:s="using:FMOpenEditor.App.Services"
+             x:Class="FMOpenEditor.App.Controls.Aurora"
+             IsHitTestVisible="False" ClipToBounds="True">
+  <!--
+    The light the glass sits on: four soft pools of colour that drift slowly, like floodlights
+    seen through mist. Avalonia has no backdrop blur, so the blur is built into the light instead
+    and the panels above only need to be translucent to read as frosted glass.
+  -->
+  <UserControl.Styles>
+    <Style Selector="Ellipse.orb">
+      <Setter Property="RenderTransformOrigin" Value="50%,50%" />
+    </Style>
+    <Style Selector="Ellipse.a.drift">
+      <Style.Animations>
+        <Animation Duration="0:0:34" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="160" /><Setter Property="TranslateTransform.Y" Value="90" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Ellipse.b.drift">
+      <Style.Animations>
+        <Animation Duration="0:0:41" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="-200" /><Setter Property="TranslateTransform.Y" Value="120" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Ellipse.c.drift">
+      <Style.Animations>
+        <Animation Duration="0:0:47" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="180" /><Setter Property="TranslateTransform.Y" Value="-110" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+    <Style Selector="Ellipse.d.drift">
+      <Style.Animations>
+        <Animation Duration="0:0:38" IterationCount="INFINITE" PlaybackDirection="Alternate" Easing="SineEaseInOut">
+          <KeyFrame Cue="0%"><Setter Property="TranslateTransform.X" Value="0" /><Setter Property="TranslateTransform.Y" Value="0" /></KeyFrame>
+          <KeyFrame Cue="100%"><Setter Property="TranslateTransform.X" Value="-140" /><Setter Property="TranslateTransform.Y" Value="-80" /></KeyFrame>
+        </Animation>
+      </Style.Animations>
+    </Style>
+  </UserControl.Styles>
+
+  <Panel>
+    <Ellipse Classes="orb a" s:Motion.Loop="drift" Width="900" Height="900" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-320,-420,0,0">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="{DynamicResource OrbAColor}" />
+          <GradientStop Offset="1" Color="#00000000" />
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+    <Ellipse Classes="orb b" s:Motion.Loop="drift" Width="1000" Height="1000" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-380,-360,0">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="{DynamicResource OrbBColor}" />
+          <GradientStop Offset="1" Color="#00000000" />
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+    <Ellipse Classes="orb c" s:Motion.Loop="drift" Width="820" Height="820" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="-260,0,0,-460">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="{DynamicResource OrbCColor}" />
+          <GradientStop Offset="1" Color="#00000000" />
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+    <Ellipse Classes="orb d" s:Motion.Loop="drift" Width="860" Height="860" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-300,-430">
+      <Ellipse.Fill>
+        <RadialGradientBrush>
+          <GradientStop Offset="0" Color="{DynamicResource OrbDColor}" />
+          <GradientStop Offset="1" Color="#00000000" />
+        </RadialGradientBrush>
+      </Ellipse.Fill>
+    </Ellipse>
+  </Panel>
+</UserControl>
