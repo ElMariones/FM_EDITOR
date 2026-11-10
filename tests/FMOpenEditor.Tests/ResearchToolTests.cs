@@ -127,6 +127,49 @@ public class ResearchToolTests
         Assert.Equal(objects, result.Samples[vtable]);
     }
 
+    [Fact]
+    public void Rtti_object_bases_account_for_the_vtable_offset()
+    {
+        var (mem, vtable, _) = BuildRttiFixture();
+        // A class whose only vtable sits 0x100 into the object (e.g. a virtual base).
+        var obj = Heap + 0x3000;
+        mem.I64(obj + 0x100, vtable);
+        var result = RttiScanner.FindInstances(mem, [new RttiVtable(vtable, 0, 0x100)], Module, 0x10000);
+        Assert.Contains(obj, result.Samples[vtable]);
+    }
+
+    [Fact]
+    public void Pe_file_maps_sections_at_the_image_base()
+    {
+        // Minimal PE32+: headers in the first 0x200 bytes, one section at RVA 0x1000 from file offset 0x200.
+        var file = new byte[0x400];
+        file[0] = (byte)'M'; file[1] = (byte)'Z';
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(file.AsSpan(0x3C), 0x80);
+        var pe = 0x80;
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(pe), 0x4550);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(pe + 6), 1);      // sections
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(pe + 20), 0xF0);  // optional header size
+        var opt = pe + 24;
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt16LittleEndian(file.AsSpan(opt), 0x20B);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt64LittleEndian(file.AsSpan(opt + 24), 0x180000000);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(opt + 56), 0x3000);
+        var sec = opt + 0xF0;
+        Encoding.ASCII.GetBytes(".data").CopyTo(file, sec);
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(sec + 8), 0x2000);   // virtual size (bigger than raw)
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(sec + 12), 0x1000);  // RVA
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(sec + 16), 0x200);   // raw size
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(sec + 20), 0x200);   // raw offset
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32LittleEndian(file.AsSpan(sec + 36), 0xC0000040);
+        Encoding.ASCII.GetBytes("hello").CopyTo(file, 0x210);
+
+        var mem = new PeFileMemory(file);
+        Assert.Equal(unchecked((nint)0x180000000), mem.ImageBase);
+        Assert.Equal("hello", mem.ReadString(unchecked((nint)0x180001010), Encoding.ASCII, 5));
+        Assert.Equal(0, mem.ReadByte(unchecked((nint)0x180002800))); // past raw data, inside the virtual size: zero
+        Assert.False(mem.Read(unchecked((nint)0x180005000), new byte[1]));
+        Assert.Equal([unchecked((nint)0x180001010)], ReferenceScanner.FindString(mem, "hello", Encoding.ASCII));
+    }
+
     [Theory]
     [InlineData(".?AVplayer@@", "player")]
     [InlineData(".?AVclub@fm@sigames@@", "sigames::fm::club")]

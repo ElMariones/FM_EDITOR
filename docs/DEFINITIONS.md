@@ -66,16 +66,39 @@ A definition has three layers:
 }
 ```
 
+### Collections found by RTTI (no root needed)
+
+Instead of a root, a collection can name C++ classes. At connect, the editor finds their vtables through RTTI and scans the heap once for objects that point at them:
+
+```jsonc
+"Player": {
+  "layout": "rttiInstances",
+  "classes": [
+    // vtableOffset picks which of the class's vtables to look for. The record base is where it sits,
+    // so pointing every class at the vtable of a shared base part (db::PERSON) gives one set of offsets.
+    { "class": "db::ACTUAL_PLAYER", "vtableOffset": "0x288" },
+    { "class": "db::ACTUAL_PLAYER_AND_NON_PLAYER", "vtableOffset": "0x380" }
+  ],
+  // Optional: freed memory can still hold old objects; a filter (e.g. a flag or id that must match) drops them.
+  "filter": { "offset": "0x...", "type": "u8" }, "filterValue": 1
+}
+```
+
+Class names survive patches; only `vtableOffset` and struct offsets may move. The Research page's **Classes (RTTI)** tab lists classes, their vtables and object offsets. To read the same RTTI from the DLL on disk without the game running, use `PeFileMemory` with `RttiScanner`.
+
 ### Field types
 
 | type | meaning |
 |---|---|
 | `u8` `i8` `u16` `i16` `i32` `u32` `i64` `f32` `f64` | numbers |
 | `bool` | one byte, 0 or 1 |
-| `fmDate` | u16 day of year (0-based) + u16 year |
+| `fmDate` | u16 day of year + u16 year. The day counts from 0 unless the definition sets `"dateDayBase": 1` (FM27 does; there, day 1 of 1900 is the empty date). |
 | `utf16Ptr` / `utf8Ptr` | pointer to a null-terminated string. In a live game, names can be shortened, not lengthened. |
 | `utf16Inline` | characters stored inside the record (`maxLength`) |
+| `fmString` | pointer to FM's length-prefixed string: i32 byte count, UTF-8 bytes, 0. FM27 uses it for every name. Edited in place, never longer than the current text. |
 | `entityPtr` | pointer to another record (club, nation…); the editor shows the name |
+
+A `path` whose pointer is empty (no common name, no contract) makes the field read as empty; it can't be edited for that record.
 
 `scale` converts the stored value to the one shown: shown = stored ÷ scale. FM has historically stored 1–20 attributes as 1–100 (scale 5). **Confirm this per field.** Mark a field `"verified": true` once you've tested it in-game.
 

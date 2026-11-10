@@ -83,7 +83,7 @@ public sealed partial class RttiViewModel(ResearchContext context) : ObservableO
         Status = $"Scanning the heap for objects of {rows.Count:N0} class(es)…";
         try
         {
-            var vtables = rows.Select(r => r.Class.PrimaryVtable!.Address).Distinct().ToList();
+            var vtables = rows.Select(r => r.Class.PrimaryVtable!).DistinctBy(v => v.Address).ToList();
             var result = await Task.Run(() => RttiScanner.FindInstances(context.Memory, vtables, context.ModuleBase, context.ModuleSize));
             foreach (var r in rows)
             {

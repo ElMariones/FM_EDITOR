@@ -22,6 +22,12 @@ public sealed class GameDefinition
     public bool Verified { get; set; }
     public string? Notes { get; set; }
 
+    /// <summary>
+    /// What the day-of-year half of an <see cref="FieldType.FmDate"/> counts from: 0 (1 January = 0) or
+    /// 1 (1 January = 1, as in FM27). With 1, the game's empty date (day 1 of 1900) reads as no date.
+    /// </summary>
+    public int DateDayBase { get; set; }
+
     public Dictionary<string, RootDef> Roots { get; set; } = [];
 
     /// <summary>Keyed by entity kind name (Player, Staff, Club, Competition, Nation).</summary>
@@ -99,11 +105,34 @@ public enum CollectionLayout
     PointerArray,
     /// <summary>Pointer to records stored inline, plus a count and a fixed stride.</summary>
     InlineArray,
+    /// <summary>
+    /// Every live object of the listed C++ classes, found by scanning the heap for their vtables
+    /// (located by RTTI class name). Needs no root and survives patches that move globals.
+    /// </summary>
+    RttiInstances,
+}
+
+/// <summary>One class an <see cref="CollectionLayout.RttiInstances"/> collection draws records from.</summary>
+public sealed class RttiSourceDef
+{
+    /// <summary>Demangled RTTI name, e.g. <c>db::ACTUAL_PLAYER</c>.</summary>
+    public string Class { get; set; } = "";
+
+    /// <summary>
+    /// Which of the class's vtables to look for, by its offset inside the object (0 = primary). The
+    /// record base is that vtable's position, so choosing the vtable of a shared base part (such as
+    /// db::PERSON) gives every class the same field offsets.
+    /// </summary>
+    public string VtableOffset { get; set; } = "0x0";
 }
 
 public sealed class CollectionDef
 {
+    /// <summary>Root the table hangs off. Not used by <see cref="CollectionLayout.RttiInstances"/>.</summary>
     public string Root { get; set; } = "";
+
+    /// <summary>For <see cref="CollectionLayout.RttiInstances"/>: the classes whose objects are records.</summary>
+    public List<RttiSourceDef>? Classes { get; set; }
     public CollectionLayout Layout { get; set; } = CollectionLayout.PointerRange;
     public string BeginOffset { get; set; } = "0x0";
     public string EndOffset { get; set; } = "0x8";
@@ -124,7 +153,7 @@ public sealed class CollectionDef
 public enum FieldType
 {
     U8, I8, U16, I16, I32, U32, I64, F32, F64, Bool,
-    /// <summary>FM native date: u16 day of year (0-based) then u16 year.</summary>
+    /// <summary>FM native date: u16 day of year then u16 year (see <see cref="GameDefinition.DateDayBase"/>).</summary>
     FmDate,
     /// <summary>Pointer to a null-terminated UTF-16 string.</summary>
     Utf16Ptr,
@@ -134,6 +163,8 @@ public enum FieldType
     Utf16Inline,
     /// <summary>Pointer to another entity's record; the value is that entity's id.</summary>
     EntityPtr,
+    /// <summary>Pointer to FM's length-prefixed string: an i32 byte count, then that many UTF-8 bytes and a 0.</summary>
+    FmString,
 }
 
 public sealed class FieldDef

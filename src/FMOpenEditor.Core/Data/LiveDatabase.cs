@@ -3,6 +3,7 @@ using System.Text;
 using FMOpenEditor.Core.Definitions;
 using FMOpenEditor.Core.Memory;
 using FMOpenEditor.Core.Model;
+using FMOpenEditor.Core.Research;
 
 namespace FMOpenEditor.Core.Data;
 
@@ -19,6 +20,7 @@ public sealed class LiveDatabase : IGameDatabase
     private readonly Dictionary<EntityKind, List<Entity>> _entities = [];
     private readonly Dictionary<EntityKind, Dictionary<int, Entity>> _byId = [];
     private readonly Dictionary<nint, Entity> _byAddress = [];
+    private List<RttiClass>? _rttiClasses;
 
     public string DisplayName { get; }
     public bool IsLive => true;
@@ -90,17 +92,22 @@ public sealed class LiveDatabase : IGameDatabase
         _entities.Clear();
         _byId.Clear();
         _byAddress.Clear();
+        var rttiRecords = ScanRttiCollections();
         foreach (var kind in Enum.GetValues<EntityKind>())
         {
             var list = new List<Entity>();
             var ids = new Dictionary<int, Entity>();
-            if (_def.Collections.TryGetValue(kind.ToString(), out var col) && _roots.TryGetValue(col.Root, out var root))
+            if (_def.Collections.TryGetValue(kind.ToString(), out var col))
             {
+                IEnumerable<nint>? records = null;
+                if (col.Layout == CollectionLayout.RttiInstances) records = rttiRecords.GetValueOrDefault(kind.ToString());
+                else if (_roots.TryGetValue(col.Root, out var root)) records = EnumerateRecords(root, col);
+                if (records is not null)
                 try
                 {
                     var idField = FieldsFor(kind)?.GetValueOrDefault("Id");
                     var index = 0;
-                    foreach (var addr in EnumerateRecords(root, col))
+                    foreach (var addr in records)
                     {
                         if (col.Filter is { IsMapped: true } filter && ReadRaw(addr, filter) != col.FilterValue) continue;
                         var id = idField is { IsMapped: true } ? (int)ReadRaw(addr, idField) : index;
@@ -119,6 +126,54 @@ public sealed class LiveDatabase : IGameDatabase
             _entities[kind] = list;
             _byId[kind] = ids;
         }
+    }
+
+    /// <summary>
+    /// Resolves every <see cref="CollectionLayout.RttiInstances"/> collection with one RTTI lookup and one
+    /// pass over the heap. Keyed by entity kind name; each list is in address order without duplicates.
+    /// </summary>
+    private Dictionary<string, List<nint>> ScanRttiCollections()
+    {
+        var result = new Dictionary<string, List<nint>>();
+        var wanted = _def.Collections.Where(c => c.Value.Layout == CollectionLayout.RttiInstances).ToList();
+        if (wanted.Count == 0) return result;
+
+        try
+        {
+            _rttiClasses ??= RttiScanner.FindClasses(_memory, _moduleBase, _moduleSize);
+        }
+        catch (Exception ex)
+        {
+            Warnings.Add($"RTTI: {ex.Message}");
+            return result;
+        }
+        var byName = _rttiClasses.GroupBy(c => c.Name).ToDictionary(g => g.Key, g => g.First());
+
+        var vtablesByKind = new Dictionary<string, List<nint>>();
+        foreach (var (kind, col) in wanted)
+        {
+            var list = vtablesByKind[kind] = [];
+            foreach (var src in col.Classes ?? [])
+            {
+                if (!byName.TryGetValue(src.Class, out var cls)) { Warnings.Add($"{kind} list: class {src.Class} not found."); continue; }
+                var offset = (int)GameDefinition.ParseOffset(src.VtableOffset);
+                var vt = cls.Vtables.FirstOrDefault(v => v.ObjectOffset == offset);
+                if (vt is null) { Warnings.Add($"{kind} list: {src.Class} has no vtable at offset 0x{offset:X}."); continue; }
+                list.Add(vt.Address);
+            }
+        }
+
+        var all = vtablesByKind.Values.SelectMany(v => v).Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList();
+        var max = wanted.Max(c => c.Value.MaxCount);
+        var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
+        foreach (var (kind, vtables) in vtablesByKind)
+        {
+            var records = vtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).Distinct().Order().ToList();
+            var cap = _def.Collections[kind].MaxCount;
+            if (records.Count > cap) { Warnings.Add($"{kind} list: {records.Count:N0} objects, more than the {cap:N0} allowed."); records = records[..cap]; }
+            result[kind] = records;
+        }
+        return result;
     }
 
     private IEnumerable<nint> EnumerateRecords(nint root, CollectionDef col)
@@ -180,16 +235,19 @@ public sealed class LiveDatabase : IGameDatabase
     public void Write(Entity entity, string key, object? value)
     {
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
-        var addr = FieldAddress(entity.Address, field);
         var prop = PropertyCatalog.Get(entity.Kind, key);
+        var addr = FieldAddress(entity.Address, field)
+                   ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
 
         switch (field.Type)
         {
             case FieldType.FmDate:
                 var d = value as DateOnly? ?? default;
                 var dateBytes = new byte[4];
-                BinaryPrimitives.WriteUInt16LittleEndian(dateBytes, (ushort)(value is null ? 0 : d.DayOfYear - 1));
-                BinaryPrimitives.WriteUInt16LittleEndian(dateBytes.AsSpan(2), (ushort)(value is null ? 0 : d.Year));
+                var dayBase = _def.DateDayBase;
+                var emptyYear = dayBase == 1 ? 1900 : 0;
+                BinaryPrimitives.WriteUInt16LittleEndian(dateBytes, (ushort)(value is null ? dayBase : d.DayOfYear - 1 + dayBase));
+                BinaryPrimitives.WriteUInt16LittleEndian(dateBytes.AsSpan(2), (ushort)(value is null ? emptyYear : d.Year));
                 _memory.WriteChecked(addr, dateBytes);
                 break;
             case FieldType.Utf16Inline:
@@ -209,6 +267,21 @@ public sealed class LiveDatabase : IGameDatabase
                 var bytes = enc.GetBytes(next + "\0");
                 _memory.WriteChecked(target, bytes);
                 break;
+            case FieldType.FmString:
+            {
+                // Same rule as other heap strings: rewrite in place, never longer than what is there.
+                var str = _memory.ReadPointer(addr);
+                if (str == 0) throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
+                var currentBytes = _memory.ReadInt32(str);
+                var newBytes = Encoding.UTF8.GetBytes((string?)value ?? "");
+                if (currentBytes < 0 || newBytes.Length > currentBytes)
+                    throw new NotSupportedException($"{prop.Label} can be at most {currentBytes} bytes (UTF-8) in a live game.");
+                var block = new byte[4 + currentBytes + 1];
+                BinaryPrimitives.WriteInt32LittleEndian(block, newBytes.Length);
+                newBytes.CopyTo(block, 4);
+                _memory.WriteChecked(str, block);
+                break;
+            }
             case FieldType.EntityPtr:
                 var refKind = prop.RefKind ?? throw new InvalidDataException($"{key} has no reference kind.");
                 var ptr = value is int id && Find(refKind, id) is { } refEntity ? refEntity.Address : 0;
@@ -220,28 +293,41 @@ public sealed class LiveDatabase : IGameDatabase
         }
     }
 
-    private nint FieldAddress(nint recordBase, FieldDef field)
+    /// <summary>The field's address, or null when a pointer along its <see cref="FieldDef.Path"/> is empty.</summary>
+    private nint? FieldAddress(nint recordBase, FieldDef field)
     {
         var addr = recordBase;
         if (field.Path is { } path)
         {
-            foreach (var hop in path) addr = _memory.ReadPointer(addr + (nint)GameDefinition.ParseOffset(hop));
+            foreach (var hop in path)
+            {
+                addr = _memory.ReadPointer(addr + (nint)GameDefinition.ParseOffset(hop));
+                if (addr == 0) return null;
+            }
         }
         return addr + (nint)GameDefinition.ParseOffset(field.Offset!);
     }
 
-    private long ReadRaw(nint recordBase, FieldDef field) => (long)ReadNumber(FieldAddress(recordBase, field), field.Type);
+    private long ReadRaw(nint recordBase, FieldDef field) =>
+        FieldAddress(recordBase, field) is { } addr ? (long)ReadNumber(addr, field.Type) : 0;
 
     private object? ReadField(nint recordBase, FieldDef field, ValueKind kind)
     {
-        var addr = FieldAddress(recordBase, field);
+        if (FieldAddress(recordBase, field) is not { } addr) return null;
         switch (field.Type)
         {
             case FieldType.FmDate:
-                var day = _memory.ReadUInt16(addr);
+                var day = _memory.ReadUInt16(addr) - _def.DateDayBase;
                 var year = _memory.ReadUInt16(addr + 2);
-                if (year is < 1 or > 9999) return null;
-                return new DateOnly(year, 1, 1).AddDays(Math.Min(day, (ushort)365));
+                if (year is < 1 or > 9999 || day < 0) return null;
+                if (_def.DateDayBase == 1 && year <= 1900) return null;
+                return new DateOnly(year, 1, 1).AddDays(Math.Min(day, 365));
+            case FieldType.FmString:
+                var str = _memory.ReadPointer(addr);
+                if (str == 0) return null;
+                var length = _memory.ReadInt32(str);
+                if (length <= 0 || length > field.MaxLength * 4) return length == 0 ? "" : null;
+                return Encoding.UTF8.GetString(_memory.ReadBytes(str + 4, length));
             case FieldType.Utf16Ptr:
                 return _memory.ReadString(_memory.ReadPointer(addr), Encoding.Unicode, field.MaxLength);
             case FieldType.Utf8Ptr:

@@ -107,16 +107,19 @@ public static class RttiScanner
 
     /// <summary>
     /// Scans writable memory outside the module for 8-byte-aligned pointers to any of <paramref name="vtables"/>.
-    /// Each hit is (almost always) the base address of a live object of that class.
+    /// A hit is the vtable slot of a live object; the object's base is the hit minus the vtable's
+    /// <see cref="RttiVtable.ObjectOffset"/> (classes with multiple or virtual inheritance keep some
+    /// vtables away from offset 0). Results are keyed by vtable address and hold object bases.
     /// </summary>
-    public static InstanceScanResult FindInstances(IMemoryAccess memory, IReadOnlyCollection<nint> vtables,
+    public static InstanceScanResult FindInstances(IMemoryAccess memory, IReadOnlyCollection<RttiVtable> vtables,
         nint moduleBase, long moduleSize, int maxSamplesPerVtable = 1000, CancellationToken ct = default)
     {
-        var wanted = vtables.Select(v => (long)v).ToHashSet();
-        var counts = vtables.Distinct().ToDictionary(v => v, _ => 0);
-        var samples = vtables.Distinct().ToDictionary(v => v, _ => new List<nint>());
-        if (wanted.Count == 0) return new InstanceScanResult(counts, samples);
-        long min = wanted.Min(), max = wanted.Max();
+        var offsets = new Dictionary<long, int>();
+        foreach (var v in vtables) offsets[v.Address] = v.ObjectOffset;
+        var counts = offsets.Keys.ToDictionary(v => (nint)v, _ => 0);
+        var samples = offsets.Keys.ToDictionary(v => (nint)v, _ => new List<nint>());
+        if (offsets.Count == 0) return new InstanceScanResult(counts, samples);
+        long min = offsets.Keys.Min(), max = offsets.Keys.Max();
 
         var regions = memory.Regions().Where(r => r.Writable).Outside(moduleBase, moduleSize);
         RegionScan.ForEachChunk(memory, regions, 0, (address, data, owned) =>
@@ -125,15 +128,20 @@ public static class RttiScanner
             for (var i = first; i + 8 <= owned; i += 8)
             {
                 var v = BinaryPrimitives.ReadInt64LittleEndian(data.Slice(i, 8));
-                if (v < min || v > max || !wanted.Contains(v)) continue;
+                if (v < min || v > max || !offsets.TryGetValue(v, out var objectOffset)) continue;
                 var key = (nint)v;
                 counts[key]++;
-                if (samples[key].Count < maxSamplesPerVtable) samples[key].Add(address + i);
+                if (samples[key].Count < maxSamplesPerVtable) samples[key].Add(address + i - objectOffset);
             }
             return true;
         }, ct);
         return new InstanceScanResult(counts, samples);
     }
+
+    /// <summary>Overload for bare vtable addresses (object offset 0).</summary>
+    public static InstanceScanResult FindInstances(IMemoryAccess memory, IReadOnlyCollection<nint> vtables,
+        nint moduleBase, long moduleSize, int maxSamplesPerVtable = 1000, CancellationToken ct = default) =>
+        FindInstances(memory, vtables.Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList(), moduleBase, moduleSize, maxSamplesPerVtable, ct);
 
     /// <summary>Turns <c>.?AVplayer@fm@@</c> into <c>fm::player</c>. Templates and other complex names are returned as-is.</summary>
     public static string Demangle(string mangled)

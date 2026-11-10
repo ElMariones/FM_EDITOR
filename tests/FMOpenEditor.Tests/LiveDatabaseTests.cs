@@ -178,3 +178,157 @@ public class LiveDatabaseTests
         Assert.Empty(db.GetAll(EntityKind.Player));
     }
 }
+
+/// <summary>
+/// Records found by RTTI: two classes whose shared "person" part sits at different offsets, so the
+/// definition points each at the vtable of that part and person fields share offsets.
+/// </summary>
+public class LiveDatabaseRttiTests
+{
+    private static readonly nint Module = unchecked((nint)0x7FF6_0000_0000);
+    private static readonly nint Heap = unchecked((nint)0x2_0000_0000);
+
+    /// <summary>Writes MSVC RTTI for a class with a primary vtable and a second one at <paramref name="personOffset"/>.</summary>
+    private static (nint Primary, nint Person) AddClass(FakeMemory m, int slot, string mangled, int personOffset)
+    {
+        var td = Module + 0x1000 + slot * 0x100;
+        m.I64(td, Module + 0x9000);
+        m.Bytes(td + 16, System.Text.Encoding.ASCII.GetBytes(mangled + "\0"));
+        var vts = new List<nint>();
+        foreach (var (i, offset) in new[] { (0, 0), (1, personOffset) })
+        {
+            var col = Module + 0x3000 + slot * 0x100 + i * 0x20;
+            m.I32(col, 1); m.I32(col + 4, offset); m.I32(col + 12, (int)(td - Module));
+            m.I32(col + 16, 0x8000); m.I32(col + 20, (int)(col - Module));
+            var meta = Module + 0x5000 + slot * 0x100 + i * 0x20;
+            m.I64(meta, col);
+            vts.Add(meta + 8);
+        }
+        return (vts[0], vts[1]);
+    }
+
+    [Fact]
+    public void Collects_records_from_several_classes_by_their_shared_part()
+    {
+        var m = new FakeMemory().Map(Module, 0x10000, writable: false).Map(Heap, 0x10000);
+        var (_, playerPerson) = AddClass(m, 0, ".?AVACTUAL_PLAYER@db@@", 0x288);
+        var (_, bothPerson) = AddClass(m, 1, ".?AVACTUAL_PLAYER_AND_NON_PLAYER@db@@", 0x380);
+
+        // Two players and a player-manager. The record base is the person part; Id at +0x10 from it.
+        nint p1 = Heap + 0x1000, p2 = Heap + 0x2000, pm = Heap + 0x3000;
+        m.I64(p1 + 0x288, playerPerson); m.I32(p1 + 0x288 + 0x10, 11);
+        m.I64(p2 + 0x288, playerPerson); m.I32(p2 + 0x288 + 0x10, 12);
+        m.I64(pm + 0x380, bothPerson); m.I32(pm + 0x380 + 0x10, 13);
+        // A stale copy left in freed memory: Id 0, rejected by the filter below.
+        m.I64(Heap + 0x6000, playerPerson);
+
+        var def = new GameDefinition
+        {
+            Version = "test",
+            Collections =
+            {
+                ["Player"] = new CollectionDef
+                {
+                    Layout = CollectionLayout.RttiInstances,
+                    Classes =
+                    [
+                        new RttiSourceDef { Class = "db::ACTUAL_PLAYER", VtableOffset = "0x288" },
+                        new RttiSourceDef { Class = "db::ACTUAL_PLAYER_AND_NON_PLAYER", VtableOffset = "0x380" },
+                    ],
+                    Filter = new FieldDef { Offset = "0x14", Type = FieldType.U8 }, FilterValue = 1,
+                },
+            },
+            Structs = { ["Player"] = new() { ["Id"] = new FieldDef { Offset = "0x10", Type = FieldType.I32 } } },
+        };
+        foreach (var p in new[] { p1 + 0x288, p2 + 0x288, pm + 0x380 }) m.Bytes(p + 0x14, 1);
+
+        var db = new LiveDatabase(m, def, Module, 0x10000, "fake");
+        Assert.Empty(db.Warnings);
+        Assert.Equal([11, 12, 13], db.GetAll(EntityKind.Player).Select(e => e.Id).Order());
+        Assert.Equal(pm + 0x380, db.Find(EntityKind.Player, 13)!.Address);
+    }
+
+    [Fact]
+    public void Warns_about_unknown_classes()
+    {
+        var m = new FakeMemory().Map(Module, 0x10000, writable: false).Map(Heap, 0x1000);
+        AddClass(m, 0, ".?AVACTUAL_PLAYER@db@@", 0x288);
+        var def = new GameDefinition
+        {
+            Collections =
+            {
+                ["Player"] = new CollectionDef
+                {
+                    Layout = CollectionLayout.RttiInstances,
+                    Classes = [new RttiSourceDef { Class = "db::NOPE" }, new RttiSourceDef { Class = "db::ACTUAL_PLAYER", VtableOffset = "0x99" }],
+                },
+            },
+        };
+        var db = new LiveDatabase(m, def, Module, 0x10000, "fake");
+        Assert.Contains(db.Warnings, w => w.Contains("db::NOPE not found"));
+        Assert.Contains(db.Warnings, w => w.Contains("no vtable at offset 0x99"));
+    }
+    [Fact]
+    public void Reads_and_writes_fm27_strings_dates_and_pointer_paths()
+    {
+        var m = new FakeMemory().Map(Module, 0x10000, writable: false).Map(Heap, 0x10000);
+        var (_, playerPerson) = AddClass(m, 0, ".?AVACTUAL_PLAYER@db@@", 0x288);
+        nint person = Heap + 0x1288;
+        m.I64(person, playerPerson);
+        m.I32(person + 0x8, 7);
+        // First name through a shared name-table entry: person -> entry -> { i32 length, UTF-8, 0 }.
+        nint entry = Heap + 0x5000, text = Heap + 0x5100;
+        m.I64(person + 0x50, entry);
+        m.I64(entry, text);
+        m.I32(text, 6);
+        m.Bytes(text + 4, "Erling "u8.ToArray());
+        // No common name: the entry pointer is null.
+        m.I16(person + 0x88, 203); m.I16(person + 0x8A, 2000);   // day 203 counted from 1 = 21 July 2000
+        m.I16(person + 0x8C, 1); m.I16(person + 0x8E, 1900);     // FM's empty date
+
+        var def = new GameDefinition
+        {
+            Version = "test",
+            DateDayBase = 1,
+            Collections =
+            {
+                ["Player"] = new CollectionDef
+                {
+                    Layout = CollectionLayout.RttiInstances,
+                    Classes = [new RttiSourceDef { Class = "db::ACTUAL_PLAYER", VtableOffset = "0x288" }],
+                },
+            },
+            Structs =
+            {
+                ["Player"] = new()
+                {
+                    ["Id"] = new FieldDef { Offset = "0x8", Type = FieldType.I32 },
+                    ["FirstName"] = new FieldDef { Offset = "0x0", Type = FieldType.FmString, Path = ["0x50"] },
+                    ["CommonName"] = new FieldDef { Offset = "0x0", Type = FieldType.FmString, Path = ["0x60"] },
+                    ["DateOfBirth"] = new FieldDef { Offset = "0x88", Type = FieldType.FmDate },
+                    ["Contract.Expiry"] = new FieldDef { Offset = "0x8C", Type = FieldType.FmDate },
+                },
+            },
+        };
+        var db = new LiveDatabase(m, def, Module, 0x10000, "fake");
+        var p = Assert.Single(db.GetAll(EntityKind.Player));
+        Assert.Equal(7, p.Id);
+        Assert.Equal("Erling", db.Read(p, "FirstName"));
+        Assert.Null(db.Read(p, "CommonName"));
+        Assert.Equal(new DateOnly(2000, 7, 21), db.Read(p, "DateOfBirth"));
+        Assert.Null(db.Read(p, "Contract.Expiry"));
+
+        db.Write(p, "FirstName", "Erl");
+        Assert.Equal("Erl", db.Read(p, "FirstName"));
+        Assert.Equal(3, m.ReadInt32(text));
+        Assert.Throws<NotSupportedException>(() => db.Write(p, "FirstName", "Erlingxx"));
+        Assert.Throws<NotSupportedException>(() => db.Write(p, "CommonName", "E"));
+
+        db.Write(p, "DateOfBirth", new DateOnly(2001, 1, 1));
+        Assert.Equal(1, m.ReadUInt16(person + 0x88));
+        Assert.Equal(2001, m.ReadUInt16(person + 0x8A));
+        db.Write(p, "DateOfBirth", null);
+        Assert.Equal(1900, m.ReadUInt16(person + 0x8A));
+        Assert.Null(db.Read(p, "DateOfBirth"));
+    }
+}
