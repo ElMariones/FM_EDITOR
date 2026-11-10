@@ -2,7 +2,7 @@ using System.Buffers.Binary;
 
 namespace FMOpenEditor.Core.Memory;
 
-public enum ScanValueType { Byte, Int16, Int32, Int64, Float }
+public enum ScanValueType { Byte, Int16, Int32, Int64, Float, Double }
 
 public enum ScanCompare { Exact, Changed, Unchanged, Increased, Decreased }
 
@@ -119,6 +119,7 @@ public sealed class MemoryScanner(IMemoryAccess memory)
         ScanValueType.Int16 => BinaryPrimitives.ReadInt16LittleEndian(b),
         ScanValueType.Int32 => BinaryPrimitives.ReadInt32LittleEndian(b),
         ScanValueType.Int64 => BinaryPrimitives.ReadInt64LittleEndian(b),
+        ScanValueType.Double => BinaryPrimitives.ReadDoubleLittleEndian(b),
         _ => BinaryPrimitives.ReadSingleLittleEndian(b),
     };
 
@@ -130,6 +131,7 @@ public sealed class MemoryScanner(IMemoryAccess memory)
             case ScanValueType.Int16: BinaryPrimitives.WriteInt16LittleEndian(b, (short)v); break;
             case ScanValueType.Int32: BinaryPrimitives.WriteInt32LittleEndian(b, (int)v); break;
             case ScanValueType.Int64: BinaryPrimitives.WriteInt64LittleEndian(b, (long)v); break;
+            case ScanValueType.Double: BinaryPrimitives.WriteDoubleLittleEndian(b, v); break;
             default: BinaryPrimitives.WriteSingleLittleEndian(b, (float)v); break;
         }
     }

@@ -26,7 +26,7 @@ The loop is simple:
 | **Nations** | EU free movement, work permits and non-EU limits, per nation. |
 | **Compare** | Two players side by side, with the better value highlighted. |
 | **Release on a free** | Right-click any player. |
-| **Research tools** | A built-in value scanner and offset calculator for contributors mapping new game versions. |
+| **Research tools** | For contributors mapping new game versions: value, string and pointer scans, an RTTI class and object finder, record snapshot/diff, and a correlator that finds a field's offset and scale from many records at once. |
 
 ## Project status: read this first
 

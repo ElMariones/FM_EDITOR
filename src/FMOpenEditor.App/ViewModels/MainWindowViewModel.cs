@@ -19,6 +19,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private readonly Dictionary<NavItem, object> _pages = [];
     private IMemoryAccess? _liveMemory;
     private string? _liveModuleInfo;
+    private nint _liveModuleBase;
+    private long _liveModuleSize;
 
     public PresetLibrary Presets { get; }
     public DefinitionLibrary Definitions { get; }
@@ -122,7 +124,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             ConnectDetails = details;
 
             var info = $"{game.ProcessName}.exe (pid {game.ProcessId}) · {def.Module} at 0x{game.ModuleBase:X}, {game.ModuleSize / 1048576} MB";
-            Open(db, memory, info);
+            Open(db, memory, info, game.ModuleBase, game.ModuleSize);
             ConnectMessage = db.GetAll(EntityKind.Player).Count == 0
                 ? "Attached, but no players were found: this game version isn't mapped yet. The Research tools are ready for mapping it."
                 : null;
@@ -133,11 +135,13 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void Open(IGameDatabase db, IMemoryAccess? memory, string? moduleInfo)
+    private void Open(IGameDatabase db, IMemoryAccess? memory, string? moduleInfo, nint moduleBase = 0, long moduleSize = 0)
     {
         Disconnect();
         _liveMemory = memory;
         _liveModuleInfo = moduleInfo;
+        _liveModuleBase = moduleBase;
+        _liveModuleSize = moduleSize;
         var session = new EditorSession(db) { AutoSave = AutoSave };
         session.Changes.Changed += UpdatePending;
         Session = session;
@@ -150,7 +154,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Nav.Add(new NavItem("Competitions", "🏆", () => NewBrowser(EntityKind.Competition)));
         Nav.Add(new NavItem("Nations", "🌍", () => NewBrowser(EntityKind.Nation)));
         Nav.Add(new NavItem("Watch list", "❄", () => new WatchListViewModel(session)));
-        Nav.Add(new NavItem("Research", "🔬", () => new ResearchViewModel(_liveMemory, _liveModuleInfo)));
+        Nav.Add(new NavItem("Research", "🔬", () => new ResearchViewModel(_liveMemory, _liveModuleInfo, _liveModuleBase, _liveModuleSize)));
         SelectedNav = Nav[0];
         UpdatePending();
         Status = $"Opened {db.DisplayName}: {db.GetAll(EntityKind.Player).Count:N0} players, {db.GetAll(EntityKind.Club).Count:N0} clubs.";

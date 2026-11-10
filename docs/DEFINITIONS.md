@@ -83,31 +83,43 @@ Property keys (`Attr.Finishing`, `Finance.Balance`…) come from [`PropertyCatal
 
 ## Mapping workflow
 
-You need FM27 running with a save loaded, and FM OpenEditor connected (**Connect to Football Manager**). Open **Research**.
+You need FM27 running with a save loaded, and FM OpenEditor connected (**Connect to Football Manager**). Open **Research**. Its tabs:
 
-### 1. Find a value
+| Tab | What it's for |
+|---|---|
+| **Value scan** | Classic scan, change in game, scan again (Byte, Int16/32/64, Float, Double), plus the offset calculator. |
+| **Strings & pointers** | Find a name as UTF-16/UTF-8; "what points here?" with an optional max offset. Pointers that live inside `game_plugin.dll` are starred: root candidates. |
+| **Classes (RTTI)** | Lists the module's C++ classes from MSVC run-time type information with their vtables, and counts each class's objects in the heap. |
+| **Record diff** | Snapshot a record, change one thing in game, snapshot again: changed bytes with their readings (u8/i16/i32/i64/f32/f64/fmDate). Also lists the record's pointers (vtable, name strings, sub-records) and follows them. |
+| **Correlator** | Give it several records and the value the game shows for each; it finds the offset, type and scale that explain all of them, as a JSON snippet. |
 
-Pick something you can see and change in the game. Your club's balance is a good start.
+Addresses flow between tabs: open an RTTI object or a search hit as a record, add objects to the correlator, or search pointers to anything. Addresses can be typed as hex (`0x1F2A3B40`) or as `game_plugin.dll+0x1234`.
 
-1. In Research, type the balance (exact number, e.g. `12500000`), pick the type (`Int64` for money, `Int32` otherwise; try both), and press **First scan**.
-2. Change the value in-game (sell a player, pay a fee…), type the new number, choose **Exact**, and press **Next scan**. Repeat until only a few addresses remain.
-3. Confirm by writing a new value to the address and checking the game shows it.
+### 1. Find one record
 
-### 2. Find the record base
+Try these in order:
 
-The address you found is *inside* a record. To turn it into an offset you need the start of that record. A memory viewer or debugger such as [x64dbg](https://x64dbg.com) or [ReClass.NET](https://github.com/ReClassNET/ReClass.NET) helps here: look for the pointer that points a little before your address, and for the club's name and id nearby. Find two or three fields of the same record (balance, transfer budget, reputation) and the layout becomes clear.
+1. **Classes (RTTI).** Press **Find classes**, filter by `person`, `player`, `staff`, `club`, `nation`, `competition` and **Count objects (listed)**. A class with about as many objects as the game has people (tens of thousands or more) is a strong lead. Count it on its own to list its objects: each address is the base of one record. If the module has no RTTI, or the data classes aren't polymorphic, use one of the next two.
+2. **A name.** In **Strings & pointers**, search for an unusual player's name, then find pointers to the hit. One is usually a name field inside the record. FM has also stored names as indices into a name table, so if nothing points at the string, look near it for that table.
+3. **A value.** In **Value scan**, scan for something you can see and change: your club's balance is a good start. Set the game's currency to pounds first, since displayed money is converted and rounded. Try `Int32`, `Int64` and `Double`. Confirm by writing a new value and checking the game shows it. Then use **Find pointers to selected** with a max offset such as `0x800` to reach the start of the record.
 
-The **Offset calculator** in Research subtracts the base from the field address.
+### 2. Map the fields
+
+- **Record diff**, for one field at a time: snapshot, change exactly one thing in the game (sign a contract, injure a player, use the in-game editor), snapshot again. Snapshot once more without changing anything to rule out values that change on their own.
+- **Correlator**, for attributes and anything you can read off many records: add 10 or more records whose values differ (from the RTTI object list), type the shown value next to each, and press **Find the field**. It tries every aligned offset as u8/i8/u16/i16/u32/i32/i64/f32/f64, exact (stored = shown × scale) and rounded or floored (shown = round(stored ÷ scale)). One match is very likely the field, and it tells you the `scale`.
+- **Fields behind pointers** (contract, finances): in Record diff, select a heap pointer under *Pointers in this record* and **Follow** it. Fields found there go in the definition with `"path": ["<offset of the pointer>"]`.
+
+A memory viewer such as [x64dbg](https://x64dbg.com) or [ReClass.NET](https://github.com/ReClassNET/ReClass.NET) is still handy for looking around a record.
 
 ### 3. Find a root (the hard part)
 
-To list every club, you need a stable path from `game_plugin.dll` to the club table:
+To list every record of a kind, you need a stable path from `game_plugin.dll` to the table:
 
-1. Find what points at your record: scan for the record's address as an `Int64`. Repeat up the chain until you reach an address inside `game_plugin.dll`'s range (shown in Research).
-2. Disassemble around code that reads that global (x64dbg: find references to the address) and copy a byte pattern for the instruction, replacing the displacement and other volatile bytes with `??`. Make it long enough to be unique.
+1. From a record's base, use **Find pointers** (max offset `0x0`). Usually it's an entry in an array or vector. Find pointers to the start of that array (raise the max offset), and repeat until a hit is starred (inside the module). That module address is the global.
+2. Disassemble around code that reads that global (Ghidra, IDA or x64dbg: find references to the address) and copy a byte pattern for the instruction, replacing the displacement and other volatile bytes with `??`. Make it long enough to be unique.
 3. Put it in `roots`, add the `deref` hops, then describe the table in `collections`.
 
-Reconnect. If the club list fills, it worked. Warnings on the Home page tell you which root or collection failed.
+Reconnect. If the list fills, it worked. Check the count against the RTTI object count for the same class. Warnings on the Home page tell you which root or collection failed.
 
 ### 4. Share it
 

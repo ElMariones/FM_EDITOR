@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using FMOpenEditor.App.ViewModels.Research;
 using FMOpenEditor.Core.Memory;
 
 namespace FMOpenEditor.App.ViewModels;
@@ -9,18 +10,48 @@ namespace FMOpenEditor.App.ViewModels;
 public sealed record ScanHit(nint Address, string AddressText, string Value);
 
 /// <summary>
-/// Tools for contributors mapping a game version: a value scanner and an offset calculator. The
-/// workflow is in docs/DEFINITIONS.md.
+/// Tools for contributors mapping a game version: value, string and pointer scans, an RTTI class
+/// finder, a record snapshot/diff, a multi-record correlator and an offset calculator. The workflow
+/// is in docs/DEFINITIONS.md.
 /// </summary>
 public sealed partial class ResearchViewModel : ObservableObject
 {
     private readonly MemoryScanner? _scanner;
 
-    public ResearchViewModel(IMemoryAccess? memory, string? moduleInfo)
+    public ResearchViewModel(IMemoryAccess? memory, string? moduleInfo, nint moduleBase = 0, long moduleSize = 0)
     {
         _scanner = memory is null ? null : new MemoryScanner(memory);
         ModuleInfo = moduleInfo ?? "Not attached to the game.";
+        if (memory is null) return;
+
+        var context = new ResearchContext(memory, moduleBase, moduleSize, GameProcess.DefaultModule);
+        Search = new MemorySearchViewModel(context);
+        Rtti = new RttiViewModel(context);
+        Diff = new RecordDiffViewModel(context);
+        Correlator = new CorrelatorViewModel(context);
+        context.UseAsRecordBase = a =>
+        {
+            RecordBase = ResearchFormat.Hex(a);
+            Diff.SetBase(a);
+            SelectedTab = RecordTab;
+        };
+        context.AddToCorrelator = a => Correlator.AddSample(a);
+        context.FindPointersTo = a =>
+        {
+            SelectedTab = SearchTab;
+            Search.SearchPointersTo(a);
+        };
     }
+
+    public const int SearchTab = 1;
+    public const int RecordTab = 3;
+
+    public MemorySearchViewModel? Search { get; }
+    public RttiViewModel? Rtti { get; }
+    public RecordDiffViewModel? Diff { get; }
+    public CorrelatorViewModel? Correlator { get; }
+
+    [ObservableProperty] private int _selectedTab;
 
     public bool IsAvailable => _scanner is not null;
     public string ModuleInfo { get; }
@@ -89,6 +120,14 @@ public sealed partial class ResearchViewModel : ObservableObject
     partial void OnSelectedHitChanged(ScanHit? value)
     {
         if (value is not null) FieldAddress = value.AddressText;
+    }
+
+    [RelayCommand]
+    private void PointersToHit()
+    {
+        if (SelectedHit is null || Search is null) return;
+        SelectedTab = SearchTab;
+        Search.SearchPointersTo(SelectedHit.Address);
     }
 
     partial void OnRecordBaseChanged(string? value) => CalcOffset();

@@ -1,60 +1,314 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:FMOpenEditor.App.ViewModels"
+             xmlns:r="using:FMOpenEditor.App.ViewModels.Research"
              x:Class="FMOpenEditor.App.Views.ResearchView"
              x:DataType="vm:ResearchViewModel">
-  <ScrollViewer>
-    <StackPanel Spacing="12" MaxWidth="900" HorizontalAlignment="Left">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.mono, SelectableTextBlock.mono">
+      <Setter Property="FontFamily" Value="Cascadia Mono,Consolas,monospace" />
+    </Style>
+    <Style Selector="TextBlock.changed">
+      <Setter Property="Foreground" Value="{StaticResource PendingBrush}" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="ListBox.dense ListBoxItem">
+      <Setter Property="Padding" Value="10,1" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="TabItem">
+      <Setter Property="FontSize" Value="14" />
+    </Style>
+  </UserControl.Styles>
+
+  <DockPanel>
+    <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,8">
       <TextBlock Classes="h1" Text="Research: map a new game version" />
-      <TextBlock Classes="muted" TextWrapping="Wrap"
-                 Text="Help support every FM patch. Find a value you can see in the game (a club balance, a wage), scan for it, change it in the game, scan again until a few addresses remain. Subtract the record base to get the field offset, and add it to the definition file. Step-by-step guide: docs/DEFINITIONS.md." />
+      <TextBlock Classes="hint"
+                 Text="Find one record (a club, a player), work out where each field sits in it, then find a stable path to it from the game module. Step-by-step guide: docs/DEFINITIONS.md." />
       <TextBlock Text="{Binding ModuleInfo}" Classes="muted" />
-
       <Border Classes="card" IsVisible="{Binding !IsAvailable}">
-        <TextBlock TextWrapping="Wrap" Text="Connect to the running game from the Home page to use the scanner. It isn't available for the demo save." />
-      </Border>
-
-      <Border Classes="card" IsVisible="{Binding IsAvailable}">
-        <StackPanel Spacing="8">
-          <TextBlock Classes="h2" Text="Value scanner" />
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBox Text="{Binding Value}" Watermark="value" Width="160" />
-            <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" Width="110" />
-            <Button Classes="accent" Content="First scan" Command="{Binding FirstScanCommand}" IsEnabled="{Binding !IsBusy}" />
-            <ComboBox ItemsSource="{Binding Compares}" SelectedItem="{Binding Compare}" Width="130" />
-            <Button Content="Next scan" Command="{Binding NextScanCommand}" IsEnabled="{Binding !IsBusy}" />
-            <Button Content="Reset" Command="{Binding ResetCommand}" />
-          </StackPanel>
-          <TextBlock Text="{Binding ResultText}" />
-          <ListBox ItemsSource="{Binding Hits}" SelectedItem="{Binding SelectedHit}" MaxHeight="300">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="vm:ScanHit">
-                <Grid ColumnDefinitions="200,*">
-                  <TextBlock Text="{Binding AddressText}" FontFamily="Consolas,monospace" />
-                  <TextBlock Grid.Column="1" Text="{Binding Value}" />
-                </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBox Text="{Binding WriteValue}" Watermark="new value" Width="160" />
-            <Button Content="Write to selected address" Command="{Binding WriteCommand}" />
-          </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <Border Classes="card">
-        <StackPanel Spacing="8">
-          <TextBlock Classes="h2" Text="Offset calculator" />
-          <TextBlock Classes="muted" TextWrapping="Wrap"
-                     Text="The record base is shown under a person's name in the editor once their list is mapped." />
-          <StackPanel Orientation="Horizontal" Spacing="6">
-            <TextBox Text="{Binding RecordBase}" Watermark="record base (hex)" Width="200" />
-            <TextBox Text="{Binding FieldAddress}" Watermark="field address (hex)" Width="200" />
-            <SelectableTextBlock Text="{Binding OffsetResult}" VerticalAlignment="Center" FontFamily="Consolas,monospace" />
-          </StackPanel>
-        </StackPanel>
+        <TextBlock TextWrapping="Wrap" Text="Connect to the running game from the Home page to use these tools. They aren't available for the demo save." />
       </Border>
     </StackPanel>
-  </ScrollViewer>
+
+    <TabControl IsVisible="{Binding IsAvailable}" SelectedIndex="{Binding SelectedTab}">
+
+      <!-- 0: value scan + offset calculator -->
+      <TabItem Header="Value scan">
+        <ScrollViewer>
+          <StackPanel Spacing="12" Margin="0,8">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="hint" Text="Scan for a number you can see in the game, change it in the game, and scan again until a few addresses remain. Money: set the game's currency to pounds first and try Int32, Int64 and Double." />
+                <WrapPanel>
+                  <TextBox Text="{Binding Value}" Watermark="value" Width="160" Margin="0,0,6,6" />
+                  <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" Width="110" Margin="0,0,6,6" />
+                  <Button Classes="accent" Content="First scan" Command="{Binding FirstScanCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                  <ComboBox ItemsSource="{Binding Compares}" SelectedItem="{Binding Compare}" Width="130" Margin="0,0,6,6" />
+                  <Button Content="Next scan" Command="{Binding NextScanCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                  <Button Content="Reset" Command="{Binding ResetCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+                <TextBlock Text="{Binding ResultText}" TextWrapping="Wrap" />
+                <ListBox ItemsSource="{Binding Hits}" SelectedItem="{Binding SelectedHit}" MaxHeight="300">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ScanHit">
+                      <Grid ColumnDefinitions="200,*">
+                        <TextBlock Text="{Binding AddressText}" Classes="mono" />
+                        <TextBlock Grid.Column="1" Text="{Binding Value}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <WrapPanel>
+                  <TextBox Text="{Binding WriteValue}" Watermark="new value" Width="160" Margin="0,0,6,6" />
+                  <Button Content="Write to selected address" Command="{Binding WriteCommand}" Margin="0,0,6,6" />
+                  <Button Content="Find pointers to selected" Command="{Binding PointersToHitCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Offset calculator" />
+                <TextBlock Classes="hint" Text="Field address minus record base. Selecting a scan hit fills the field address; the other tools fill the record base." />
+                <WrapPanel>
+                  <TextBox Text="{Binding RecordBase}" Watermark="record base (hex)" Width="200" Margin="0,0,6,6" />
+                  <TextBox Text="{Binding FieldAddress}" Watermark="field address (hex)" Width="200" Margin="0,0,6,6" />
+                  <SelectableTextBlock Text="{Binding OffsetResult}" VerticalAlignment="Center" Classes="mono" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 1: strings and pointers -->
+      <TabItem Header="Strings &amp; pointers">
+        <ScrollViewer>
+          <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Search}" x:DataType="r:MemorySearchViewModel">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Find a string" />
+                <TextBlock Classes="hint" Text="Search for an unusual player's or club's name, exactly as the game shows it. Then find pointers to the hit: one of them is usually a name field inside the record." />
+                <WrapPanel>
+                  <TextBox Text="{Binding Text}" Watermark="name" Width="260" Margin="0,0,6,6" />
+                  <ComboBox ItemsSource="{Binding Encodings}" SelectedItem="{Binding Encoding}" Width="110" Margin="0,0,6,6" />
+                  <Button Classes="accent" Content="Find string" Command="{Binding FindStringCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="What points here?" />
+                <TextBlock Classes="hint" Text="Lists 8-byte pointers to the target. A max offset above 0 also finds pointers to just before it, i.e. to the start of the record that contains your field. Repeat on each hit to climb towards a pointer inside the module (★): that's a root candidate." />
+                <WrapPanel>
+                  <TextBox Text="{Binding PointerTarget}" Watermark="target address (hex)" Width="220" Margin="0,0,6,6" />
+                  <TextBox Text="{Binding MaxOffset}" Watermark="max offset" Width="110" Margin="0,0,6,6" ToolTip.Tip="How far before the target a pointer may point, in hex (e.g. 0x400)." />
+                  <Button Classes="accent" Content="Find pointers" Command="{Binding FindPointersCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+                <ListBox ItemsSource="{Binding Results}" SelectedItem="{Binding Selected}" MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:AddressRow">
+                      <Grid ColumnDefinitions="260,*">
+                        <TextBlock Text="{Binding AddressText}" Classes="mono" />
+                        <TextBlock Grid.Column="1" Text="{Binding Detail}" TextTrimming="CharacterEllipsis" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <WrapPanel>
+                  <Button Content="Find pointers to selected" Command="{Binding PointersToSelectedCommand}" Margin="0,0,6,6" />
+                  <Button Content="Open selected as a record" Command="{Binding UseSelectedAsBaseCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 2: RTTI -->
+      <TabItem Header="Classes (RTTI)">
+        <ScrollViewer>
+          <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Rtti}" x:DataType="r:RttiViewModel">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="hint" Text="Lists the C++ classes in game_plugin.dll from their run-time type information, with each one's vtable. Every object of a class starts with a pointer to its vtable, so counting those pointers in the heap finds every player, club or nation and gives each one's base address, without needing a root." />
+                <TextBlock Classes="hint" Text="The module address isn't known, so this tool can't run." IsVisible="{Binding !HasModule}" />
+                <WrapPanel>
+                  <Button Classes="accent" Content="Find classes" Command="{Binding FindClassesCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                  <TextBox Text="{Binding Filter}" Watermark="filter by name" Width="220" Margin="0,0,6,6" />
+                  <Button Content="Count objects (listed)" Command="{Binding CountListedCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                  <Button Content="Count objects (selected)" Command="{Binding CountSelectedCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                </WrapPanel>
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+                <ListBox ItemsSource="{Binding Classes}" SelectedItem="{Binding SelectedClass}" MaxHeight="320">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:RttiRow">
+                      <Grid ColumnDefinitions="*,280,120">
+                        <TextBlock Text="{Binding Name}" Classes="mono" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding VtableText}" Classes="mono muted" />
+                        <TextBlock Grid.Column="2" Text="{Binding InstancesText}" HorizontalAlignment="Right" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Objects" />
+                <TextBlock Classes="hint" Text="Objects of the selected class (first 1,000) after counting it on its own." />
+                <ListBox ItemsSource="{Binding Instances}" SelectedItem="{Binding SelectedInstance}" MaxHeight="260">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:AddressRow">
+                      <TextBlock Text="{Binding AddressText}" Classes="mono" />
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <WrapPanel>
+                  <Button Content="Open as a record" Command="{Binding UseInstanceAsBaseCommand}" Margin="0,0,6,6" />
+                  <Button Content="Add to correlator" Command="{Binding AddInstanceToCorrelatorCommand}" Margin="0,0,6,6" />
+                  <Button Content="Find pointers to it" Command="{Binding PointersToInstanceCommand}" Margin="0,0,6,6" />
+                </WrapPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 3: record snapshot / diff -->
+      <TabItem Header="Record diff">
+        <ScrollViewer>
+          <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Diff}" x:DataType="r:RecordDiffViewModel">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="hint" Text="Take a snapshot, change exactly one thing in the game (sign a contract, injure a player, use the in-game editor), and take another. The bytes that changed are the field." />
+                <WrapPanel>
+                  <TextBox Text="{Binding BaseAddress}" Watermark="record base (hex)" Width="220" Margin="0,0,6,6" />
+                  <TextBox Text="{Binding Length}" Watermark="length" Width="100" Margin="0,0,6,6" />
+                  <Button Classes="accent" Content="Take snapshot" Command="{Binding SnapshotCommand}" Margin="0,0,6,6" />
+                  <Button Content="Clear" Command="{Binding ClearCommand}" Margin="0,0,6,6" />
+                  <CheckBox Content="Only changed rows" IsChecked="{Binding OnlyChangedRows}" Margin="0,0,6,6" />
+                </WrapPanel>
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Changes" />
+                <ListBox ItemsSource="{Binding Changes}" MaxHeight="240">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:ChangeRow">
+                      <StackPanel>
+                        <TextBlock Classes="mono changed">
+                          <Run Text="{Binding OffsetText}" />
+                          <Run Text="  " />
+                          <Run Text="{Binding Before}" />
+                          <Run Text=" → " />
+                          <Run Text="{Binding After}" />
+                        </TextBlock>
+                        <SelectableTextBlock Text="{Binding Readings}" Classes="mono" TextWrapping="Wrap" FontSize="12" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Hex dump" />
+                <ListBox Classes="dense" ItemsSource="{Binding Rows}" MaxHeight="420">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:HexRowView">
+                      <StackPanel Orientation="Horizontal" Spacing="16">
+                        <TextBlock Text="{Binding OffsetText}" Classes="mono muted" />
+                        <TextBlock Text="{Binding Hex}" Classes="mono" Classes.changed="{Binding Changed}" />
+                        <TextBlock Text="{Binding Ascii}" Classes="mono muted" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Pointers in this record" />
+                <TextBlock Classes="hint" Text="Offset 0x0 pointing into the module is usually the vtable. Strings are names. Other heap pointers are sub-records (contract, finances): follow one and its fields go in the definition with a &quot;path&quot;." />
+                <ListBox ItemsSource="{Binding Pointers}" SelectedItem="{Binding SelectedPointer}" MaxHeight="300">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:PointerRow">
+                      <Grid ColumnDefinitions="80,200,*">
+                        <TextBlock Text="{Binding OffsetText}" Classes="mono" />
+                        <TextBlock Grid.Column="1" Text="{Binding TargetText}" Classes="mono muted" />
+                        <TextBlock Grid.Column="2" Text="{Binding Description}" TextTrimming="CharacterEllipsis" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+                <Button Content="Follow selected pointer" Command="{Binding FollowPointerCommand}" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- 4: correlator -->
+      <TabItem Header="Correlator">
+        <ScrollViewer>
+          <StackPanel Spacing="12" Margin="0,8" DataContext="{Binding Correlator}" x:DataType="r:CorrelatorViewModel">
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="hint" Text="Finds a field by comparing many records at once. List several records (e.g. players from the Classes tab) and the value the game shows for each, such as their Finishing. Every offset and number type is tried; the ones that explain all the values are kept, with their scale." />
+                <TextBox Text="{Binding SamplesText}" AcceptsReturn="True" TextWrapping="NoWrap" Height="200"
+                         FontFamily="Cascadia Mono,Consolas,monospace"
+                         Watermark="0x1F2A3B40 15&#x0a;0x1F2A4C80 7&#x0a;0x1F2A5DC0 18" />
+                <WrapPanel>
+                  <TextBox Text="{Binding Length}" Watermark="record length" Width="120" Margin="0,0,6,6" />
+                  <Button Classes="accent" Content="Find the field" Command="{Binding CorrelateCommand}" IsEnabled="{Binding !IsBusy}" Margin="0,0,6,6" />
+                </WrapPanel>
+                <TextBlock Text="{Binding Status}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <Border Classes="card">
+              <StackPanel Spacing="8">
+                <TextBlock Classes="h2" Text="Matches" />
+                <ListBox ItemsSource="{Binding Candidates}" SelectedItem="{Binding Selected}" MaxHeight="360">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="r:CandidateRow">
+                      <StackPanel>
+                        <Grid ColumnDefinitions="90,60,*">
+                          <TextBlock Text="{Binding OffsetText}" Classes="mono" />
+                          <TextBlock Grid.Column="1" Text="{Binding Type}" Classes="mono" />
+                          <TextBlock Grid.Column="2" Text="{Binding Formula}" />
+                        </Grid>
+                        <TextBlock Classes="mono muted" FontSize="12">
+                          <Run Text="stored: " />
+                          <Run Text="{Binding Stored}" />
+                        </TextBlock>
+                        <SelectableTextBlock Text="{Binding Json}" Classes="mono" FontSize="12" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
 </UserControl>
