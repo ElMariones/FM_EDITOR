@@ -43,11 +43,11 @@ per view.
 
 ## The tour
 
-On first launch Tiki gives a three-stop welcome; the first time a save opens, a five-stop walk
-through the workspace ([`Controls/TourOverlay`](src/FMOpenEditor.App/Controls/TourOverlay.axaml.cs),
+The home screen stays quiet. The first time a save is connected, Tiki says hello and gives a
+five-stop walk through the workspace ([`Controls/TourOverlay`](src/FMOpenEditor.App/Controls/TourOverlay.axaml.cs),
 steps in `MainWindow.axaml.cs`). The screen dims except for the control being explained, a Chroma
-ring glides from stop to stop, and Tiki looks at what it is describing. Each tour runs once; the
-**?** in the top bar replays it. Rules for writing a stop: one idea, two sentences at most, say what
+ring glides from stop to stop, and Tiki looks at what it is describing. It runs once; the
+**?** in the top bar replays it (on the home screen it gives a two-stop version). Rules for writing a stop: one idea, two sentences at most, say what
 the user can do, and point at a control that exists on that screen (the UI tests check this).
 ## Colour
 

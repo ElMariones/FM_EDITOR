@@ -43,14 +43,6 @@ public static class ValueParser
         }
     }
 
-    /// <summary>Accepts 1500000, 1.5M, 750k, €2,000,000.</summary>
-    public static long ParseMoney(string text)
-    {
-        var t = text.Replace("€", "").Replace("£", "").Replace("$", "").Replace(",", "").Replace(" ", "").ToLowerInvariant();
-        double mult = 1;
-        if (t.EndsWith('k')) { mult = 1e3; t = t[..^1]; }
-        else if (t.EndsWith('m')) { mult = 1e6; t = t[..^1]; }
-        else if (t.EndsWith('b')) { mult = 1e9; t = t[..^1]; }
-        return (long)Math.Round(double.Parse(t, System.Globalization.CultureInfo.InvariantCulture) * mult);
-    }
+    /// <summary>Accepts 1500000, 1.5M, 750k, €2,000,000, in the currency chosen in Settings; returns pounds.</summary>
+    public static long ParseMoney(string text) => Money.Parse(text);
 }

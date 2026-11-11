@@ -5,7 +5,7 @@ public enum ValueKind
 {
     /// <summary><see cref="int"/>.</summary>
     Integer,
-    /// <summary><see cref="long"/>, in the game's base currency unit.</summary>
+    /// <summary><see cref="long"/>, in pounds, the game's base currency; <see cref="Money"/> converts for display.</summary>
     Money,
     /// <summary><see cref="double"/>.</summary>
     Decimal,

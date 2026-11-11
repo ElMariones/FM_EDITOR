@@ -102,16 +102,6 @@ public static class Values
             _ => Convert.ToString(value, Inv) ?? "",
         };
 
-    public static string FormatMoney(long amount)
-    {
-        var abs = Math.Abs(amount);
-        var sign = amount < 0 ? "-" : "";
-        return abs switch
-        {
-            >= 1_000_000_000 => $"{sign}€{abs / 1_000_000_000d:0.##}B",
-            >= 1_000_000 => $"{sign}€{abs / 1_000_000d:0.##}M",
-            >= 10_000 => $"{sign}€{abs / 1_000d:0.#}K",
-            _ => $"{sign}€{abs:N0}",
-        };
-    }
+    /// <summary>An amount in pounds, shown in the currency the user chose (see <see cref="Money"/>).</summary>
+    public static string FormatMoney(long amount) => Money.Format(amount);
 }

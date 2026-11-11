@@ -60,7 +60,7 @@ public sealed class GraphicsLibrary
     }
 
     /// <summary>Whether any picture exists for this kind of entity; lets the UI drop the picture slot entirely.</summary>
-    public bool HasAny(EntityKind kind) => CountOf(TypeOf(kind)) > 0;
+    public bool HasAny(EntityKind kind) => TypeOf(kind) is { } type && CountOf(type) > 0;
 
     /// <summary>Walks <paramref name="roots"/> and indexes every pack found. Missing folders are skipped.</summary>
     public static GraphicsLibrary Load(IEnumerable<string> roots, CancellationToken cancel = default)
@@ -239,17 +239,24 @@ public sealed class GraphicsLibrary
     {
         // Icon faces are ~25px thumbnails, so the portrait is the better source even for small sizes.
         EntityKind.Player or EntityKind.Staff => Find("person", id, "portrait", "icon"),
-        _ => size == GraphicSize.Large
-            ? Find(TypeOf(kind), id, "logo", "icon")
-            : Find(TypeOf(kind), id, "icon", "logo"),
+        _ when TypeOf(kind) is { } type => size == GraphicSize.Large
+            ? Find(type, id, "logo", "icon")
+            : Find(type, id, "icon", "logo"),
+        _ => null,
     };
 
-    public static string TypeOf(EntityKind kind) => kind switch
+    /// <summary>
+    /// The pack resource type that holds pictures of this kind, or null when the game has none
+    /// (continents, currencies, cities, injuries...). Those must not borrow another type's
+    /// pictures: their ids overlap, so a currency would wear some nation's flag.
+    /// </summary>
+    public static string? TypeOf(EntityKind kind) => kind switch
     {
         EntityKind.Player or EntityKind.Staff => "person",
         EntityKind.Club => "club",
         EntityKind.Competition => "comp",
-        _ => "nation",
+        EntityKind.Nation => "nation",
+        _ => null,
     };
 
     private static string? Resolve(string stem)

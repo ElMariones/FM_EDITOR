@@ -29,6 +29,48 @@
     <Rectangle Height="1" Fill="{DynamicResource HairlineBrush}" />
 
     <StackPanel Spacing="8">
+      <TextBlock Classes="eyebrow" Text="CURRENCY" />
+      <Grid ColumnDefinitions="*,Auto">
+        <ListBox x:Name="CommonCurrencies" ItemsSource="{Binding CommonCurrencies}" SelectedItem="{Binding SelectedCommon}" Background="Transparent">
+          <ListBox.ItemsPanel>
+            <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
+          </ListBox.ItemsPanel>
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem"><Setter Property="HorizontalContentAlignment" Value="Center" /></Style>
+          </ListBox.Styles>
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CurrencyOption">
+              <TextBlock Text="{Binding Short}" ToolTip.Tip="{Binding Name}" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <Button Grid.Column="1" Margin="6,0,0,0" VerticalAlignment="Center" Command="{Binding ToggleMoreCurrenciesCommand}"
+                Content="{Binding MoreCurrenciesLabel}" ToolTip.Tip="Search every currency in your save" />
+      </Grid>
+
+      <StackPanel Spacing="6" IsVisible="{Binding ShowMoreCurrencies}">
+        <TextBox Classes="search" Watermark="Search currencies" Text="{Binding CurrencySearch}" />
+        <ListBox x:Name="AllCurrencies" ItemsSource="{Binding CurrencyResults}" SelectedItem="{Binding SelectedOther}"
+                 MaxHeight="190" Background="Transparent" IsVisible="{Binding CurrencyResults.Count}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:CurrencyOption">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" />
+                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding Mark}" Margin="10,0,0,0" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="{Binding CurrencyHint}"
+                   IsVisible="{Binding CurrencyHint, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+      </StackPanel>
+
+      <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="{Binding CurrencySummary}" />
+    </StackPanel>
+
+    <Rectangle Height="1" Fill="{DynamicResource HairlineBrush}" />
+
+    <StackPanel Spacing="8">
       <TextBlock Classes="eyebrow" Text="FACES AND BADGES" />
       <ToggleSwitch IsChecked="{Binding ShowPictures}" OnContent="Show pictures from my graphics packs" OffContent="Show pictures from my graphics packs" />
       <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap"

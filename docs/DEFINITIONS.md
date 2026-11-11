@@ -110,7 +110,7 @@ A `path` whose pointer is empty (no common name, no contract) makes the field re
 
 Property keys (`Attr.Finishing`, `Finance.Balance`…) come from [`PropertyCatalog.cs`](../src/FMOpenEditor.Core/Model/PropertyCatalog.cs). Properties found by the scripts in [`tools/research`](../tools/research) are listed in [`catalog.generated.json`](../src/FMOpenEditor.Core/Model/catalog.generated.json), which is built into the app and extends that catalog.
 
-Record kinds are `Player`, `Staff`, `Club`, `Competition`, `Nation`, and, since FM27, `Stadium`, `City`, `Team`, `Continent`, `LocalRegion`, `Award`, `Injury`, `Language`, `MediaSource`, `Derby`, `StageName`, `Weather` and `Currency`. A kind appears in the sidebar when the definition gives it a collection with records. [`definitions/_template.json`](../definitions/_template.json) lists them all. A test fails if a definition uses an unknown key.
+Record kinds are `Player`, `Staff`, `Club`, `Competition`, `Nation`, and, since FM27, `Stadium`, `City`, `Team`, `Continent`, `LocalRegion`, `Award`, `Injury`, `Language`, `MediaSource`, `Derby`, `StageName`, `Weather` and `Currency`. A kind appears in the sidebar when the definition gives it a collection with records, except `Team`: a club's page carries its first team's fields, and a link to a team opens its club. [`definitions/_template.json`](../definitions/_template.json) lists them all. A test fails if a definition uses an unknown key.
 
 ## Mapping workflow
 

@@ -384,6 +384,20 @@ public sealed partial class BrowserViewModel : ObservableObject
         return s;
     }
 
+    /// <summary>
+    /// The display currency changed: rows show the new amounts, and the editor is rebuilt because its
+    /// money boxes hold amounts (and limits) in the old currency.
+    /// </summary>
+    public void CurrencyChanged()
+    {
+        foreach (var r in Rows) r.Refresh(_session, Columns);
+        if (Editor is not { } old) return;
+        var tab = old.SelectedGroup?.Name;
+        var editor = NewEditor(old.Entity);
+        editor.SelectedGroup = editor.Tabs.FirstOrDefault(t => t.Name == tab) ?? editor.SelectedGroup;
+        Editor = editor;
+    }
+
     /// <summary>The graphics index finished loading (or was switched off): re-ask for every picture.</summary>
     private void OnPicturesChanged()
     {

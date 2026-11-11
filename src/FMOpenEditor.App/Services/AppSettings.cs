@@ -25,9 +25,11 @@ public sealed class AppSettings
     /// <summary>Turns off decorative animation (background drift, entrances, the mascot).</summary>
     public bool ReduceMotion { get; set; }
 
-    /// <summary>Tiki's tours run once each: the welcome on first launch, the workspace the first time a save opens.</summary>
-    public bool TourHomeSeen { get; set; }
+    /// <summary>Tiki's tour runs once, the first time a save is connected. The ? button replays it.</summary>
     public bool TourWorkspaceSeen { get; set; }
+
+    /// <summary>The game's id of the currency amounts are shown in (28 euro, 86 pound, 87 US dollar).</summary>
+    public int CurrencyId { get; set; } = 28;
 
     public static string DefaultPath =>
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FMOpenEditor", "settings.json");

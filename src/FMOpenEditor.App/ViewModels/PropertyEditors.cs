@@ -68,8 +68,10 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
 {
     public NumberEditorViewModel(EditorSession s, Entity e, PropertyDef d) : base(s, e, d)
     {
-        Minimum = (decimal)Math.Max(d.Min, -1e15);
-        Maximum = (decimal)Math.Min(d.Max, 1e15);
+        // Money is edited in the currency chosen in Settings and stored in pounds.
+        var rate = IsMoney ? Money.Current.Rate : 1;
+        Minimum = (decimal)Math.Max(d.Min * rate, -1e24);
+        Maximum = (decimal)Math.Min(d.Max * rate, 1e24);
         Increment = d.Kind == ValueKind.Money ? 100_000 : d.Max >= 1000 ? 100 : 1;
         FormatString = d.Kind == ValueKind.Decimal ? "0.##" : "N0";
         Load();
@@ -83,14 +85,17 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
 
     [ObservableProperty] private decimal? _value;
 
-    protected override void LoadValue(object? v) => Value = v is null ? null : (decimal)Values.ToDouble(v);
+    protected override void LoadValue(object? v) => Value = v is null ? null
+        : IsMoney ? (decimal)Math.Round(Money.ToDisplay(Values.ToDouble(v)))
+        : (decimal)Values.ToDouble(v);
+
     partial void OnValueChanged(decimal? value)
     {
-        if (value is not null) Commit(value);
+        if (value is { } shown) Commit(IsMoney ? Money.ToBase((double)shown) : shown);
         OnPropertyChanged(nameof(MoneyText));
     }
 
-    public string MoneyText => Value is { } v && IsMoney ? Values.FormatMoney((long)v) : "";
+    public string MoneyText => Value is { } v && IsMoney ? Values.FormatMoney(Money.ToBase((double)v)) : "";
 }
 
 public sealed partial class BoolEditorViewModel : PropertyEditorViewModel

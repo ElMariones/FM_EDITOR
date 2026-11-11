@@ -764,6 +764,43 @@
    "kind": "Integer",
    "min": 0,
    "max": 20
+  },
+  {
+   "key": "Captain",
+   "label": "Captain",
+   "category": "First team",
+   "kind": "Reference",
+   "refKind": "Player"
+  },
+  {
+   "key": "ViceCaptain",
+   "label": "Vice-Captain",
+   "category": "First team",
+   "kind": "Reference",
+   "refKind": "Player"
+  },
+  {
+   "key": "OtherDivision",
+   "label": "Other division",
+   "category": "First team",
+   "kind": "Reference",
+   "refKind": "Competition"
+  },
+  {
+   "key": "WeekendHomeMatchDay",
+   "label": "Weekend home match day",
+   "category": "First team",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "MidweekHomeMatchDay",
+   "label": "Midweek home match day",
+   "category": "First team",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
   }
  ],
  "Competition": [
@@ -1817,10 +1854,17 @@
    "kind": "Text"
   },
   {
-   "key": "AnnouncementDate",
-   "label": "Announcement date",
-   "category": "History",
+   "key": "AwardDate",
+   "label": "Next award date",
+   "category": "Dates",
    "kind": "Date"
+  },
+  {
+   "key": "AnnouncementDate",
+   "label": "Next announcement",
+   "category": "Dates",
+   "kind": "Date",
+   "description": "Only set for awards whose result is announced on a different day from the ceremony."
   },
   {
    "key": "AllowPreviousWinner",
@@ -1866,12 +1910,6 @@
    "category": "Location",
    "kind": "Reference",
    "refKind": "Continent"
-  },
-  {
-   "key": "AwardDate",
-   "label": "Award date",
-   "category": "History",
-   "kind": "Date"
   },
   {
    "key": "AwardPeriod",
@@ -3119,6 +3157,27 @@
    "label": "Name",
    "category": "Profile",
    "kind": "Text"
+  },
+  {
+   "key": "ShortName",
+   "label": "Short name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "Symbol",
+   "label": "Symbol",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "ExchangeRate",
+   "label": "Exchange rate (per £1)",
+   "category": "Profile",
+   "kind": "Decimal",
+   "min": 0.0001,
+   "max": 1000000000,
+   "description": "How many units of this currency one pound buys. The game keeps every amount in pounds."
   }
  ]
 }

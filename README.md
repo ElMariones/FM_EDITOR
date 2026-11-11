@@ -83,7 +83,7 @@ Balance, transfer and wage budgets, ticket prices, facilities, reputation, kits,
 
 ### The whole database, linked
 
-Players, staff, clubs, teams, competitions, stadiums, awards, derbies, nations, cities, regions, languages, currencies, injuries and more: **18 record types and around 540 fields**.
+Players, staff, clubs, competitions, stadiums, awards, derbies, nations, cities, regions, languages, currencies, injuries and more: **17 record types and around 540 fields**.
 
 ![A competition and the clubs in it](docs/screenshots/competition.png)
 
@@ -94,6 +94,7 @@ Players, staff, clubs, teams, competitions, stadiums, awards, derbies, nations, 
 - **Nation rules**: EU free movement, work permits and non-EU limits.
 - **Your faces and badges**: player faces, club badges, competition logos and flags from your own FM graphics folder. No pack? You just see names.
 - **Day and night themes**, or follow Windows.
+- **Your currency**: amounts show in euros, pounds or dollars, or any other currency in your save, at the save's own exchange rate.
 - **Research tools** for contributors mapping new game versions: value, string and pointer scans, an RTTI class finder, record snapshot/diff and a field correlator.
 
 ## How AI helped map the game

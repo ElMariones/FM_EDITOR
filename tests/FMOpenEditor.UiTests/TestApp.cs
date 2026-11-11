@@ -13,7 +13,8 @@ public static class TestAppBuilder
         // Tests never touch the user's real preferences, and run without decorative animation
         // so captured frames are deterministic.
         AppServices.Settings = AppSettings.Load(null);
-        AppServices.Settings.TourHomeSeen = AppServices.Settings.TourWorkspaceSeen = true;
+        AppServices.Settings.TourWorkspaceSeen = true;
+        AppServices.Settings.CurrencyId = FMOpenEditor.Core.Model.Money.Pound.Id;
         Motion.Enabled = false;
         return AppBuilder.Configure<FMOpenEditor.App.App>()
             .UseSkia().WithInterFont()

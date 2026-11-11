@@ -760,6 +760,11 @@ The *Code* column is the game's own field code from `editor.fmf`; rows without o
 | Field | Code | Path | Offset | Type | Live check |
 |---|---|---|---|---|---|
 | Name |  |  | 0x18 | fmString | str e.g. 'Albanian Lek' (173/173 set) |
+| Short name |  |  | 0x20 | fmString | str e.g. 'Lek' (173/173 set) |
+| Symbol |  |  | 0x30 | fmString | str e.g. '€' (117/173 set) |
+| Exchange rate |  |  | 0x38 | f32 | units per pound: pound 1.0, euro 1.164, US dollar 1.348 |
+
+Every amount in the game is kept in pounds. `+0x40` points at a list of dated past rates (8 bytes each: date, then f32 rate).
 
 ---
 
@@ -800,6 +805,13 @@ The *Code* column is the game's own field code from `editor.fmf`; rows without o
 |---|---|
 | Prize money | Not a database field. It is paid by per-competition rule code (`sicomps::*_MONEY_HELPER`). |
 | Nation rules (EU free movement, work permits, non-EU limit) | Not database fields either: they are competition rules in `sicomps`. The nation record only holds "Nations treated as non-foreign" (a list) and a dual-nationality flag word at +0x1E8. |
+
+### Award
+
+| Field | What's known / next step |
+|---|---|
+| Past winners | Not on the award record, and nothing in memory points back at an award except the award lists and its `YEAR_AWARD_DATA` schedule entry (award pointer at +0x8, dates from +0x18). `db::STARTING_AWARD_HISTORY` has no live objects: it is converted when the save starts (`CONVERT_STARTING_AWARD_HISTORY`). Where the converted history lives is not found. |
+| Award date / announcement date | The *next* time the award is given, not a history. Announcement date is 1 Jan 1900 (empty) for most awards. |
 
 ### Record types not in the app yet
 

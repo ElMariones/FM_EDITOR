@@ -2370,6 +2370,63 @@
         "path": [
           "0x100"
         ]
+      },
+      "Captain": {
+        "offset": "0x88",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0"
+        ]
+      },
+      "ViceCaptain": {
+        "offset": "0x90",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0"
+        ]
+      },
+      "OtherDivision": {
+        "offset": "0x68",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0"
+        ]
+      },
+      "WeekendHomeMatchDay": {
+        "offset": "0x115",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0",
+          "0xA0"
+        ]
+      },
+      "MidweekHomeMatchDay": {
+        "offset": "0x116",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0",
+          "0xA0"
+        ]
       }
     },
     "Competition": {
@@ -4759,6 +4816,27 @@
       "Name": {
         "offset": "0x18",
         "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Symbol": {
+        "offset": "0x30",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ExchangeRate": {
+        "offset": "0x38",
+        "type": "f32",
         "scale": 1,
         "maxLength": 64,
         "verified": false

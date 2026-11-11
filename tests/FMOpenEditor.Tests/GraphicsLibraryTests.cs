@@ -55,6 +55,22 @@ public sealed class GraphicsLibraryTests(ITestOutputHelper output) : IDisposable
     }
 
     [Fact]
+    public void Only_people_clubs_competitions_and_nations_have_pictures()
+    {
+        var flags = Pack(@"flags", """<record from="5" to="graphics/pictures/nation/5/icon"/>""", "5.png");
+        var lib = GraphicsLibrary.Load([_root]);
+
+        Assert.Equal(Path.Combine(flags, "5.png"), lib.Find(EntityKind.Nation, 5, GraphicSize.Small));
+        // Currency 5, continent 5, city 5... share the number but are not that nation.
+        foreach (var kind in Enum.GetValues<EntityKind>().Where(k => k > EntityKind.Nation))
+        {
+            Assert.Null(lib.Find(kind, 5, GraphicSize.Small));
+            Assert.Null(lib.Find(kind, 5, GraphicSize.Large));
+            Assert.False(lib.HasAny(kind));
+        }
+    }
+
+    [Fact]
     public void Missing_pictures_and_missing_files_return_null()
     {
         Pack("faces", """<record from="face_5" to="graphics/pictures/person/5/portrait"/>""");

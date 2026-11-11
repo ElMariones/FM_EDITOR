@@ -82,7 +82,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _watchTimer.Tick += (_, _) => Session?.Watcher.Tick();
         _watchTimer.Start();
 
-        Settings = new SettingsViewModel(StartGraphics);
+        Settings = new SettingsViewModel(StartGraphics, OnCurrencyChanged);
         ImageService.Instance.Changed += OnGraphicsChanged;
         IsNight = AppServices.IsNight;
         if (Avalonia.Application.Current is { } app)
@@ -125,6 +125,29 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             return;
         }
         _ = images.IndexAsync(roots);
+    }
+
+    /// <summary>Every amount on screen is re-shown in the currency just chosen in Settings.</summary>
+    private void OnCurrencyChanged()
+    {
+        foreach (var p in _pages.Values.OfType<BrowserViewModel>()) p.CurrencyChanged();
+        Status = $"Amounts are now shown in {Money.Current.Name}.";
+    }
+
+    /// <summary>The save's currencies with the game's own exchange rates (units per pound).</summary>
+    private static List<CurrencyDisplay> ReadCurrencies(EditorSession session)
+    {
+        const EntityKind kind = EntityKind.Currency;
+        if (!session.IsSupported(kind, "ExchangeRate")) return [];
+        var list = new List<CurrencyDisplay>();
+        foreach (var e in session.GetAll(kind))
+        {
+            if (session.TryRead(e, "ExchangeRate") is not double rate || !(rate > 0) || !double.IsFinite(rate)) continue;
+            if (session.TryRead(e, "Name") is not string { Length: > 0 } name) continue;
+            string Text(string key) => session.IsSupported(kind, key) ? session.TryRead(e, key) as string ?? "" : "";
+            list.Add(new CurrencyDisplay(e.Id, name, Text("Symbol"), Text("ShortName"), rate));
+        }
+        return list;
     }
 
     private void OnGraphicsChanged()
@@ -244,18 +267,20 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         session.Changes.Changed += UpdatePending;
         Session = session;
         _relations = new RelationIndex(session);
+        Settings.UseCurrencies(ReadCurrencies(session));
         ClearHistory();
         if (!db.IsLive) _edition = null;
         StartGraphics();
 
         Nav.Clear();
         _pages.Clear();
-        // Grouped so eighteen record types read as four short lists. A type is listed only when this
+        // Grouped so the record types read as four short lists. A type is listed only when this
         // game version has records for it (the demo database has just the first five).
+        // Teams have no page: people look for clubs, and a club's page carries its first team's fields.
         (string Section, EntityKind[] Kinds)[] groups =
         [
             ("PEOPLE", [EntityKind.Player, EntityKind.Staff]),
-            ("FOOTBALL", [EntityKind.Club, EntityKind.Team, EntityKind.Competition, EntityKind.Stadium, EntityKind.Award, EntityKind.Derby]),
+            ("FOOTBALL", [EntityKind.Club, EntityKind.Competition, EntityKind.Stadium, EntityKind.Award, EntityKind.Derby]),
             ("WORLD", [EntityKind.Nation, EntityKind.Continent, EntityKind.City, EntityKind.LocalRegion, EntityKind.Language, EntityKind.Currency, EntityKind.Weather]),
             ("GAME DATA", [EntityKind.Injury, EntityKind.MediaSource, EntityKind.StageName]),
         ];
@@ -305,6 +330,12 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Follows a link: switches to the page for <paramref name="entity"/>'s kind and opens it there.</summary>
     public void Navigate(Entity entity)
     {
+        // A team (a derby's two sides, say) opens as the club it belongs to.
+        if (entity.Kind == EntityKind.Team && Session is { } s)
+        {
+            if (s.TryRead(entity, "Club") is not int clubId || s.Database.Find(EntityKind.Club, clubId) is not { } club) return;
+            entity = club;
+        }
         var target = Nav.FirstOrDefault(n => n.Title == PropertyCatalog.Plural(entity.Kind));
         if (target is null) return;
         Show(new Spot(target, entity));
@@ -437,6 +468,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         }
         Session = null;
         _relations = null;
+        Settings.UseCurrencies([]);
         ClearHistory();
         ImageService.Instance.Disable();
         _liveMemory = null;

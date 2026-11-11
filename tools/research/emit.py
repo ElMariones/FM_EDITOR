@@ -73,9 +73,21 @@ MANUAL = {
         'Stadium.Name': (None, None, None, 'fmString', [0x18, 0x0, 0x78], 0x40, {}),
         'Stadium.Capacity': (None, None, None, 'i32', [0x18, 0x0, 0x78], 0x7C, {}),
         'Stadium': ('Stadium', 'Kits & stadium', 'Reference', 'entityPtr', [0x18, 0x0], 0x78, dict(refKind='Stadium', readOnly=True)),
+        # The first team's own fields, shown on the club: the editor has no separate Teams page.
+        'Captain': ('Captain', 'First team', 'Reference', 'entityPtr', [0x18, 0x0], 0x88, dict(refKind='Player')),
+        'ViceCaptain': ('Vice-Captain', 'First team', 'Reference', 'entityPtr', [0x18, 0x0], 0x90, dict(refKind='Player')),
+        'OtherDivision': ('Other division', 'First team', 'Reference', 'entityPtr', [0x18, 0x0], 0x68, dict(refKind='Competition')),
+        'WeekendHomeMatchDay': ('Weekend home match day', 'First team', 'Integer', 'u8', [0x18, 0x0, 0xA0], 0x115, dict(min=0, max=255)),
+        'MidweekHomeMatchDay': ('Midweek home match day', 'First team', 'Integer', 'u8', [0x18, 0x0, 0xA0], 0x116, dict(min=0, max=255)),
     },
     'Competition': {'ThreeLetterName': ('Three letter name', 'Profile', 'Text', 'fmString', [], 0x50, {})},
     'Team': {'Club': ('Club', 'Profile', 'Reference', 'entityPtr', [], 0x30, dict(refKind='Club', readOnly=True))},
+    # No field codes for these: found by reading the records. The rate is units per pound (the pound's is 1.0).
+    'Currency': {
+        'ShortName': ('Short name', 'Profile', 'Text', 'fmString', [], 0x20, {}),
+        'Symbol': ('Symbol', 'Profile', 'Text', 'fmString', [], 0x30, {}),
+        'ExchangeRate': ('Exchange rate (per £1)', 'Profile', 'Decimal', 'f32', [], 0x38, dict(min=0.0001, max=1000000000)),
+    },
 }
 NAME_AT = {'Stadium': 0x40, 'City': 0x18, 'Continent': 0x18, 'LocalRegion': 0x18, 'Award': 0x30, 'Injury': 0x18, 'Language': 0x18,
            'MediaSource': 0x18, 'Derby': 0x18, 'StageName': 0x18, 'Weather': 0x18, 'Currency': 0x18}
@@ -116,6 +128,7 @@ def cat_for(kind, code, v, c):
     if kind == 'Club' and 'formation' in n: return 'Playing style'
     if 'pitch' in n: return 'Pitch rules'
     if any(k in n for k in ('latitude', 'longitude', 'altitude', 'boundary', 'inhabitants')) or (t.startswith('database') and any(k in n for k in ('city', 'region', 'nation', 'continent', 'weather', 'language', 'currency'))): return 'Location'
+    if kind == 'Award' and 'date' in n: return 'Dates'  # when it is next given out, not who has won it
     if any(k in n for k in ('year', 'date')): return 'History'
     if any(k in n for k in ('reputation', 'rating', 'importance', 'power', 'economic', 'strength', 'points', 'morale', 'attraction')): return 'Standing'
     return 'Details'

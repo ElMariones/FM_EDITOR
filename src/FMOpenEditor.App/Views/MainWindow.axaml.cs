@@ -11,10 +11,9 @@ namespace FMOpenEditor.App.Views;
 
 public partial class MainWindow : Window
 {
-    /// <summary>Shown on first launch, before any save is open.</summary>
+    /// <summary>Shown only when asked for (the ? button) while no save is open.</summary>
     public static readonly IReadOnlyList<TourStep> HomeTour =
     [
-        new("Hi, I'm Tiki", "I keep an eye on your save while you edit it. Give me twenty seconds and I'll show you around."),
         new("Start here",
             "Start Football Manager and load your save, then connect. Nothing is written to the game until you save.",
             "TourConnect"),
@@ -23,9 +22,10 @@ public partial class MainWindow : Window
             "TourAppearance"),
     ];
 
-    /// <summary>Shown the first time a save (or the demo) is opened.</summary>
+    /// <summary>Shown the first time a save is connected: that is when there is something to show.</summary>
     public static readonly IReadOnlyList<TourStep> WorkspaceTour =
     [
+        new("Hi, I'm Tiki", "I keep an eye on your save while you edit it. Give me twenty seconds and I'll show you around."),
         new("Your whole database",
             "Players, staff, clubs, competitions and nations. The watch list keeps frozen attributes in place while you play.",
             "TourSidebar"),
@@ -50,6 +50,7 @@ public partial class MainWindow : Window
             vm.CompareRequested += c => new CompareWindow { DataContext = c }.Show(this);
             vm.PropertyChanged += OnViewModelChanged;
         };
+        // Launched straight into a save (tests, --demo): the tour still gets its chance.
         Opened += (_, _) => OfferTour();
         // The mouse's back/forward side buttons step through history, wherever the pointer is.
         AddHandler(PointerPressedEvent, OnMouseHistory, RoutingStrategies.Tunnel, handledEventsToo: true);
@@ -100,25 +101,26 @@ public partial class MainWindow : Window
         }
     }
 
-    /// <summary>Runs whichever tour hasn't been seen yet for the current screen.</summary>
+    /// <summary>Runs the tour the first time a save is connected. The home screen never starts one by itself.</summary>
     private void OfferTour()
     {
-        var settings = AppServices.Settings;
         var connected = DataContext is MainWindowViewModel { IsConnected: true };
-        if (connected ? settings.TourWorkspaceSeen : settings.TourHomeSeen) return;
+        if (!connected || AppServices.Settings.TourWorkspaceSeen) return;
         // After layout, so the controls the tour points at have their final positions.
         Dispatcher.UIThread.Post(() => StartTour(), DispatcherPriority.Background);
     }
 
-    /// <summary>Starts the tour for the current screen and remembers that it has been shown.</summary>
+    /// <summary>Starts the tour for the current screen; the workspace one is remembered as shown.</summary>
     public void StartTour()
     {
         if (Tour.IsRunning) return;
         var settings = AppServices.Settings;
         var connected = DataContext is MainWindowViewModel { IsConnected: true };
-        if (connected) settings.TourWorkspaceSeen = true;
-        else settings.TourHomeSeen = true;
-        settings.Save();
+        if (connected && !settings.TourWorkspaceSeen)
+        {
+            settings.TourWorkspaceSeen = true;
+            settings.Save();
+        }
         Tour.Start(connected ? WorkspaceTour : HomeTour, () => TopMascot.Cheer());
     }
 

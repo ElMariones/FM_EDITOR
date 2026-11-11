@@ -58,8 +58,8 @@
                 <Border Classes="rowbg" Padding="8,5">
                   <Grid ColumnDefinitions="2*,*,*">
                     <TextBlock>
-                      <Run Text="{Binding Label}" />
-                      <Run Text="{Binding Category, StringFormat='  {0}'}" Foreground="{DynamicResource FaintBrush}" FontSize="11" />
+                      <Run Text="{Binding Label, Mode=OneWay}" />
+                      <Run Text="{Binding Category, Mode=OneWay, StringFormat='  {0}'}" Foreground="{DynamicResource FaintBrush}" FontSize="11" />
                     </TextBlock>
                     <TextBlock Grid.Column="1" Classes="num" Text="{Binding A}" Classes.better="{Binding ABetter}" />
                     <TextBlock Grid.Column="2" Classes="num" Text="{Binding B}" Classes.better="{Binding BBetter}" />
