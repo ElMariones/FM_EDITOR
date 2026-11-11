@@ -213,4 +213,17 @@ public class EditingTests
             }
         }
     }
+
+    /// <summary>
+    /// Pictures are looked up by Id, so Id must be the game's unique ID (the number graphics packs
+    /// and other editors use), not the record's row index. In FM27 the row index sits at +0x8 and
+    /// the unique ID at +0xC; reading +0x8 gave every club, league, nation and face someone else's picture.
+    /// </summary>
+    [Fact]
+    public void Fm27_ids_are_the_unique_ids_that_graphics_packs_use()
+    {
+        var def = DefinitionLibrary.LoadFolder(RepoFolder("definitions")).Definitions.Single(d => d.Version == "27.0.1");
+        foreach (var kind in Enum.GetValues<EntityKind>())
+            Assert.Equal(0xC, GameDefinition.ParseOffset(def.Structs[kind.ToString()]["Id"].Offset!));
+    }
 }

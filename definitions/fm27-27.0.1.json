@@ -115,7 +115,7 @@
   "structs": {
     "Player": {
       "Id": {
-        "offset": "0x8",
+        "offset": "0xC",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
@@ -944,7 +944,7 @@
     },
     "Staff": {
       "Id": {
-        "offset": "0x8",
+        "offset": "0xC",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
@@ -1214,7 +1214,7 @@
     },
     "Club": {
       "Id": {
-        "offset": "0x8",
+        "offset": "0xC",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
@@ -1435,7 +1435,7 @@
     },
     "Competition": {
       "Id": {
-        "offset": "0x8",
+        "offset": "0xC",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
@@ -1479,7 +1479,7 @@
     },
     "Nation": {
       "Id": {
-        "offset": "0x8",
+        "offset": "0xC",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
