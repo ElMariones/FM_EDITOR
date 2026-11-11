@@ -20,7 +20,6 @@ Open it next to the game, change what you like, save, and keep playing.
 <br><br>
 
 [![Latest release](https://img.shields.io/github/v/release/ElMariones/FM_EDITOR?label=latest&color=22c55e)](https://github.com/ElMariones/FM_EDITOR/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/ElMariones/FM_EDITOR/total?color=0ea5e9)](https://github.com/ElMariones/FM_EDITOR/releases)
 [![Stars](https://img.shields.io/github/stars/ElMariones/FM_EDITOR?style=flat&color=eab308)](https://github.com/ElMariones/FM_EDITOR/stargazers)
 [![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-8b5cf6)](LICENSE)
 
@@ -34,15 +33,13 @@ Open it next to the game, change what you like, save, and keep playing.
 
 ## Get started in 2 minutes
 
-You don't need to be technical. If you can unzip a file, you can use FM OpenEditor.
-
 ### What you need
 
 | | |
 |---|---|
-| 💻 **Windows 10 or 11, 64-bit** | Mac and Linux aren't supported yet. |
-| ⚽ **Football Manager 2027** on PC | Build 27.0.1. The app tells you if your version isn't supported yet. |
-| 📦 **About 100 MB of free space** | That's it. No .NET, no Java, no installer. |
+| 💻 **Windows 10 or 11, 64-bit** |
+| ⚽ **Football Manager 2027** on PC |
+| 📦 **About 100 MB of free space** |
 
 ### Step by step
 
@@ -58,17 +55,11 @@ You don't need to be technical. If you can unzip a file, you can use FM OpenEdit
 > [!NOTE]
 > **It says Football Manager isn't running, but it is?** If the game runs as administrator, FM OpenEditor needs to as well: right-click `FMOpenEditor.exe` → **Run as administrator**.
 
-**Updating** is the same: download the new zip and replace the old folder. Your settings and your own presets are stored separately, so you keep them.
-
 ## What you can do
-
-| Night | Day |
-|---|---|
-| ![Home screen, night theme](docs/screenshots/home.png) | ![Home screen, day theme](docs/screenshots/home-day.png) |
 
 ### Edit any player, live
 
-Every attribute, current and potential ability, positions, reputation, condition, morale, contract and more. Changes wait as **pending** (highlighted in amber) until you press **Save changes**, and **Undo last save** takes them back. Tick **Save instantly** to skip the waiting.
+Every attribute, current and potential ability, positions, reputation, condition, morale, contract and more. Changes wait as **pending** until you press **Save changes**, and **Undo last save** takes them back. Tick **Save instantly** to skip the waiting.
 
 ![A preset staged on a player: the changed attributes glow amber until saved](docs/screenshots/player-editor.png)
 
@@ -78,7 +69,7 @@ Every attribute, current and potential ability, positions, reputation, condition
 
 ### Find anyone
 
-Search by name (accents don't matter), or open **Advanced search** and filter by any field: age, nationality, ability, contract expiry… Then **Mass edit** everyone in the result at once: set, add, multiply, raise to at least, lower to at most.
+Search by name, or open **Advanced search** and filter by any field: age, nationality, ability, contract expiry… Then **Mass edit** everyone in the result at once: set, add, multiply, raise to at least, lower to at most.
 
 ![Advanced search for players aged 19 or under](docs/screenshots/advanced-search.png)
 
@@ -86,13 +77,13 @@ Search by name (accents don't matter), or open **Advanced search** and filter by
 
 Balance, transfer and wage budgets, ticket prices, facilities, reputation, kits, stadium and league standing.
 
-| Finances (day) | Squad (night) |
+| Finances | Squad |
 |---|---|
 | ![Club finances](docs/screenshots/club-finances.png) | ![Club squad](docs/screenshots/club-squad.png) |
 
 ### The whole database, linked
 
-Players, staff, clubs, teams, competitions, stadiums, awards, derbies, nations, cities, regions, languages, currencies, injuries and more: **18 record types and around 540 fields**. Click a club from a player, a nation from a club, a player from a squad. **Back** and **Forward** (or your mouse's side buttons) step through where you've been.
+Players, staff, clubs, teams, competitions, stadiums, awards, derbies, nations, cities, regions, languages, currencies, injuries and more: **18 record types and around 540 fields**.
 
 ![A competition and the clubs in it](docs/screenshots/competition.png)
 
@@ -101,33 +92,21 @@ Players, staff, clubs, teams, competitions, stadiums, awards, derbies, nations, 
 - **Freeze or only-up**: lock a player's attributes, or let them improve but never decline, while the game runs.
 - **Compare** two players side by side, with the better value highlighted.
 - **Nation rules**: EU free movement, work permits and non-EU limits.
-- **Your faces and badges**: player faces, club badges, competition logos and flags from your own FM graphics folder. Facepacks and logo packs work as they are, wherever you keep them. No pack? You just see names.
+- **Your faces and badges**: player faces, club badges, competition logos and flags from your own FM graphics folder. No pack? You just see names.
 - **Day and night themes**, or follow Windows.
-- **A guided tour**: Tiki, the little bot, shows you around the first time, and comes back from the **?** button.
 - **Research tools** for contributors mapping new game versions: value, string and pointer scans, an RTTI class finder, record snapshot/diff and a field correlator.
 
 ## How AI helped map the game
 
 Football Manager doesn't publish where it keeps its data in memory. Finding that out (the "mapping") is the hard part of any editor, and it's usually slow, manual work: change a value in the game, scan memory for it, repeat, one field at a time.
 
-FM OpenEditor's FM27 mapping was done with the help of **[Claude](https://claude.com/claude-code)**, Anthropic's AI coding assistant, working with me on my own machine against my own game. Instead of hunting fields one by one, we read the answers out of the game itself:
+FM OpenEditor's FM27 mapping was done with the help of Claude, working with me on my own machine against my own game.
 
-1. **The game's own field list.** FM ships a file, `shared/data/editor.fmf`, that lists every database field (about 2,250 of them) with a 4-letter code, a name, a type and a range. That became the checklist.
-2. **The game's own get/set code.** Every record class in `game_plugin.dll` has a "get field" and a "set field" function that switches on those same codes. Claude wrote the [analysis scripts](tools/research) that disassemble each of those functions and work out which bytes of the record each field lives in.
-3. **Checked against the live game.** Every candidate was tested against hundreds of real records while the game ran: numbers had to fall inside the game's own ranges, names had to read as names, links had to point at the right kind of record. Anything that didn't hold up was thrown out. Some were also checked against real-world facts and in-game screens.
-
-The result is the definition file [`definitions/fm27-27.0.1.json`](definitions/fm27-27.0.1.json): 18 record types and roughly 540 fields, found in days instead of months. Everything was reviewed and tested by hand, and every step is documented in [addresses.md](addresses.md) so anyone can check it or redo it after a patch. No data was copied from any other editor.
-
-AI also helped write and test much of the app itself, as a pair programmer. The decisions, the testing in game, and the responsibility are human.
-
-## Project status
-
-FM OpenEditor is **early and moving fast**. Reading a live FM27 save works across the 18 record types above. Writing changes into the game uses the same field locations, but many fields **haven't been tested by editing in game yet**, so:
+The result is the definition file [`definitions/fm27-27.0.1.json`](definitions/fm27-27.0.1.json): 18 record types and roughly 540 fields. Everything was reviewed and tested by hand, and every step is documented in [addresses.md](addresses.md) so anyone can check it or redo it after a patch. No data was copied from any other editor.
 
 > [!WARNING]
 > **Back up your save before editing**, and use it in **single-player** careers only. FM OpenEditor never touches your game files on disk; it only reads and writes the running game's memory, and only when you save.
-
-If something looks wrong, please [open an issue](https://github.com/ElMariones/FM_EDITOR/issues/new) with your FM build (shown at the top of the app when connected).
+If something looks wrong, please [open an issue](https://github.com/ElMariones/FM_EDITOR/issues/new).
 
 ## A community project
 
@@ -136,7 +115,6 @@ FM OpenEditor is **free, nonprofit and open source**, and it gets better with ev
 - ⭐ **Star the repo.** It's free, and it helps other FM players find the project.
 - 🐛 **[Report a bug or suggest a feature](https://github.com/ElMariones/FM_EDITOR/issues).** Tell us what you did, what you expected and what happened.
 - 🧪 **Test fields in game** and tell us which ones work. That's how fields become "verified".
-- 🧩 **Share presets.** Copy one from [`presets/`](presets), change it, and open a pull request.
 - 🍴 **Fork it** and send a pull request: code, new game versions, translations, docs.
 - 🗺️ **Map a new patch.** When FM updates, the [research tools](tools/research) and [docs/DEFINITIONS.md](docs/DEFINITIONS.md) show how to bring the offsets up to date. No code changes needed, just numbers.
 
