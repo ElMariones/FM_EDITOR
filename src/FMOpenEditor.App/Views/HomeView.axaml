@@ -32,13 +32,6 @@
                 <TextBlock Text="Connect to Football Manager" />
               </StackPanel>
             </Button>
-            <Button Classes="hero" Command="{Binding OpenDemoCommand}"
-                    ToolTip.Tip="A generated, fictional database. Everything works, nothing touches the game.">
-              <StackPanel Orientation="Horizontal" Spacing="9">
-                <c:Icon Kind="play" Size="15" />
-                <TextBlock Text="Try the demo save" />
-              </StackPanel>
-            </Button>
           </StackPanel>
 
           <TextBlock Classes="muted" FontSize="12.5" Text="Start Football Manager and load your save first, then connect." />
@@ -110,6 +103,15 @@
 
       <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11.5" HorizontalAlignment="Center" TextAlignment="Center"
                  Text="Back up your save before editing. FM OpenEditor is a fan project, not affiliated with Sports Interactive or SEGA. Licensed under GPL-3.0." />
+
+      <!-- Credit -->
+      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="4" Margin="0,-12,0,0">
+        <TextBlock Classes="muted" FontSize="12" VerticalAlignment="Center" Text="Developed by" />
+        <Button x:Name="AuthorLink" Classes="link" Click="OnAuthorClick"
+                ToolTip.Tip="github.com/ElMariones">
+          <TextBlock Text="Mario Landaburu" FontSize="12" FontWeight="SemiBold" />
+        </Button>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

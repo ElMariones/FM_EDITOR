@@ -19,7 +19,7 @@ dotnet run --project src/FMOpenEditor.App -- --demo
 
 - Match the surrounding code style. Keep Core free of UI dependencies.
 - New properties go in `PropertyCatalog`. The demo save supports them automatically.
-- Add or update tests with your change. UI changes: run the UI tests with `SCREENSHOTS=1` and include updated screenshots if they changed.
+- Add or update tests with your change. UI changes: run the UI tests with `SCREENSHOTS=1` to check them against the demo save (captures land in `docs/screenshots/demo`, which isn't committed). The README screenshots come from a real save: with Football Manager running, run `LIVE_SCREENSHOTS=1 dotnet test tests/FMOpenEditor.UiTests --filter LiveScreenshot`. It only reads the game.
 
 ## The one hard rule
 

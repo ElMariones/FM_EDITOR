@@ -16,7 +16,7 @@ public partial class MainWindow : Window
     [
         new("Hi, I'm Tiki", "I keep an eye on your save while you edit it. Give me twenty seconds and I'll show you around."),
         new("Start here",
-            "Load your save in Football Manager, then connect. No game running? The demo save has everything, and nothing touches your game.",
+            "Start Football Manager and load your save, then connect. Nothing is written to the game until you save.",
             "TourConnect"),
         new("Make it yours",
             "Switch between day and night, and check your graphics folder so faces and badges show up. The ? brings me back any time.",

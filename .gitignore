@@ -7,3 +7,6 @@ obj/
 TestResults/
 publish/
 artifacts/
+
+# Demo-save captures from the UI tests (SCREENSHOTS=1); the README uses live ones
+docs/screenshots/demo/

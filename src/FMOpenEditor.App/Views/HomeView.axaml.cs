@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Interactivity;
 using FMOpenEditor.App.Services;
 
 namespace FMOpenEditor.App.Views;
@@ -19,5 +20,13 @@ public partial class HomeView : UserControl
                 delay += 70;
             }
         };
+    }
+
+    public const string AuthorUrl = "https://github.com/ElMariones";
+
+    private async void OnAuthorClick(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is { } top)
+            await top.Launcher.LaunchUriAsync(new Uri(AuthorUrl));
     }
 }

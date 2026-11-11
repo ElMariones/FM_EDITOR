@@ -10,7 +10,7 @@ using FMOpenEditor.Core.Model;
 
 namespace FMOpenEditor.UiTests;
 
-/// <summary>Drives the real window against the demo save. Screenshots land in docs/screenshots when SCREENSHOTS=1.</summary>
+/// <summary>Drives the real window against the demo save. Screenshots land in docs/screenshots/demo when SCREENSHOTS=1.</summary>
 public class MainWindowTests
 {
     private static void Pump()
@@ -26,7 +26,7 @@ public class MainWindowTests
         if (Environment.GetEnvironmentVariable("SCREENSHOTS") != "1") return;
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "docs"))) dir = dir.Parent;
-        var outDir = Path.Combine(dir!.FullName, "docs", "screenshots");
+        var outDir = Path.Combine(dir!.FullName, "docs", "screenshots", "demo");
         Directory.CreateDirectory(outDir);
         w.CaptureRenderedFrame()?.Save(Path.Combine(outDir, name + ".png"));
     }

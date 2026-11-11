@@ -31,7 +31,9 @@ jobs:
       - name: Test
         run: dotnet test --configuration Release
 
-      # The version comes from the tag, so v0.2.0 shows as v0.2.0 in the app.
+      # The version comes from the tag, so v0.2.0 shows as v0.2.0 in the app. The zip keeps the
+      # same name in every release, so .../releases/latest/download/FMOpenEditor-win-x64.zip (the
+      # README's download button) always fetches the newest version.
       - name: Publish
         shell: pwsh
         run: |
@@ -39,16 +41,51 @@ jobs:
           dotnet publish src/FMOpenEditor.App -c Release -r win-x64 --self-contained true `
             -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none `
             -p:Version=$version -o publish/FMOpenEditor
-          Copy-Item LICENSE, README.md publish/FMOpenEditor/
-          Compress-Archive -Path publish/FMOpenEditor/* -DestinationPath "FMOpenEditor-$env:TAG-win-x64.zip"
+          Copy-Item LICENSE publish/FMOpenEditor/
+          @"
+          FM OpenEditor $env:TAG
+          =====================
+
+          1. Start Football Manager 2027 and load your save.
+          2. Double-click FMOpenEditor.exe (keep it in this folder, next to definitions and presets).
+          3. Click "Connect to Football Manager".
+
+          If Windows says "Windows protected your PC", click "More info", then "Run anyway".
+          If the game runs as administrator, right-click FMOpenEditor.exe and choose "Run as administrator".
+
+          Back up your save before editing. Single-player only.
+
+          Help, bug reports and new versions: https://github.com/ElMariones/FM_EDITOR
+          "@ | Set-Content -Encoding utf8 "publish/FMOpenEditor/READ ME FIRST.txt"
+          Compress-Archive -Path publish/FMOpenEditor/* -DestinationPath FMOpenEditor-win-x64.zip
+          (Get-FileHash FMOpenEditor-win-x64.zip -Algorithm SHA256).Hash | Set-Content -Encoding ascii FMOpenEditor-win-x64.zip.sha256
 
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG }}
           name: FM OpenEditor ${{ env.TAG }}
-          files: FMOpenEditor-${{ env.TAG }}-win-x64.zip
+          files: |
+            FMOpenEditor-win-x64.zip
+            FMOpenEditor-win-x64.zip.sha256
+          make_latest: true
           generate_release_notes: true
           body: |
-            **Download** `FMOpenEditor-${{ env.TAG }}-win-x64.zip`, unzip it anywhere and run `FMOpenEditor.exe`. No .NET install needed (Windows 10/11, 64-bit).
+            ## ⬇️ Download
 
-            Back up your save before editing. If Football Manager runs as administrator, run FM OpenEditor as administrator too.
+            **[Download FMOpenEditor-win-x64.zip](https://github.com/${{ github.repository }}/releases/download/${{ env.TAG }}/FMOpenEditor-win-x64.zip)** (also under *Assets* below). Windows 10 or 11, 64-bit. Nothing else to install.
+
+            ### How to run it
+
+            1. **Download** the zip above.
+            2. **Unzip it**: right-click the file → *Extract All…* → *Extract*. Put the folder wherever you like (Desktop, Documents…).
+            3. **Start Football Manager 2027** and load your save.
+            4. **Open the folder and double-click `FMOpenEditor.exe`.**
+            5. Click **Connect to Football Manager**. Edit, then press **Save changes**.
+
+            **"Windows protected your PC"?** The app isn't code-signed yet, so Windows doesn't recognise it. Click **More info → Run anyway**. It's open source: every line is in this repository.
+
+            **"Football Manager isn't running" but it is?** If the game runs as administrator, right-click `FMOpenEditor.exe` → **Run as administrator**.
+
+            ⚠️ Back up your save before editing, and only use it in single-player careers.
+
+            To update, download the new zip and replace the old folder. Your settings and presets are kept.

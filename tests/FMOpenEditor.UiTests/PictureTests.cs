@@ -44,7 +44,7 @@ public class PictureTests
         if (Environment.GetEnvironmentVariable("SCREENSHOTS") != "1") return;
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "docs"))) dir = dir.Parent;
-        var outDir = Path.Combine(dir!.FullName, "docs", "screenshots");
+        var outDir = Path.Combine(dir!.FullName, "docs", "screenshots", "demo");
         Directory.CreateDirectory(outDir);
         w.CaptureRenderedFrame()?.Save(Path.Combine(outDir, name + ".png"));
     }
