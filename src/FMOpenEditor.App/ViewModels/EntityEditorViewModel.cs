@@ -15,6 +15,7 @@ public sealed class PropertyGroupViewModel(string name, IReadOnlyList<PropertyEd
 public sealed partial class EntityEditorViewModel : ObservableObject
 {
     private readonly EditorSession _session;
+    private readonly Action<Entity>? _transfer;
 
     public Entity Entity { get; }
     /// <summary>The field groups (Profile, Technical, …).</summary>
@@ -44,9 +45,12 @@ public sealed partial class EntityEditorViewModel : ObservableObject
 
     /// <param name="relations">Reverse lookups for the related-list tabs; none are shown without it.</param>
     /// <param name="open">Opens another entity (a reference, a related row) in its own page.</param>
-    public EntityEditorViewModel(EditorSession session, Entity entity, RelationIndex? relations, Action<Entity>? open)
+    /// <param name="transfer">Opens the Transfer window for a player; no Transfer button without it.</param>
+    public EntityEditorViewModel(EditorSession session, Entity entity, RelationIndex? relations, Action<Entity>? open,
+        Action<Entity>? transfer = null)
     {
         _session = session;
+        _transfer = transfer;
         Entity = entity;
         Picture = new EntityPicture(entity, FMOpenEditor.Core.Graphics.GraphicSize.Large);
 
@@ -67,6 +71,15 @@ public sealed partial class EntityEditorViewModel : ObservableObject
         Tabs = [.. Groups, .. related];
         SelectedGroup = Tabs.FirstOrDefault();
         RefreshHeader();
+    }
+
+    /// <summary>Shows the Transfer button: players, when this game version can move them.</summary>
+    public bool CanTransfer => _transfer is not null && Entity.Kind == EntityKind.Player && _session.Transfers.CanTransfer;
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void Transfer()
+    {
+        if (CanTransfer) _transfer!(Entity);
     }
 
     public void Reload()

@@ -154,6 +154,9 @@
                     GridLinesVisibility="Horizontal" HeadersVisibility="Column">
             <DataGrid.ContextMenu>
               <ContextMenu>
+                <MenuItem Header="Transfer…" Command="{Binding TransferCommand}" IsVisible="{Binding CanTransfer}">
+                  <MenuItem.Icon><c:Icon Kind="transfer" Size="15" /></MenuItem.Icon>
+                </MenuItem>
                 <MenuItem Header="Release on a free" Command="{Binding ReleaseOnFreeCommand}" />
                 <Separator />
                 <MenuItem Header="Freeze attributes" Command="{Binding FreezeCommand}">

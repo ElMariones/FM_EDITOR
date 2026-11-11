@@ -29,6 +29,7 @@ public sealed class Icon : Control
         ["power"] = "M12 3 V11 M7 6.2 A8 8 0 1 0 17 6.2",
         ["search"] = "M11 4 A7 7 0 1 0 11 18 A7 7 0 0 0 11 4 Z M16 16 L21 21",
         ["filter"] = "M3 5 H21 L14 13 V20 L10 18 V13 Z",
+        ["transfer"] = "M4 8 H19 M15 4 L19 8 L15 12 M20 16 H5 M9 12 L5 16 L9 20",
         ["compare"] = "M4 5 H10 V19 H4 Z M14 5 H20 V19 H14 Z",
         ["save"] = "M5 4 H16 L20 8 V20 H5 Z M8 4 V9 H15 V4 M8 20 V14 H16 V20",
         ["undo"] = "M8 5 L3 10 L8 15 M3 10 H14.5 A5.5 5.5 0 0 1 14.5 21 H10",

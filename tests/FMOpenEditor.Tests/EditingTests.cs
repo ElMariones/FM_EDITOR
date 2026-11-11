@@ -59,6 +59,62 @@ public class EditingTests
     }
 
     [Fact]
+    public void Jadedness_can_be_negative()
+    {
+        using var s = NewSession();
+        var p = s.GetAll(EntityKind.Player)[0];
+        s.Set(p, "Jadedness", -33);
+        Assert.Equal(-33, s.Read(p, "Jadedness"));
+    }
+
+    private static readonly string[] Outfield = ["Technical", "Mental", "Physical"];
+
+    private static IEnumerable<string> CountingAttributes() =>
+        PropertyCatalog.For(EntityKind.Player).Where(d => d.IsAttribute && Outfield.Contains(d.Category)).Select(d => d.Key);
+
+    private static Entity Outfielder(EditorSession s) =>
+        s.GetAll(EntityKind.Player).First(p => (int)s.Read(p, "Pos.GK")! < 15);
+
+    [Fact]
+    public void Maxing_attributes_takes_current_ability_to_200_and_lifts_potential()
+    {
+        using var s = NewSession();
+        var p = Outfielder(s);
+        s.Set(p, "CurrentAbility", 120);
+        s.Set(p, "PotentialAbility", 150);
+
+        foreach (var key in CountingAttributes()) s.Set(p, key, 20);
+
+        Assert.Equal(200, s.Read(p, "CurrentAbility"));
+        Assert.Equal(200, s.Read(p, "PotentialAbility"));
+    }
+
+    [Fact]
+    public void Current_ability_follows_attributes_and_potential_never_drops()
+    {
+        using var s = NewSession();
+        var p = Outfielder(s);
+        s.Set(p, "CurrentAbility", 100);
+        s.Set(p, "PotentialAbility", 180);
+        var pace = (int)s.Read(p, "Attr.Pace")!;
+        var raised = Math.Min(20, pace + 5);
+
+        s.Set(p, "Attr.Pace", raised);
+        var ca = (int)s.Read(p, "CurrentAbility")!;
+        Assert.True(ca > 100);
+        Assert.Equal(180, s.Read(p, "PotentialAbility"));
+
+        // Putting it back restores current ability exactly; potential stays where it was.
+        s.Set(p, "Attr.Pace", pace);
+        Assert.Equal(100, s.Read(p, "CurrentAbility"));
+        Assert.Equal(180, s.Read(p, "PotentialAbility"));
+
+        // Hidden attributes don't count.
+        s.Set(p, "Attr.Consistency", 20);
+        Assert.Equal(100, s.Read(p, "CurrentAbility"));
+    }
+
+    [Fact]
     public void Derived_age_and_name_follow_their_sources()
     {
         using var s = NewSession();

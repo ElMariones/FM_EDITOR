@@ -29,6 +29,7 @@ public sealed partial class BrowserViewModel : ObservableObject
     private readonly Action<Entity, Entity> _compare;
     private readonly Action<Entity> _navigate;
     private readonly RelationIndex? _relations;
+    private readonly Action<Entity>? _transfer;
     private List<EntityRow> _selection = [];
     private bool _refreshQueued;
     private string? _sortKey;
@@ -66,8 +67,10 @@ public sealed partial class BrowserViewModel : ObservableObject
     [ObservableProperty] private string? _massValue;
 
     public BrowserViewModel(EditorSession session, EntityKind kind, PresetLibrary presets,
-        Action<string> status, Action<Entity, Entity> compare, Action<Entity>? navigate = null, RelationIndex? relations = null)
+        Action<string> status, Action<Entity, Entity> compare, Action<Entity>? navigate = null, RelationIndex? relations = null,
+        Action<Entity>? transfer = null)
     {
+        _transfer = transfer;
         _session = session;
         _status = status;
         _compare = compare;
@@ -162,7 +165,10 @@ public sealed partial class BrowserViewModel : ObservableObject
         if (Editor?.Entity != first.Entity) Editor = NewEditor(first.Entity);
     }
 
-    private EntityEditorViewModel NewEditor(Entity entity) => new(_session, entity, _relations, _navigate);
+    private EntityEditorViewModel NewEditor(Entity entity) => new(_session, entity, _relations, _navigate, _transfer);
+
+    /// <summary>Players can be moved to another club from the row menu.</summary>
+    public bool CanTransfer => _transfer is not null && Kind == EntityKind.Player && _session.Transfers.CanTransfer;
 
     /// <summary>Raised when <see cref="Open"/> wants the grid to select and show a row.</summary>
     public event Action<EntityRow>? RevealRequested;
@@ -346,6 +352,17 @@ public sealed partial class BrowserViewModel : ObservableObject
             return;
         }
         _compare(_selection[0].Entity, _selection[1].Entity);
+    }
+
+    [RelayCommand]
+    private void Transfer()
+    {
+        if (_selection.Count != 1)
+        {
+            _status("Select one player to transfer.");
+            return;
+        }
+        if (CanTransfer) _transfer!(_selection[0].Entity);
     }
 
     [RelayCommand]

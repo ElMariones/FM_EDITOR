@@ -91,6 +91,7 @@ Players, staff, clubs, competitions, stadiums, awards, derbies, nations, cities,
 
 - **Freeze or only-up**: lock a player's attributes, or let them improve but never decline, while the game runs.
 - **Compare** two players side by side, with the better value highlighted.
+- **Transfers**: move a player to any club, now or on a future date, with a fee (taken from the buyer and paid to the seller) and a new wage and contract. Right-click a player, or use the Transfer button on their page. The game's Career screen isn't updated: the current season shows under the new club, with no fee.
 - **Nation rules**: EU free movement, work permits and non-EU limits.
 - **Your faces and badges**: player faces, club badges, competition logos and flags from your own FM graphics folder. No pack? You just see names.
 - **Day and night themes**, or follow Windows.

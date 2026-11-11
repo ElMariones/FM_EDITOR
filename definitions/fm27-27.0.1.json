@@ -1009,6 +1009,38 @@
         "path": [
           "0xA8",
           "0x10"
+        ],
+        "storeAt": {
+          "path": [
+            "0xA8"
+          ],
+          "offset": "0x10"
+        },
+        "storeTarget": [
+          "0x18",
+          "0x0"
+        ],
+        "members": {
+          "list": "0x38",
+          "siblingsPath": [
+            "0x30"
+          ],
+          "siblings": "0x18",
+          "donors": "Team"
+        },
+        "alsoStoreAt": [
+          {
+            "path": [
+              "0xA8"
+            ],
+            "offset": "0x18"
+          },
+          {
+            "offset": "-0x158"
+          },
+          {
+            "offset": "-0x150"
+          }
         ]
       },
       "Contract.Wage": {
@@ -1491,7 +1523,8 @@
         "path": [
           "0xA8",
           "0x10"
-        ]
+        ],
+        "readOnly": true
       },
       "Contract.Wage": {
         "offset": "0x20",

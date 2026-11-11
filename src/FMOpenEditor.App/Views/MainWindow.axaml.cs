@@ -48,6 +48,7 @@ public partial class MainWindow : Window
         {
             if (DataContext is not MainWindowViewModel vm) return;
             vm.CompareRequested += c => new CompareWindow { DataContext = c }.Show(this);
+            vm.TransferRequested += t => new TransferWindow { DataContext = t }.ShowDialog(this);
             vm.PropertyChanged += OnViewModelChanged;
         };
         // Launched straight into a save (tests, --demo): the tour still gets its chance.

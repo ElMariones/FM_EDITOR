@@ -171,7 +171,7 @@
           </LinearGradientBrush>
         </Border.OpacityMask>
       </Border>
-      <Grid ColumnDefinitions="Auto,*" Margin="18,18,18,8">
+      <Grid ColumnDefinitions="Auto,*,Auto" Margin="18,18,18,8">
         <Border Width="84" Height="84" Margin="0,0,16,0" VerticalAlignment="Top"
                 IsVisible="{Binding Picture.HasImage}"
                 BorderBrush="{DynamicResource GlassEdgeBrush}" BorderThickness="1"
@@ -199,6 +199,14 @@
           <SelectableTextBlock FontSize="10.5" Classes="num" Foreground="{DynamicResource FaintBrush}" Text="{Binding AddressText}"
                                IsVisible="{Binding AddressText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
         </StackPanel>
+        <!-- Actions on this record -->
+        <Button x:Name="TransferButton" Grid.Column="2" Classes="accent" VerticalAlignment="Top" Margin="12,0,0,0"
+                Command="{Binding TransferCommand}" IsVisible="{Binding CanTransfer}" ToolTip.Tip="Move to another club">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <c:Icon Kind="transfer" Size="15" />
+            <TextBlock Text="Transfer" />
+          </StackPanel>
+        </Button>
       </Grid>
     </Panel>
     <!-- Content comes from the tab DataTemplates above (field group or related list). -->

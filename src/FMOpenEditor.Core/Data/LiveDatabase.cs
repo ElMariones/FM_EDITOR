@@ -20,6 +20,9 @@ public sealed class LiveDatabase : IGameDatabase
     private readonly Dictionary<EntityKind, List<Entity>> _entities = [];
     private readonly Dictionary<EntityKind, Dictionary<int, Entity>> _byId = [];
     private readonly Dictionary<nint, Entity> _byAddress = [];
+    // Where each RTTI-found record's object starts: the record is the vtable slot of one base class,
+    // and squad lists hold the start of the whole object.
+    private readonly Dictionary<nint, int> _objectOffset = [];
     private List<RttiClass>? _rttiClasses;
 
     public string DisplayName { get; }
@@ -92,6 +95,7 @@ public sealed class LiveDatabase : IGameDatabase
         _entities.Clear();
         _byId.Clear();
         _byAddress.Clear();
+        _objectOffset.Clear();
         var rttiRecords = ScanRttiCollections();
         foreach (var kind in Enum.GetValues<EntityKind>())
         {
@@ -150,6 +154,7 @@ public sealed class LiveDatabase : IGameDatabase
         var byName = _rttiClasses.GroupBy(c => c.Name).ToDictionary(g => g.Key, g => g.First());
 
         var vtablesByKind = new Dictionary<string, List<nint>>();
+        var offsetOf = new Dictionary<nint, int>();
         foreach (var (kind, col) in wanted)
         {
             var list = vtablesByKind[kind] = [];
@@ -160,6 +165,7 @@ public sealed class LiveDatabase : IGameDatabase
                 var vt = cls.Vtables.FirstOrDefault(v => v.ObjectOffset == offset);
                 if (vt is null) { Warnings.Add($"{kind} list: {src.Class} has no vtable at offset 0x{offset:X}."); continue; }
                 list.Add(vt.Address);
+                offsetOf[vt.Address] = offset;
             }
         }
 
@@ -168,6 +174,8 @@ public sealed class LiveDatabase : IGameDatabase
         var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
         foreach (var (kind, vtables) in vtablesByKind)
         {
+            foreach (var v in vtables)
+                foreach (var r in scan.Samples.GetValueOrDefault(v) ?? []) _objectOffset.TryAdd(r, offsetOf[v]);
             var records = vtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).Distinct().Order().ToList();
             var cap = _def.Collections[kind].MaxCount;
             if (records.Count > cap) { Warnings.Add($"{kind} list: {records.Count:N0} objects, more than the {cap:N0} allowed."); records = records[..cap]; }
@@ -285,6 +293,9 @@ public sealed class LiveDatabase : IGameDatabase
                 _memory.WriteChecked(str, block);
                 break;
             }
+            case FieldType.EntityPtr when field.StoreAt is not null:
+                WriteStoredLink(entity, field, prop, value);
+                break;
             case FieldType.EntityPtr:
                 var refKind = prop.RefKind ?? throw new InvalidDataException($"{key} has no reference kind.");
                 var ptr = value is int id && Find(refKind, id) is { } refEntity ? refEntity.Address : 0;
@@ -310,6 +321,166 @@ public sealed class LiveDatabase : IGameDatabase
                 WriteNumber(addr, field, value is null ? 0 : Values.ToDouble(value) * field.Scale);
                 break;
         }
+    }
+
+    /// <summary>
+    /// Writes a link that is read through a chain one link earlier (see <see cref="FieldDef.StoreAt"/>):
+    /// a transfer. Everything is checked before the first byte is written, so a move that can't be
+    /// made completely is refused rather than left half done.
+    /// </summary>
+    private void WriteStoredLink(Entity entity, FieldDef field, PropertyDef prop, object? value)
+    {
+        var refKind = prop.RefKind ?? throw new InvalidDataException($"{prop.Key} has no reference kind.");
+        if (value is not int id || Find(refKind, id) is not { } target)
+            throw new NotSupportedException($"{prop.Label} can't be emptied in a live game; release the player on a free instead.");
+
+        var store = Locate(entity.Address, field.StoreAt!)
+                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
+        var next = Follow(target.Address, field.StoreTarget)
+                   ?? throw new NotSupportedException($"{prop.Label}: that {refKind.ToString().ToLowerInvariant()} has nothing to link to here.");
+        var previous = _memory.ReadPointer(store);
+
+        // The old owner and its siblings (a club's other teams): links into this group move with the record.
+        var members = field.Members;
+        var oldGroup = new HashSet<nint>();
+        if (previous != 0)
+        {
+            oldGroup.Add(previous);
+            if (members?.Siblings is { } siblings && Follow(previous, members.SiblingsPath) is { } holder)
+                oldGroup.UnionWith(ReadPointerList(holder + (nint)GameDefinition.ParseOffset(siblings)).Where(x => x != 0));
+        }
+        oldGroup.Remove(next);
+
+        var member = entity.Address - _objectOffset.GetValueOrDefault(entity.Address);
+        var list = members is null ? 0 : (nint)GameDefinition.ParseOffset(members.List);
+        var add = members is null ? null : PlanAdd(next + list, member, members, oldGroup.Select(o => o + list).ToHashSet(), prop.Label);
+
+        _memory.WriteChecked(store, BitConverter.GetBytes((long)next));
+        foreach (var also in field.AlsoStoreAt ?? [])
+        {
+            if (Locate(entity.Address, also) is not { } at) continue;
+            var current = _memory.ReadPointer(at);
+            if (current == previous || oldGroup.Contains(current)) _memory.WriteChecked(at, BitConverter.GetBytes((long)next));
+        }
+        if (members is null) return;
+        foreach (var owner in oldGroup) RemoveFromList(owner + list, member);
+        add?.Invoke();
+    }
+
+    private nint? Locate(nint record, FieldLocation location) =>
+        Follow(record, location.Path) is { } at ? at + (nint)GameDefinition.ParseOffset(location.Offset) : null;
+
+    private readonly record struct ListState(nint Vector, nint Begin, int Count, int Capacity);
+
+    private ListState? ReadListState(nint vector)
+    {
+        var begin = _memory.ReadPointer(vector);
+        var end = _memory.ReadPointer(vector + 8);
+        var cap = _memory.ReadPointer(vector + 16);
+        if (begin == 0 || end < begin || cap < end || (cap - begin) / 8 > MaxListLength) return null;
+        return new ListState(vector, begin, (int)((end - begin) / 8), (int)((cap - begin) / 8));
+    }
+
+    /// <summary>
+    /// Works out how <paramref name="item"/> joins the list at <paramref name="vector"/>, without writing.
+    /// A list with room takes it at the end. A full one swaps storage with a roomier list of the same
+    /// kind (<see cref="MemberListDef.Donors"/>): both blocks were allocated by the game and each stays
+    /// owned by exactly one list, so the game can grow or free them as usual. Growing a list in place
+    /// would mean allocating inside the game, which the editor never does.
+    /// </summary>
+    private Action? PlanAdd(nint vector, nint item, MemberListDef members, HashSet<nint> exclude, string label)
+    {
+        var target = ReadListState(vector)
+                     ?? throw new NotSupportedException($"{label}: the new squad list can't be read, so the move wasn't made.");
+        var items = ReadPointerList(vector);
+        if (items.Contains(item)) return null;
+
+        if (target.Capacity > target.Count)
+            return () =>
+            {
+                _memory.WriteChecked(target.Begin + target.Count * 8, BitConverter.GetBytes((long)item));
+                _memory.WriteChecked(vector + 8, BitConverter.GetBytes((long)(target.Begin + (target.Count + 1) * 8)));
+            };
+
+        if (members.Donors is not { } donorKind || !Enum.TryParse<EntityKind>(donorKind, out var kind))
+            throw new NotSupportedException($"{label}: the new squad list is full, so the move wasn't made.");
+        var list = (nint)GameDefinition.ParseOffset(members.List);
+        ListState? donor = null;
+        foreach (var owner in GetAll(kind))
+        {
+            var v = owner.Address + list;
+            if (v == vector || exclude.Contains(v) || ReadListState(v) is not { } d) continue;
+            if (d.Capacity <= target.Count || d.Count > target.Capacity) continue;
+            if (donor is null || d.Capacity < donor.Value.Capacity) donor = d;
+        }
+        if (donor is not { } give)
+            throw new NotSupportedException(
+                $"{label}: the new club's squad list is full and no spare list could be borrowed, so the move wasn't made. " +
+                "Lists free up as the game plays on; try again in a few days.");
+
+        return () =>
+        {
+            var donorItems = ReadPointerList(give.Vector);
+            var mine = new byte[(target.Count + 1) * 8];
+            for (var i = 0; i < target.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(mine.AsSpan(i * 8), items[i]);
+            BinaryPrimitives.WriteInt64LittleEndian(mine.AsSpan(target.Count * 8), item);
+
+            _memory.WriteChecked(give.Begin, mine);
+            if (donorItems.Count > 0)
+            {
+                var theirs = new byte[donorItems.Count * 8];
+                for (var i = 0; i < donorItems.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(theirs.AsSpan(i * 8), donorItems[i]);
+                _memory.WriteChecked(target.Begin, theirs);
+            }
+            _memory.WriteChecked(vector, Triple(give.Begin, target.Count + 1, give.Capacity));
+            _memory.WriteChecked(give.Vector, Triple(target.Begin, donorItems.Count, target.Capacity));
+        };
+    }
+
+    private static byte[] Triple(nint begin, int count, int capacity)
+    {
+        var b = new byte[24];
+        BinaryPrimitives.WriteInt64LittleEndian(b, begin);
+        BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(8), begin + count * 8);
+        BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(16), begin + capacity * 8);
+        return b;
+    }
+
+    private nint? Follow(nint addr, IEnumerable<string>? hops)
+    {
+        foreach (var hop in hops ?? [])
+        {
+            addr = _memory.ReadPointer(addr + (nint)GameDefinition.ParseOffset(hop));
+            if (addr == 0) return null;
+        }
+        return addr;
+    }
+
+    private const int MaxListLength = 10_000;
+
+    private List<nint> ReadPointerList(nint vector)
+    {
+        var begin = _memory.ReadPointer(vector);
+        var end = _memory.ReadPointer(vector + 8);
+        var count = (end - begin) / 8;
+        if (begin == 0 || count <= 0 || count > MaxListLength) return [];
+        var list = new List<nint>((int)count);
+        for (var i = 0; i < count; i++) list.Add(_memory.ReadPointer(begin + i * 8));
+        return list;
+    }
+
+    /// <summary>Takes <paramref name="item"/> out of a (begin, end, capacity) list in place, keeping the order.</summary>
+    private void RemoveFromList(nint vector, nint item)
+    {
+        var items = ReadPointerList(vector);
+        var index = items.IndexOf(item);
+        if (index < 0) return;
+        var begin = _memory.ReadPointer(vector);
+        items.RemoveAt(index);
+        var bytes = new byte[(items.Count + 1) * 8];
+        for (var i = 0; i < items.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(bytes.AsSpan(i * 8), items[i]);
+        _memory.WriteChecked(begin + index * 8, bytes.AsSpan(index * 8));
+        _memory.WriteChecked(vector + 8, BitConverter.GetBytes((long)(begin + items.Count * 8)));
     }
 
     /// <summary>The field's address, or null when a pointer along its <see cref="FieldDef.Path"/> is empty.</summary>

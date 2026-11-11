@@ -70,28 +70,47 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
     {
         // Money is edited in the currency chosen in Settings and stored in pounds.
         var rate = IsMoney ? Money.Current.Rate : 1;
-        Minimum = (decimal)Math.Max(d.Min * rate, -1e24);
-        Maximum = (decimal)Math.Min(d.Max * rate, 1e24);
+        _minimum = (decimal)Math.Max(d.Min * rate, -1e24);
+        _maximum = (decimal)Math.Min(d.Max * rate, 1e24);
         Increment = d.Kind == ValueKind.Money ? 100_000 : d.Max >= 1000 ? 100 : 1;
         FormatString = d.Kind == ValueKind.Decimal ? "0.##" : "N0";
         Load();
     }
 
-    public decimal Minimum { get; }
-    public decimal Maximum { get; }
+    // The range widens to take in whatever the game holds, so a value outside the catalog's range is
+    // shown as it is instead of the spinner clipping it (and that clipped value being saved).
+    [ObservableProperty] private decimal _minimum;
+    [ObservableProperty] private decimal _maximum;
     public decimal Increment { get; }
     public string FormatString { get; }
     public bool IsMoney => Def.Kind == ValueKind.Money;
 
     [ObservableProperty] private decimal? _value;
 
-    protected override void LoadValue(object? v) => Value = v is null ? null
-        : IsMoney ? (decimal)Math.Round(Money.ToDisplay(Values.ToDouble(v)))
-        : (decimal)Values.ToDouble(v);
+    private decimal? _loaded;
+
+    protected override void LoadValue(object? v)
+    {
+        decimal? shown = v is null ? null
+            : IsMoney ? (decimal)Math.Round(Money.ToDisplay(Values.ToDouble(v)))
+            : (decimal)Values.ToDouble(v);
+        if (shown is { } n)
+        {
+            if (n < Minimum) Minimum = n;
+            if (n > Maximum) Maximum = n;
+        }
+        _loaded = shown;
+        Value = shown;
+    }
 
     partial void OnValueChanged(decimal? value)
     {
-        if (value is { } shown) Commit(IsMoney ? Money.ToBase((double)shown) : shown);
+        // Only the user's own changes are written; showing a value never changes it.
+        if (value is { } shown && shown != _loaded)
+        {
+            _loaded = shown;
+            Commit(IsMoney ? Money.ToBase((double)shown) : shown);
+        }
         OnPropertyChanged(nameof(MoneyText));
     }
 

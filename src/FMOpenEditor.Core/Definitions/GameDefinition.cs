@@ -202,8 +202,65 @@ public sealed class FieldDef
     /// </summary>
     public List<long>? Values { get; set; }
 
+    /// <summary>
+    /// For an <see cref="FieldType.EntityPtr"/> that is read through a chain but must be written one link
+    /// earlier: where the pointer is stored. A player's club is read as contract → team → club, but a
+    /// transfer changes the contract's team, not the team's club (that would move the whole team).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public FieldLocation? StoreAt { get; set; }
+
+    /// <summary>
+    /// Pointer hops from the chosen record to what is stored at <see cref="StoreAt"/> (e.g. from a club to
+    /// its first team: ["0x18", "0x0"]). Empty means the record itself.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<string>? StoreTarget { get; set; }
+
+    /// <summary>
+    /// Other copies of the same link (a player's squad team, the contract's second team pointer). Each is
+    /// moved to the new target when it pointed at the old one or one of its siblings, and left alone
+    /// otherwise (a national team, say).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public List<FieldLocation>? AlsoStoreAt { get; set; }
+
+    /// <summary>Squad lists to keep in step when the stored pointer changes; see <see cref="MemberListDef"/>.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public MemberListDef? Members { get; set; }
+
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }
 
     [JsonIgnore] public bool IsMapped => !string.IsNullOrWhiteSpace(Offset);
+}
+
+/// <summary>A place in a record: pointer hops, then an offset.</summary>
+public sealed class FieldLocation
+{
+    public List<string>? Path { get; set; }
+    public string Offset { get; set; } = "0x0";
+}
+
+/// <summary>
+/// Lists of record pointers (begin, end, capacity) that name the record as a member, such as a team's
+/// squad. When a stored link moves from one owner to another, the record is taken out of every list
+/// reachable from the old owner and added to the new owner's list.
+/// </summary>
+public sealed class MemberListDef
+{
+    /// <summary>Offset of the list in each owner (a team's squad: "0x38").</summary>
+    public string List { get; set; } = "0x0";
+
+    /// <summary>Pointer hops from the old owner to the object holding its siblings (team → club: ["0x30"]).</summary>
+    public List<string>? SiblingsPath { get; set; }
+
+    /// <summary>Offset of the sibling list in that object (a club's teams: "0x18"). Without it only the old owner is searched.</summary>
+    public string? Siblings { get; set; }
+
+    /// <summary>
+    /// Entity kind whose records carry the same list (e.g. "Team"). When the new owner's list is full,
+    /// its storage is swapped with a roomier one of these instead of growing it.
+    /// </summary>
+    public string? Donors { get; set; }
 }

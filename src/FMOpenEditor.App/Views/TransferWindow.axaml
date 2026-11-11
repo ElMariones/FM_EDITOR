@@ -1,0 +1,216 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FMOpenEditor.App.ViewModels"
+        xmlns:c="using:FMOpenEditor.App.Controls"
+        x:Class="FMOpenEditor.App.Views.TransferWindow"
+        x:DataType="vm:TransferViewModel"
+        Title="Transfer" Icon="/Assets/icon.ico" Width="620" Height="760" MinWidth="520" MinHeight="560"
+        WindowStartupLocation="CenterOwner">
+  <Window.Styles>
+    <Style Selector="TextBlock.field">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,12,0" />
+    </Style>
+    <Style Selector="TextBlock.problem">
+      <Setter Property="Foreground" Value="{DynamicResource ErrorBrush}" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style Selector="ListBox.clubs">
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="ListBox.clubs ListBoxItem">
+      <Setter Property="Padding" Value="8,6" />
+      <Setter Property="Margin" Value="0,1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <!-- The chosen club: a card that opens the search again when clicked -->
+    <Style Selector="Button.clubcard">
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+      <Setter Property="Padding" Value="12,10" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+    <Style Selector="Button.clubcard /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource GlassInsetBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource GlassEdgeBrush}" />
+    </Style>
+    <Style Selector="Button.clubcard:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.clubcard StackPanel.change">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource MutedBrush}" />
+    </Style>
+    <Style Selector="Button.clubcard:pointerover StackPanel.change">
+      <Setter Property="TextElement.Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Border.badge">
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Background" Value="{DynamicResource FieldBrush}" />
+      <Setter Property="ClipToBounds" Value="True" />
+    </Style>
+  </Window.Styles>
+
+  <Panel>
+    <c:Aurora />
+    <Border Classes="glass" Margin="14" Padding="22,18">
+      <DockPanel>
+        <!-- Who is moving -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*" Margin="0,0,0,14">
+          <Border Width="64" Height="64" CornerRadius="32" ClipToBounds="True" Margin="0,0,14,0"
+                  Background="{DynamicResource FieldBrush}" IsVisible="{Binding Picture.HasImage}">
+            <Image Source="{Binding Picture.Image}" Stretch="UniformToFill" />
+          </Border>
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+            <TextBlock Classes="eyebrow" Text="TRANSFER" />
+            <TextBlock Classes="h1" Text="{Binding PlayerName}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="muted" TextTrimming="CharacterEllipsis">
+              <Run Text="At " /><Run Text="{Binding CurrentClub, Mode=OneWay}" /><Run Text="  ·  " />
+              <Run Text="{Binding CurrentWageText, Mode=OneWay}" /><Run Text=" a week" />
+            </TextBlock>
+          </StackPanel>
+        </Grid>
+
+        <!-- Confirm / cancel -->
+        <StackPanel DockPanel.Dock="Bottom" Spacing="10" Margin="0,14,0,0">
+          <TextBlock Classes="problem" Text="{Binding Problem}" IsVisible="{Binding HasProblem}" />
+          <TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap"
+                     IsVisible="{Binding !HasProblem}" />
+          <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+            <Button Content="Cancel" Command="{Binding CloseCommand}" IsCancel="True" />
+            <Button x:Name="ConfirmButton" Classes="accent" Command="{Binding ConfirmCommand}" IsDefault="True">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <c:Icon Kind="transfer" Size="15" />
+                <TextBlock Text="Transfer" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </StackPanel>
+
+        <ScrollViewer>
+          <StackPanel Spacing="16" Margin="0,0,6,0">
+            <Border Classes="pill" IsVisible="{Binding HasScheduled}" HorizontalAlignment="Stretch">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{Binding ScheduledText}" TextWrapping="Wrap" VerticalAlignment="Center" />
+                <Button Grid.Column="1" Classes="link" Content="Cancel it" Command="{Binding CancelScheduledCommand}" Margin="10,0,0,0" />
+              </Grid>
+            </Border>
+
+            <!-- 1. Where to: a search while picking, then a card for the chosen club -->
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="h2" Text="Transfer to" />
+                <Button Grid.Column="1" Classes="link" Content="Keep current choice" Command="{Binding CancelPickingCommand}"
+                        IsVisible="{Binding ShowKeepChoice}" />
+              </Grid>
+
+              <StackPanel x:Name="PickPanel" Spacing="6" IsVisible="{Binding IsPicking}">
+                <TextBox x:Name="ClubSearchBox" Classes="search" Watermark="Search for a club…" Text="{Binding ClubSearch}">
+                  <TextBox.InnerLeftContent>
+                    <c:Icon Kind="search" Size="16" Margin="14,0,-4,0" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource MutedBrush}" />
+                  </TextBox.InnerLeftContent>
+                </TextBox>
+                <TextBlock Classes="muted" FontSize="12" Margin="4,0" Text="{Binding SearchHint}" IsVisible="{Binding HasSearchHint}" />
+                <ListBox x:Name="ClubList" Classes="clubs" ItemsSource="{Binding Results}" SelectedItem="{Binding Highlighted}"
+                         MaxHeight="232" IsVisible="{Binding HasResults}">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ClubOption">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Border Classes="badge" Width="28" Height="28" Margin="0,0,10,0">
+                          <Panel>
+                            <c:Icon Kind="club" Size="15" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                    TextElement.Foreground="{DynamicResource MutedBrush}" IsVisible="{Binding !Badge.HasImage}" />
+                            <Image Source="{Binding Badge.Image}" Stretch="Uniform" Margin="2" />
+                          </Panel>
+                        </Border>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
+                          <TextBlock Text="{Binding Name}" FontWeight="Medium" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Classes="muted" FontSize="11.5" Text="{Binding Detail}" TextTrimming="CharacterEllipsis" />
+                        </StackPanel>
+                        <Border Grid.Column="2" Classes="pill" VerticalAlignment="Center" Margin="8,0,0,0" IsVisible="{Binding IsCurrent}">
+                          <TextBlock Text="Current club" FontSize="11" />
+                        </Border>
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+
+              <Button x:Name="ChosenCard" Classes="clubcard" Command="{Binding ChangeClubCommand}" IsVisible="{Binding IsChosen}"
+                      ToolTip.Tip="Pick a different club">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                  <Border Classes="badge" Width="44" Height="44" Margin="0,0,12,0">
+                    <Panel>
+                      <c:Icon Kind="club" Size="20" HorizontalAlignment="Center" VerticalAlignment="Center"
+                              TextElement.Foreground="{DynamicResource AccentBrush}" IsVisible="{Binding !SelectedClub.Badge.HasImage, FallbackValue=True}" />
+                      <Image Source="{Binding SelectedClub.Badge.Image, FallbackValue={x:Null}}" Stretch="Uniform" Margin="3" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="{Binding SelectedClub.Name, FallbackValue=''}" FontSize="16" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Classes="muted" FontSize="12" Text="{Binding SelectedClub.Detail, FallbackValue=''}" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="2" Classes="change" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="12,0,2,0">
+                    <c:Icon Kind="edit" Size="14" />
+                    <TextBlock Text="Change" FontWeight="Medium" />
+                  </StackPanel>
+                </Grid>
+              </Button>
+            </StackPanel>
+
+            <!-- 2. The deal -->
+            <StackPanel Spacing="10">
+              <TextBlock Classes="h2" Text="The deal" />
+              <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="10">
+                <TextBlock Classes="field" Text="Transfer fee" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                  <NumericUpDown x:Name="FeeBox" Value="{Binding Fee}" Minimum="0" Increment="500000" FormatString="N0" Width="200" />
+                  <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding CurrencySymbol}" />
+                </StackPanel>
+
+                <TextBlock Grid.Row="1" Classes="field" Text="When" />
+                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+                  <StackPanel Orientation="Horizontal" Spacing="16">
+                    <RadioButton x:Name="NowOption" GroupName="when" Content="Now" IsChecked="{Binding IsNow}" />
+                    <RadioButton x:Name="FutureOption" GroupName="when" Content="On a future date" IsChecked="{Binding IsFuture}" />
+                  </StackPanel>
+                  <CalendarDatePicker x:Name="DateBox" SelectedDate="{Binding Date}" DisplayDateStart="{Binding GameDate}"
+                                      IsVisible="{Binding IsFuture}" Width="200" HorizontalAlignment="Left" />
+                  <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" Text="{Binding FutureNote}" IsVisible="{Binding IsFuture}" />
+                </StackPanel>
+
+                <TextBlock Grid.Row="2" Classes="field" Text="Pay the fee" IsVisible="{Binding CanMoveMoney}" />
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding MoveMoney}" IsVisible="{Binding CanMoveMoney}"
+                          Content="Take it from the buying club's balance and transfer budget, and give it to the seller" />
+              </Grid>
+            </StackPanel>
+
+            <!-- 3. The new contract -->
+            <StackPanel Spacing="10">
+              <TextBlock Classes="h2" Text="New contract" />
+              <Grid ColumnDefinitions="150,*" RowDefinitions="Auto,Auto" RowSpacing="10">
+                <TextBlock Classes="field" Text="Wage (per week)" IsVisible="{Binding CanEditWage}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" IsVisible="{Binding CanEditWage}">
+                  <NumericUpDown x:Name="WageBox" Value="{Binding Wage}" Minimum="0" Increment="1000" FormatString="N0" Width="200" />
+                  <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding CurrencySymbol}" />
+                </StackPanel>
+
+                <TextBlock Grid.Row="1" Classes="field" Text="Contract until" IsVisible="{Binding CanEditExpiry}" />
+                <CalendarDatePicker Grid.Row="1" Grid.Column="1" SelectedDate="{Binding ContractExpiry}" Width="200"
+                                    HorizontalAlignment="Left" IsVisible="{Binding CanEditExpiry}" />
+              </Grid>
+            </StackPanel>
+
+            <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding IsLive}"
+                       Text="Moving players inside a running game is new. Keep a backup of the save until you have seen the move in the game." />
+            <TextBlock Classes="muted" FontSize="12" TextWrapping="Wrap" IsVisible="{Binding IsLive}"
+                       Text="The game's Career screen can't be updated by the editor: it will list this season's matches, and no fee, under the new club." />
+          </StackPanel>
+        </ScrollViewer>
+      </DockPanel>
+    </Border>
+  </Panel>
+</Window>

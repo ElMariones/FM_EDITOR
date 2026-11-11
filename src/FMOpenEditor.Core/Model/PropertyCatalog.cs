@@ -249,7 +249,11 @@ public static class PropertyCatalog
 
         Int("Condition", "Condition", "Status", 0, 10000),
         Int("MatchSharpness", "Match sharpness", "Status", 0, 10000),
-        Int("Jadedness", "Jadedness", "Status", 0, 10000),
+        new PropertyDef("Jadedness", "Jadedness", "Status", ValueKind.Integer)
+        {
+            Min = -10000, Max = 10000,
+            Description = "Below zero means fresh and well rested; the higher above zero, the more jaded.",
+        },
         Int("Morale", "Morale", "Status", 1, 20),
         Bool("IsInjured", "Injured", "Status"),
         Bool("IsBanned", "Banned", "Status"),

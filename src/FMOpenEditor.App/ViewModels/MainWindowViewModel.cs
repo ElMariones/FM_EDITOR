@@ -67,6 +67,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     /// <summary>Raised when the user asks to compare two entities; the view opens a window.</summary>
     public event Action<CompareViewModel>? CompareRequested;
 
+    /// <summary>Raised when the user asks to transfer a player; the view opens the Transfer window.</summary>
+    public event Action<TransferViewModel>? TransferRequested;
+
     public bool IsConnected => Session is not null;
     public bool HasPending => PendingCount > 0;
     public string ConnectionLabel => Session?.Database.DisplayName ?? "Not connected";
@@ -79,7 +82,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Definitions = DefinitionLibrary.LoadFolder(Path.Combine(baseDir, "definitions"));
 
         _watchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-        _watchTimer.Tick += (_, _) => Session?.Watcher.Tick();
+        _watchTimer.Tick += (_, _) =>
+        {
+            Session?.Watcher.Tick();
+            if (Session is not { } s) return;
+            var done = s.Transfers.Tick();
+            var dropped = s.Transfers.TakeDropped();
+            if (dropped.Count > 0)
+            {
+                var who = string.Join(", ", dropped.Select(d => s.NameOf(EntityKind.Player, d.Request.Player.Id)));
+                Status = $"Scheduled transfer cancelled: {who} had already moved club in the game.";
+            }
+            else if (done > 0)
+            {
+                Status = done == 1 ? "A scheduled transfer went through." : $"{done} scheduled transfers went through.";
+            }
+        };
         _watchTimer.Start();
 
         Settings = new SettingsViewModel(StartGraphics, OnCurrencyChanged);
@@ -304,7 +322,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private BrowserViewModel NewBrowser(EntityKind kind)
     {
         var browser = new BrowserViewModel(Session!, kind, Presets, s => Status = s,
-            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations);
+            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations,
+            p => TransferRequested?.Invoke(new TransferViewModel(Session!, p, s => Status = s)));
         // Opening a row is a step in the history too, so Back returns to the previous player.
         browser.PropertyChanged += (_, e) =>
         {

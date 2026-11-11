@@ -1,6 +1,6 @@
 {
   "name": "Make WonderKid",
-  "description": "World-class potential and the hidden personality to reach it. Current ability is untouched, so they still have to develop.",
+  "description": "World-class potential and the hidden personality to reach it. Current ability barely moves, so they still have to develop.",
   "target": "Player", "category": "Players", "order": 4, "quick": true,
   "actions": [
     { "property": "PotentialAbility", "op": "AtLeast", "value": 190 },

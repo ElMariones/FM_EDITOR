@@ -14,6 +14,14 @@ public sealed class EditorSession : IDisposable
     public IGameDatabase Database { get; }
     public ChangeSet Changes { get; } = new();
     public AttributeWatcher Watcher { get; }
+    public TransferService Transfers { get; }
+    private readonly AbilityBalancer _ability;
+
+    /// <summary>
+    /// When true (the default), editing a player's attributes moves current ability with them and keeps
+    /// potential ability at or above it.
+    /// </summary>
+    public bool AutoAbility { get; set; } = true;
 
     /// <summary>When true, edits are written to the game immediately instead of being staged.</summary>
     public bool AutoSave { get; set; }
@@ -25,6 +33,8 @@ public sealed class EditorSession : IDisposable
     {
         Database = database;
         Watcher = new AttributeWatcher(this);
+        _ability = new AbilityBalancer(this);
+        Transfers = new TransferService(this);
         Changes.Changed += () => ValuesChanged?.Invoke();
     }
 
@@ -107,6 +117,22 @@ public sealed class EditorSession : IDisposable
     public void Set(Entity entity, string key, object? value)
     {
         var def = PropertyCatalog.Get(entity.Kind, key);
+        var before = AutoAbility && def.IsAttribute ? TryRead(entity, key) : null;
+        SetValue(entity, key, value);
+
+        if (key == "CurrentAbility") _ability.Forget(entity);
+        else if (AutoAbility && def.IsAttribute)
+        {
+            foreach (var (k, v) in _ability.OnAttributeSet(entity, key, before).ToList())
+            {
+                if (CanEdit(entity.Kind, k)) SetValue(entity, k, v);
+            }
+        }
+    }
+
+    private void SetValue(Entity entity, string key, object? value)
+    {
+        var def = PropertyCatalog.Get(entity.Kind, key);
         if (def.IsDerived) throw new InvalidOperationException($"{def.Label} is calculated and can't be edited.");
         if (!Database.Supports(entity.Kind, key))
             throw new NotSupportedException($"{def.Label} isn't supported for this game version yet.");
@@ -139,6 +165,7 @@ public sealed class EditorSession : IDisposable
     {
         var n = Changes.UndoLastCommit(Database);
         _names.Clear();
+        _ability.Reset();
         return n;
     }
 
@@ -146,12 +173,14 @@ public sealed class EditorSession : IDisposable
     {
         Changes.Discard();
         _names.Clear();
+        _ability.Reset();
     }
 
     public void Refresh()
     {
         Database.Refresh();
         _names.Clear();
+        _ability.Reset();
         ValuesChanged?.Invoke();
     }
 
