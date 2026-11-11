@@ -290,6 +290,22 @@ public sealed class LiveDatabase : IGameDatabase
                 var ptr = value is int id && Find(refKind, id) is { } refEntity ? refEntity.Address : 0;
                 _memory.WriteChecked(addr, BitConverter.GetBytes((long)ptr));
                 break;
+            case FieldType.Bool when !string.IsNullOrWhiteSpace(field.Mask):
+            {
+                // One flag in a shared byte: change that bit and leave its neighbours alone.
+                var mask = (byte)GameDefinition.ParseOffset(field.Mask);
+                var flags = _memory.ReadByte(addr);
+                var on = value is not null && Values.ToDouble(value) != 0;
+                _memory.WriteChecked(addr, [(byte)(on ? flags | mask : flags & ~mask)]);
+                break;
+            }
+            case var _ when field.Values is { Count: > 0 } stored:
+            {
+                var index = value is null ? -1 : (int)Values.ToDouble(value);
+                if (index < 0 || index >= stored.Count) throw new NotSupportedException($"{prop.Label} has no choice number {index}.");
+                WriteNumber(addr, field, stored[index]);
+                break;
+            }
             default:
                 WriteNumber(addr, field, value is null ? 0 : Values.ToDouble(value) * field.Scale);
                 break;
@@ -340,6 +356,15 @@ public sealed class LiveDatabase : IGameDatabase
             case FieldType.EntityPtr:
                 var p = _memory.ReadPointer(addr);
                 return p != 0 && _byAddress.TryGetValue(p, out var e) ? e.Id : null;
+        }
+
+        if (field.Type == FieldType.Bool && !string.IsNullOrWhiteSpace(field.Mask))
+            return (_memory.ReadByte(addr) & (byte)GameDefinition.ParseOffset(field.Mask)) != 0;
+
+        if (field.Values is { Count: > 0 } stored)
+        {
+            var index = stored.IndexOf((long)ReadNumber(addr, field.Type));
+            return index < 0 ? null : index;
         }
 
         var shown = ReadNumber(addr, field.Type) / field.Scale;

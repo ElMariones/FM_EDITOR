@@ -7,6 +7,19 @@ public enum EntityKind
     Club,
     Competition,
     Nation,
+    Stadium,
+    City,
+    Team,
+    Continent,
+    LocalRegion,
+    Award,
+    Injury,
+    Language,
+    MediaSource,
+    Derby,
+    StageName,
+    Weather,
+    Currency,
 }
 
 /// <summary>

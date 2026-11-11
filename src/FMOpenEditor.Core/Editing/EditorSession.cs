@@ -78,7 +78,11 @@ public sealed class EditorSession : IDisposable
                     if (e.Kind == EntityKind.Player && TryRead(e, "CommonName") is string { Length: > 0 } common) return common;
                     return $"{TryRead(e, "FirstName")} {TryRead(e, "LastName")}".Trim();
                 }
-                return TryRead(e, "Name") as string ?? "";
+                if (Database.Supports(e.Kind, "Name")) return TryRead(e, "Name") as string ?? "";
+                // No name of its own (a team): borrow its club's.
+                return PropertyCatalog.Find(e.Kind, "Club") is { RefKind: { } owner } && TryRead(e, "Club") is int clubId
+                    ? NameOf(owner, clubId)
+                    : "";
             default:
                 return null;
         }

@@ -1,0 +1,3124 @@
+{
+ "Player": [
+  {
+   "key": "Ethnicity",
+   "label": "Ethnicity (code)",
+   "category": "Looks",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "ShirtName",
+   "label": "Shirt name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "BodyType",
+   "label": "Body type",
+   "category": "Profile",
+   "kind": "Choice",
+   "choices": [
+    "Ectomorph",
+    "Ecto-Mesomorph",
+    "Mesomorph",
+    "Meso-Endomorph",
+    "Endomorph"
+   ]
+  },
+  {
+   "key": "InternationalRetirementDate",
+   "label": "International retirement date",
+   "category": "International",
+   "kind": "Date"
+  },
+  {
+   "key": "PreferredCentralPosition",
+   "label": "Preferred central position",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Right",
+    "Left",
+    "Right Or Central When Three",
+    "Left Or Central When Three",
+    "Central When Three",
+    "Right Of Two Or Right/Central When Three",
+    "Left Of Two Or Left/Central When Three"
+   ]
+  },
+  {
+   "key": "DateWhenMovedToBasedNation",
+   "label": "Date when moved to based nation",
+   "category": "Contract",
+   "kind": "Date"
+  },
+  {
+   "key": "CityOfBirth",
+   "label": "City of birth",
+   "category": "Profile",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "DateJoined",
+   "label": "Date joined",
+   "category": "Contract",
+   "kind": "Date"
+  },
+  {
+   "key": "InternationalApps",
+   "label": "International apps",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "IsFemale",
+   "label": "Is female",
+   "category": "Profile",
+   "kind": "Boolean"
+  },
+  {
+   "key": "InternationalGoals",
+   "label": "International goals",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "U21InternationalApps",
+   "label": "U21 international apps",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "U21InternationalGoals",
+   "label": "U21 international goals",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "DefaultLanguage",
+   "label": "Default language",
+   "category": "Profile",
+   "kind": "Reference",
+   "refKind": "Language"
+  }
+ ],
+ "Staff": [
+  {
+   "key": "Looks.SkinTone",
+   "label": "Skin tone",
+   "category": "Looks",
+   "kind": "Integer",
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "Looks.HairColour",
+   "label": "Hair colour",
+   "category": "Looks",
+   "kind": "Integer",
+   "min": 0,
+   "max": 18
+  },
+  {
+   "key": "Looks.HairLength",
+   "label": "Hair length",
+   "category": "Looks",
+   "kind": "Integer",
+   "min": 0,
+   "max": 3
+  },
+  {
+   "key": "Ethnicity",
+   "label": "Ethnicity (code)",
+   "category": "Looks",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "BuyingPlayers",
+   "label": "Buying players",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Business",
+   "label": "Business",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Possession",
+   "label": "Possession",
+   "category": "Abilities",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "SetPieces",
+   "label": "Set pieces",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "DirtinessAllowance",
+   "label": "Dirtiness allowance",
+   "category": "Abilities",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "Depth",
+   "label": "Depth",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Directness",
+   "label": "Directness",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Flexibility",
+   "label": "Flexibility",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "HardnessOfTraining",
+   "label": "Hardness of training",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Interference",
+   "label": "Interference",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "MindGames",
+   "label": "Mind games",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "SideOfGameWillingToWork",
+   "label": "Side of game willing to work",
+   "category": "Profile",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Men's Only",
+    "Women's Only",
+    "Both"
+   ]
+  },
+  {
+   "key": "AttackingFormation",
+   "label": "Attacking formation",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Patience",
+   "label": "Patience",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "CoachingStyle",
+   "label": "Coaching style",
+   "category": "Profile",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "General",
+    "Goalkeeping",
+    "Fitness",
+    "Attacking",
+    "Defending",
+    "Technical[COMMENT - coach management page]",
+    "Technical[COMMENT - coach management page]",
+    "Possession",
+    "Set Pieces[COMMENT - training category]"
+   ]
+  },
+  {
+   "key": "DefensiveFormation",
+   "label": "Defensive formation",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Goalkeeping",
+   "label": "Goalkeeping",
+   "category": "Abilities",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "AnalysingData",
+   "label": "Analysing data",
+   "category": "Abilities",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "PreferredFormation",
+   "label": "Preferred formation",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "TriggerPress",
+   "label": "Trigger press",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "SecondPreferredFormation",
+   "label": "Second preferred formation",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Versatility",
+   "label": "Versatility",
+   "category": "Abilities",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 1,
+   "max": 20
+  },
+  {
+   "key": "Resources",
+   "label": "Resources",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "SquadRotation",
+   "label": "Squad rotation",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Tempo",
+   "label": "Tempo",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Width",
+   "label": "Width",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "AttackingFormationOutOfPossession",
+   "label": "Attacking formation (out of possession)",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "DefensiveFormationOutOfPossession",
+   "label": "Defensive formation (out of possession)",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Height",
+   "label": "Height",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 210
+  },
+  {
+   "key": "PreferredSetPieceDefensiveMarking",
+   "label": "Preferred set piece defensive marking",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "zonal = Zonal, balanced = Balanced, tight = Tight, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPieceDeliveryTarget",
+   "label": "Preferred set piece delivery target",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "near_post = Near Post, central = Central, far_post = Far Post, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPieceAttackingNumbers",
+   "label": "Preferred set piece attacking numbers",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "defend_transition = Defend Transition, balanced = Balanced, attack_the_box = Attack the Box, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPieceDefensiveNumbers",
+   "label": "Preferred set piece defensive numbers",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "defend_the_box = Defend the Box, balanced = Balanced, counter_attack = Counter Attack, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPieceDeliveryType",
+   "label": "Preferred set piece delivery type",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "inswinging = Inswinging, outswinging = Outswinging, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPiecePostDefence",
+   "label": "Preferred set piece post defence",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "neither_post = Neither Post, near_post = Near Post, both_posts = Both Posts, not_set = Not Set"
+  },
+  {
+   "key": "PreferredSetPieceDefendingFreeKicks",
+   "label": "Preferred set piece defending free kicks",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "high_line = High Line, balanced = Balanced, defend_the_box = Defend the Box, not_set = Not Set"
+  },
+  {
+   "key": "PreferredFormationOutOfPossession",
+   "label": "Preferred formation (out of possession)",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "SecondPreferredFormationOutOfPossession",
+   "label": "Second preferred formation (out of possession)",
+   "category": "Formations & set pieces",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "DateWhenMovedToBasedNation",
+   "label": "Date when moved to based nation",
+   "category": "Contract",
+   "kind": "Date"
+  },
+  {
+   "key": "Ambition",
+   "label": "Ambition",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "CityOfBirth",
+   "label": "City of birth",
+   "category": "Profile",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "DateJoined",
+   "label": "Date joined",
+   "category": "Contract",
+   "kind": "Date"
+  },
+  {
+   "key": "CommonName",
+   "label": "Common name",
+   "category": "Details",
+   "kind": "Text"
+  },
+  {
+   "key": "Controversy",
+   "label": "Controversy",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "InternationalApps",
+   "label": "International apps",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "InternationalGoals",
+   "label": "International goals",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Loyalty",
+   "label": "Loyalty",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Pressure",
+   "label": "Pressure",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Professionalism",
+   "label": "Professionalism",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Sportsmanship",
+   "label": "Sportsmanship",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Temperament",
+   "label": "Temperament",
+   "category": "Tendencies",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "U21InternationalApps",
+   "label": "U21 international apps",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "U21InternationalGoals",
+   "label": "U21 international goals",
+   "category": "International",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "DefaultLanguage",
+   "label": "Default language",
+   "category": "Profile",
+   "kind": "Reference",
+   "refKind": "Language"
+  }
+ ],
+ "Club": [
+  {
+   "key": "Finance.EmbargoStart",
+   "label": "Transfer embargo start",
+   "category": "Finances",
+   "kind": "Date"
+  },
+  {
+   "key": "Finance.EmbargoEnd",
+   "label": "Transfer embargo end",
+   "category": "Finances",
+   "kind": "Date"
+  },
+  {
+   "key": "Finance.EmbargoAppeal",
+   "label": "Transfer embargo appeal date",
+   "category": "Finances",
+   "kind": "Date"
+  },
+  {
+   "key": "Stadium",
+   "label": "Stadium",
+   "category": "Kits & stadium",
+   "kind": "Reference",
+   "refKind": "Stadium"
+  },
+  {
+   "key": "SecondPreferredFormation",
+   "label": "Second preferred formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "AttackingFormation",
+   "label": "Attacking formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "BasedNation",
+   "label": "Based nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "ContinentalCupNation",
+   "label": "Continental cup nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "City",
+   "label": "City",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "DefensiveFormation",
+   "label": "Defensive formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "LocalRegion",
+   "label": "Local region",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "LocalRegion"
+  },
+  {
+   "key": "Morale",
+   "label": "Morale",
+   "category": "Standing",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "PreferredFormation",
+   "label": "Preferred formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Status",
+   "label": "Status",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Professional",
+    "Semi Professional",
+    "Amateur",
+    "Always Amateur"
+   ]
+  },
+  {
+   "key": "NumberOfSeasonTicketHolders",
+   "label": "Number of season ticket holders",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200000
+  },
+  {
+   "key": "SixLetterName",
+   "label": "Six letter name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "TrainingGround",
+   "label": "Training ground",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Stadium"
+  },
+  {
+   "key": "YearFounded",
+   "label": "Year founded",
+   "category": "History",
+   "kind": "Integer",
+   "min": 1800,
+   "max": 2100
+  },
+  {
+   "key": "YouthImportance",
+   "label": "Youth importance",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 0,
+   "max": 20
+  }
+ ],
+ "Competition": [
+  {
+   "key": "TrophyType",
+   "label": "Trophy type",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not set",
+    "Silver Plate",
+    "National Cup [%number#1]",
+    "National Cup [%number#1]",
+    "National Cup [%number#1]",
+    "National Championship [%number#1]",
+    "National Championship [%number#1]",
+    "National Championship [%number#1]",
+    "International Cup [%number#1]",
+    "International Cup [%number#1]",
+    "Continental Cup [%number#1]",
+    "Continental Cup [%number#1]"
+   ]
+  },
+  {
+   "key": "LowestOfficialCategoryAllowed",
+   "label": "Lowest official category allowed",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "PlayerGender",
+   "label": "Player gender",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255,
+   "description": "male = Male, female = Female"
+  },
+  {
+   "key": "BackgroundColour",
+   "label": "Background colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "Continent",
+   "label": "Continent",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Continent"
+  },
+  {
+   "key": "EastBoundaryRegionalDivision",
+   "label": "East boundary (regional division)",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "ForegroundColour",
+   "label": "Foreground colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "MinimumPitchLength",
+   "label": "Minimum pitch length",
+   "category": "Pitch rules",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MinimumPitchWidth",
+   "label": "Minimum pitch width",
+   "category": "Pitch rules",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MaximumPitchLength",
+   "label": "Maximum pitch length",
+   "category": "Pitch rules",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MaximumPitchWidth",
+   "label": "Maximum pitch width",
+   "category": "Pitch rules",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "NorthBoundaryRegionalDivision",
+   "label": "North boundary (regional division)",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "OverridenSubsRules",
+   "label": "Overriden subs rules",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "ParentCompetition",
+   "label": "Parent competition",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Competition"
+  },
+  {
+   "key": "SouthBoundaryRegionalDivision",
+   "label": "South boundary (regional division)",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "UsesSeatedStadiumsOnly",
+   "label": "Uses seated stadiums only",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "TrimColour",
+   "label": "Trim colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "UsesExtraOfficials",
+   "label": "Uses extra officials",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "WestBoundaryRegionalDivision",
+   "label": "West boundary (regional division)",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "Type",
+   "label": "Type",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "DivisionLevel",
+   "label": "Division level",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "WinterBallColour",
+   "label": "Winter ball colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "WinterBallEndDate",
+   "label": "Winter ball end date",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "WinterBallStartDate",
+   "label": "Winter ball start date",
+   "category": "History",
+   "kind": "Date"
+  }
+ ],
+ "Nation": [
+  {
+   "key": "ThreeLetterName",
+   "label": "Three letter name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "YouthRating",
+   "label": "Youth rating",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200
+  },
+  {
+   "key": "AttackingFormation",
+   "label": "Attacking formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "YearAssociationFormed",
+   "label": "Year association formed",
+   "category": "History",
+   "kind": "Integer",
+   "min": 1800,
+   "max": 2100
+  },
+  {
+   "key": "Attacking",
+   "label": "Attacking",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Continent_Ncti",
+   "label": "Continent",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Continent"
+  },
+  {
+   "key": "Currency",
+   "label": "Currency",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Currency"
+  },
+  {
+   "key": "Depth",
+   "label": "Depth",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "DefensiveFormation",
+   "label": "Defensive formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Directness",
+   "label": "Directness",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "EconomicFactor",
+   "label": "Economic factor",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "FaFinancialPower",
+   "label": "FA financial power",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "YearAffiliated",
+   "label": "Year affiliated",
+   "category": "History",
+   "kind": "Integer",
+   "min": 1904,
+   "max": 2100
+  },
+  {
+   "key": "YearAffiliatedToFederation",
+   "label": "Year affiliated to federation",
+   "category": "History",
+   "kind": "Integer",
+   "min": 1900,
+   "max": 2100
+  },
+  {
+   "key": "WorldwideGoverningBodyFullMember",
+   "label": "Worldwide governing body full member",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "Flamboyancy",
+   "label": "Flamboyancy",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Flexibility",
+   "label": "Flexibility",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "ForeignManagerLikelihood",
+   "label": "Foreign manager likelihood",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "FaPatience",
+   "label": "FA patience",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "FreeRoles",
+   "label": "Free roles",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "RankingPoints",
+   "label": "Ranking points",
+   "category": "Standing",
+   "kind": "Decimal"
+  },
+  {
+   "key": "GainNationalityType",
+   "label": "Gain nationality type",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Continuous",
+    "Accumulative"
+   ]
+  },
+  {
+   "key": "GameImportance",
+   "label": "Game importance",
+   "category": "Standing",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Very Important",
+    "Important",
+    "Fairly Unimportant[COMMENT - match importance level; confidence screen]",
+    "Unimportant"
+   ]
+  },
+  {
+   "key": "Marking",
+   "label": "Marking",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "MaxYouthAge",
+   "label": "Max. youth age",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 15,
+   "max": 25
+  },
+  {
+   "key": "NationalStadium",
+   "label": "National stadium",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Stadium"
+  },
+  {
+   "key": "NationalityName",
+   "label": "Nationality name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "Offside",
+   "label": "Offside",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "PreferredFormation",
+   "label": "Preferred formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "Pressing",
+   "label": "Pressing",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "ShortName",
+   "label": "Short name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "StateOfDevelopment",
+   "label": "State of development",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Developed State",
+    "Developing State",
+    "Lower Developed State"
+   ]
+  },
+  {
+   "key": "SecondPreferredFormation",
+   "label": "Second preferred formation",
+   "category": "Playing style",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "SittingBack",
+   "label": "Sitting back",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Tempo",
+   "label": "Tempo",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "AllowMultipleAssistantManagers",
+   "label": "Allow multiple assistant managers",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "UseOfPlaymaker",
+   "label": "Use of playmaker",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Width",
+   "label": "Width",
+   "category": "Playing style",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Nickname",
+   "label": "Nickname",
+   "category": "Names",
+   "kind": "Text"
+  }
+ ],
+ "Stadium": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "DateOfCurrentOwnership",
+   "label": "Date of current ownership",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "BuildDate",
+   "label": "Build date",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "CapacityForAllSeaterCompetitions",
+   "label": "Capacity for All-Seater competitions",
+   "category": "Capacity",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200000
+  },
+  {
+   "key": "ContinentalName",
+   "label": "Continental name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "Capacity",
+   "label": "Capacity",
+   "category": "Capacity",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200000
+  },
+  {
+   "key": "City",
+   "label": "City",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "StadiumDecay",
+   "label": "Stadium decay",
+   "category": "Features",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "ExpansionCapacity",
+   "label": "Expansion capacity",
+   "category": "Capacity",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200000
+  },
+  {
+   "key": "Environment",
+   "label": "Environment",
+   "category": "Features",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Basic",
+    "Standard",
+    "High End",
+    "State Of The Art"
+   ]
+  },
+  {
+   "key": "PitchLengthForInternationalMatches",
+   "label": "Pitch length for international matches",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "Latitude",
+   "label": "Latitude",
+   "category": "Location",
+   "kind": "Decimal"
+  },
+  {
+   "key": "Longitude",
+   "label": "Longitude",
+   "category": "Location",
+   "kind": "Decimal"
+  },
+  {
+   "key": "MinimumPitchLength",
+   "label": "Minimum pitch length",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MinimumPitchWidth",
+   "label": "Minimum pitch width",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MaximumPitchLength",
+   "label": "Maximum pitch length",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "MaximumPitchWidth",
+   "label": "Maximum pitch width",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "NearbyStadium",
+   "label": "Nearby stadium",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Stadium"
+  },
+  {
+   "key": "Nation",
+   "label": "Nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "Owner",
+   "label": "Owner",
+   "category": "Features",
+   "kind": "Reference",
+   "refKind": "Club"
+  },
+  {
+   "key": "PitchRelayRequiredDate",
+   "label": "Pitch relay required date",
+   "category": "Pitch",
+   "kind": "Date"
+  },
+  {
+   "key": "PitchRecoveryRate",
+   "label": "Pitch recovery rate",
+   "category": "Pitch",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "PitchCondition",
+   "label": "Pitch condition",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200
+  },
+  {
+   "key": "PitchType",
+   "label": "Pitch type",
+   "category": "Pitch",
+   "kind": "Choice",
+   "choices": [
+    "Grass",
+    "Synthetic (New Type - Soft)",
+    "Synthetic (Old Type - Hard)",
+    "Gravel/Clay/Sand",
+    "Gravel",
+    "Clay",
+    "Sand",
+    "Grass/Synthetic Mix"
+   ]
+  },
+  {
+   "key": "PitchWidth",
+   "label": "Pitch width",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "ReBuildDate",
+   "label": "Re-Build date",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "SeatColour",
+   "label": "Seat colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "SeatingCapacity",
+   "label": "Seating capacity",
+   "category": "Capacity",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200000
+  },
+  {
+   "key": "State",
+   "label": "State",
+   "category": "Features",
+   "kind": "Choice",
+   "choices": [
+    "Very Good",
+    "Good",
+    "Average",
+    "Poor",
+    "Very Poor"
+   ]
+  },
+  {
+   "key": "UsedByNationalU19Team",
+   "label": "Used by national U19 team",
+   "category": "Location",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "UsedByNationalU21Team",
+   "label": "Used by national U21 team",
+   "category": "Location",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "UsedCapacity",
+   "label": "Used capacity",
+   "category": "Capacity",
+   "kind": "Integer",
+   "min": 1,
+   "max": 200000
+  },
+  {
+   "key": "UsedByNationalTeam",
+   "label": "Used by national team",
+   "category": "Location",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "PitchWidthForInternationalMatches",
+   "label": "Pitch width for international matches",
+   "category": "Pitch",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  }
+ ],
+ "City": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "Altitude",
+   "label": "Altitude",
+   "category": "Location",
+   "kind": "Integer",
+   "min": -1000,
+   "max": 8000
+  },
+  {
+   "key": "Attraction",
+   "label": "Attraction",
+   "category": "Standing",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "InhabitantsRange",
+   "label": "Inhabitants range",
+   "category": "Location",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "0 - 1000",
+    "1001 - 2500",
+    "2501 - 5000",
+    "5001 - 10000",
+    "10001 - 25000",
+    "25001 - 50000",
+    "50001 - 100000",
+    "100001 - 250000",
+    "250001 - 500000",
+    "500001 - 1000000",
+    "1000001 - 2500000",
+    "2500001 - 5000000",
+    "5000001 - 10000000",
+    "10000001 - 20000000",
+    "20000001 +"
+   ]
+  },
+  {
+   "key": "Latitude",
+   "label": "Latitude",
+   "category": "Location",
+   "kind": "Decimal"
+  },
+  {
+   "key": "Language",
+   "label": "Language",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Language"
+  },
+  {
+   "key": "Longitude",
+   "label": "Longitude",
+   "category": "Location",
+   "kind": "Decimal"
+  },
+  {
+   "key": "LocalRegion",
+   "label": "Local region",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "LocalRegion"
+  },
+  {
+   "key": "Nation",
+   "label": "Nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "Weather",
+   "label": "Weather",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Weather"
+  }
+ ],
+ "Team": [
+  {
+   "key": "Club",
+   "label": "Club",
+   "category": "Profile",
+   "kind": "Reference",
+   "refKind": "Club"
+  },
+  {
+   "key": "Captain",
+   "label": "Captain",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Player"
+  },
+  {
+   "key": "Division",
+   "label": "Division",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Competition"
+  },
+  {
+   "key": "MidweekHomeMatchDay",
+   "label": "Midweek home match day",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "OtherDivision",
+   "label": "Other division",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Competition"
+  },
+  {
+   "key": "Reputation",
+   "label": "Reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767
+  },
+  {
+   "key": "Stadium",
+   "label": "Stadium",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Stadium"
+  },
+  {
+   "key": "ViceCaptain",
+   "label": "Vice-Captain",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Player"
+  },
+  {
+   "key": "WeekendHomeMatchDay",
+   "label": "Weekend home match day",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  }
+ ],
+ "Continent": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "ThreeLetterName",
+   "label": "Three letter name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "BackgroundColour",
+   "label": "Background colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "ForegroundColour",
+   "label": "Foreground colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "TrimColour",
+   "label": "Trim colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "FederationName",
+   "label": "Federation name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "RegionalStrength",
+   "label": "Regional strength",
+   "category": "Standing",
+   "kind": "Decimal"
+  },
+  {
+   "key": "ShortFederationName",
+   "label": "Short federation name",
+   "category": "Names",
+   "kind": "Text"
+  }
+ ],
+ "LocalRegion": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "Nation",
+   "label": "Nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "Population",
+   "label": "Population",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 1000000000
+  },
+  {
+   "key": "Weather",
+   "label": "Weather",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Weather"
+  }
+ ],
+ "Award": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "AnnouncementDate",
+   "label": "Announcement date",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "AllowPreviousWinner",
+   "label": "Allow previous winner",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Never",
+    "Rarely",
+    "Yes"
+   ]
+  },
+  {
+   "key": "BackgroundColour",
+   "label": "Background colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "Based",
+   "label": "Based",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Foreign Based Nationals",
+    "Domestic Based",
+    "Domestic Based Foreigners",
+    "Domestic Based Nationals",
+    "Based Anywhere Nationals",
+    "Based Anywhere Anyone",
+    "Domestic Based African",
+    "Based Continent Anyone"
+   ]
+  },
+  {
+   "key": "Continent",
+   "label": "Continent",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Continent"
+  },
+  {
+   "key": "AwardDate",
+   "label": "Award date",
+   "category": "History",
+   "kind": "Date"
+  },
+  {
+   "key": "AwardPeriod",
+   "label": "Award period",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Invalid",
+    "Of The Week",
+    "Of The Month",
+    "Of The Season",
+    "Of The Competition",
+    "Of The Year",
+    "On Specified Date",
+    "Of The Opening Or Closing Season"
+   ]
+  },
+  {
+   "key": "ForegroundColour",
+   "label": "Foreground colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "Formation",
+   "label": "Formation",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 255
+  },
+  {
+   "key": "MinimumAge",
+   "label": "Minimum age",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 10,
+   "max": 99
+  },
+  {
+   "key": "MinimumPercentageOfGamesPlayed",
+   "label": "Minimum percentage of games played",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 1,
+   "max": 100
+  },
+  {
+   "key": "Competition",
+   "label": "Competition",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Competition"
+  },
+  {
+   "key": "Nation",
+   "label": "Nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  },
+  {
+   "key": "NumberOfPlacings",
+   "label": "Number of placings",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "1st To 3rd Place",
+    "1st Place Only",
+    "1st And 2nd Place"
+   ]
+  },
+  {
+   "key": "Position",
+   "label": "Position",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Goalkeeper",
+    "Sweeper",
+    "Full-Back",
+    "Defender",
+    "Wing-Back",
+    "Defensive Midfielder",
+    "Winger",
+    "Attacking Midfielder",
+    "Midfielder",
+    "Striker"
+   ]
+  },
+  {
+   "key": "RunBy",
+   "label": "Run by",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Football Association",
+    "Media",
+    "Players"
+   ]
+  },
+  {
+   "key": "Reputation",
+   "label": "Reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "LocalRegion",
+   "label": "Local region",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "LocalRegion"
+  },
+  {
+   "key": "AwardRecipientType",
+   "label": "Award recipient type",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Player",
+    "Non Player",
+    "Player or Non Player",
+    "Referee",
+    "Rookie Player",
+    "Squad Of Players",
+    "Club or Nation"
+   ]
+  },
+  {
+   "key": "Voting",
+   "label": "Voting",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "No Voting",
+    "Competition Club Manager",
+    "Nation Club Manager",
+    "Continent Club Manager",
+    "Continent Nation Manager",
+    "World Club Manager",
+    "World Nation Manager",
+    "Any Manager"
+   ]
+  },
+  {
+   "key": "ShortName",
+   "label": "Short name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "Side",
+   "label": "Side",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Any Side",
+    "Left Side",
+    "Right Side",
+    "Centre",
+    "Left or Right Side"
+   ]
+  },
+  {
+   "key": "UseStatsFrom",
+   "label": "Use stats from",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Domestic League",
+    "Domestic Cup",
+    "Domestic Overall",
+    "Continental",
+    "Overall Club",
+    "International",
+    "Overall"
+   ]
+  },
+  {
+   "key": "TrimColour",
+   "label": "Trim colour (ARGB)",
+   "category": "Colours",
+   "kind": "Integer",
+   "min": -2147483648,
+   "max": 2147483647,
+   "description": "Colour as a signed 32-bit ARGB number."
+  },
+  {
+   "key": "VotingFormat",
+   "label": "Voting format",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "One Vote Each",
+    "3 Votes Weighted",
+    "5 Votes Weighted"
+   ]
+  },
+  {
+   "key": "WinnerHomeReputation",
+   "label": "Winner home reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 1,
+   "max": 200
+  },
+  {
+   "key": "WinnerWorldReputation",
+   "label": "Winner world reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 1,
+   "max": 200
+  },
+  {
+   "key": "MaximumAge",
+   "label": "Maximum age",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 10,
+   "max": 99
+  }
+ ],
+ "Injury": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "ExtraDaysMen",
+   "label": "Extra days (men)",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 720
+  },
+  {
+   "key": "MinimumDaysMen",
+   "label": "Minimum days (men)",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 720
+  },
+  {
+   "key": "OccurrenceRatio",
+   "label": "Occurrence ratio",
+   "category": "Details",
+   "kind": "Decimal"
+  },
+  {
+   "key": "SentenceName",
+   "label": "Sentence name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "ExtraDaysWomen",
+   "label": "Extra days (women)",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 720
+  },
+  {
+   "key": "MinimumDaysWomen",
+   "label": "Minimum days (women)",
+   "category": "Details",
+   "kind": "Integer",
+   "min": 0,
+   "max": 720
+  },
+  {
+   "key": "Seriousness",
+   "label": "Seriousness",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Invalid",
+    "Potentially Career Threatening",
+    "Serious Injury",
+    "Moderate Injury",
+    "Minor Injury",
+    "Walking Wounded"
+   ]
+  },
+  {
+   "key": "SubClassification",
+   "label": "Sub-Classification",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Any",
+    "Brain injury",
+    "Head injury",
+    "Face injury",
+    "Jaw injury",
+    "Skull injury",
+    "Nose injury",
+    "Neck injury",
+    "Shoulder injury",
+    "Wrist injury",
+    "Radius injury",
+    "Elbow injury",
+    "Ulna injury",
+    "Humerus injury",
+    "Arm injury",
+    "Hand injury",
+    "Finger injury",
+    "Rib injury",
+    "Spine injury",
+    "Core injury",
+    "Back injury",
+    "Pectoral injury",
+    "General injury",
+    "Adductor injury",
+    "Hip injury",
+    "Pelvis injury",
+    "Thigh injury",
+    "Hamstring injury",
+    "Quadricep injury",
+    "Femur injury",
+    "Upper leg injury",
+    "Knee injury",
+    "Cruciate or collateral injury",
+    "Cruciate injury",
+    "Joint injury",
+    "Knee injury",
+    "Shin injury",
+    "Calf injury",
+    "Lower leg injury",
+    "Tibia or fibula injury",
+    "Achilles injury",
+    "Ankle injury",
+    "Toe injury",
+    "Heel injury",
+    "Foot injury",
+    "Illness"
+   ]
+  }
+ ],
+ "Language": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "LanguageDifficulty",
+   "label": "Language difficulty",
+   "category": "Details",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "LanguageFamily",
+   "label": "Language family",
+   "category": "Details",
+   "kind": "Integer",
+   "min": -32768,
+   "max": 32767,
+   "description": "1 = Afro Asiatic, 2 = Alacalufan, 3 = Algic, 4 = Altaic, 5 = Amto Musan, 6 = Andamanese, 7 = Arauan, 8 = Araucanian, 9 = Arawakan, 10 = Artificial, 11 = Arutani sape, 12 = Australian, 13 = Austro asiatic, 14 = Austronesian, 15 = Bymaran, 16 = Barbacoan, 17 = Basque, 18 = Bayono awbono, 19 = Caddoan, 20 = Cahuapanan, 21 = Cant, 22 = Carib, 23 = Chapacura wanham, 24 = Chibchan"
+  },
+  {
+   "key": "LanguageInfluence",
+   "label": "Language influence",
+   "category": "Details",
+   "kind": "Integer",
+   "isAttribute": true,
+   "min": 0,
+   "max": 20
+  },
+  {
+   "key": "Nation",
+   "label": "Nation",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Nation"
+  }
+ ],
+ "MediaSource": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "AttendsPressConferences",
+   "label": "Attends press conferences",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "Continent",
+   "label": "Continent",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "Continent"
+  },
+  {
+   "key": "City",
+   "label": "City",
+   "category": "Location",
+   "kind": "Reference",
+   "refKind": "City"
+  },
+  {
+   "key": "IsFake",
+   "label": "Is fake",
+   "category": "Details",
+   "kind": "Boolean"
+  },
+  {
+   "key": "Period",
+   "label": "Period",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Anytime",
+    "Weekday Morning",
+    "Sunday",
+    "Weekly",
+    "Monthly",
+    "Bi Monthly",
+    "Quarterly",
+    "Yearly",
+    "Weekday Evening",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday"
+   ]
+  },
+  {
+   "key": "Scope",
+   "label": "Scope",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Club",
+    "Local",
+    "Regional",
+    "National",
+    "Continental",
+    "Worldwide",
+    "Competition"
+   ]
+  },
+  {
+   "key": "Style",
+   "label": "Style",
+   "category": "Details",
+   "kind": "Choice",
+   "choices": [
+    "Not Set",
+    "Tabloid",
+    "Broadsheet",
+    "Formal",
+    "Casual",
+    "Popular",
+    "Analytical"
+   ]
+  }
+ ],
+ "Derby": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "AlternativeName",
+   "label": "Alternative name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "AlternativeShortName",
+   "label": "Alternative short name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "NationalReputation",
+   "label": "National reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200
+  },
+  {
+   "key": "ShortName",
+   "label": "Short name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "Team1",
+   "label": "Team 1",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Team"
+  },
+  {
+   "key": "Team2",
+   "label": "Team 2",
+   "category": "Details",
+   "kind": "Reference",
+   "refKind": "Team"
+  },
+  {
+   "key": "WorldReputation",
+   "label": "World reputation",
+   "category": "Standing",
+   "kind": "Integer",
+   "min": 0,
+   "max": 200
+  }
+ ],
+ "StageName": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "PluralName",
+   "label": "Plural name",
+   "category": "Names",
+   "kind": "Text"
+  },
+  {
+   "key": "ShortName",
+   "label": "Short name",
+   "category": "Names",
+   "kind": "Text"
+  }
+ ],
+ "Weather": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  },
+  {
+   "key": "Period1Dry",
+   "label": "Period 1: Dry",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Wet",
+   "label": "Period 1: Wet",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Drizzle",
+   "label": "Period 1: Drizzle",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Shower",
+   "label": "Period 1: Shower",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1DownPour",
+   "label": "Period 1: Down pour",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1StartDay",
+   "label": "Period 1: Start day",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 365
+  },
+  {
+   "key": "Period1Freezing7To0Celsius",
+   "label": "Period 1: Freezing (-7 to 0 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Cold1To6Celsius",
+   "label": "Period 1: Cold (1 to 6 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Mild7To13Celsius",
+   "label": "Period 1: Mild (7 to 13 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Fine14To21Celsius",
+   "label": "Period 1: Fine (14 to 21 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Warm22To28Celsius",
+   "label": "Period 1: Warm (22 to 28 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Hot29To34Celsius",
+   "label": "Period 1: Hot (29 to 34 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1VeryHot35To42Celsius",
+   "label": "Period 1: Very hot (35 to 42 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1ExtremelyHot43CelsiusAndAbove",
+   "label": "Period 1: Extremely hot (43 Celsius and above)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1ExtremelyFreezing16CelsiusAndBelow",
+   "label": "Period 1: Extremely freezing (-16 Celsius and below)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1VeryFreezing15To8Celsius",
+   "label": "Period 1: Very freezing (-15 to -8 celsius)",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Calm",
+   "label": "Period 1: Calm",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Breezy",
+   "label": "Period 1: Breezy",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Gusty",
+   "label": "Period 1: Gusty",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Strong",
+   "label": "Period 1: Strong",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period1Gale",
+   "label": "Period 1: Gale",
+   "category": "Period 1",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Dry",
+   "label": "Period 2: Dry",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Wet",
+   "label": "Period 2: Wet",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Drizzle",
+   "label": "Period 2: Drizzle",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Shower",
+   "label": "Period 2: Shower",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2DownPour",
+   "label": "Period 2: Down pour",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2StartDay",
+   "label": "Period 2: Start day",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 365
+  },
+  {
+   "key": "Period2Freezing7To0Celsius",
+   "label": "Period 2: Freezing (-7 to 0 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Cold1To6Celsius",
+   "label": "Period 2: Cold (1 to 6 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Mild7To13Celsius",
+   "label": "Period 2: Mild (7 to 13 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Fine14To21Celsius",
+   "label": "Period 2: Fine (14 to 21 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Warm22To28Celsius",
+   "label": "Period 2: Warm (22 to 28 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Hot29To34Celsius",
+   "label": "Period 2: Hot (29 to 34 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2VeryHot35To42Celsius",
+   "label": "Period 2: Very hot (35 to 42 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2ExtremelyHot43CelsiusAndAbove",
+   "label": "Period 2: Extremely hot (43 Celsius and above)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2ExtremelyFreezing16CelsiusAndBelow",
+   "label": "Period 2: Extremely freezing (-16 Celsius and below)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2VeryFreezing15To8Celsius",
+   "label": "Period 2: Very freezing (-15 to -8 celsius)",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Calm",
+   "label": "Period 2: Calm",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Breezy",
+   "label": "Period 2: Breezy",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Gusty",
+   "label": "Period 2: Gusty",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Strong",
+   "label": "Period 2: Strong",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period2Gale",
+   "label": "Period 2: Gale",
+   "category": "Period 2",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Dry",
+   "label": "Period 3: Dry",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Wet",
+   "label": "Period 3: Wet",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Drizzle",
+   "label": "Period 3: Drizzle",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Shower",
+   "label": "Period 3: Shower",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3DownPour",
+   "label": "Period 3: Down pour",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3StartDay",
+   "label": "Period 3: Start day",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 365
+  },
+  {
+   "key": "Period3Freezing7To0Celsius",
+   "label": "Period 3: Freezing (-7 to 0 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Cold1To6Celsius",
+   "label": "Period 3: Cold (1 to 6 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Mild7To13Celsius",
+   "label": "Period 3: Mild (7 to 13 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Fine14To21Celsius",
+   "label": "Period 3: Fine (14 to 21 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Warm22To28Celsius",
+   "label": "Period 3: Warm (22 to 28 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Hot29To34Celsius",
+   "label": "Period 3: Hot (29 to 34 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3VeryHot35To42Celsius",
+   "label": "Period 3: Very hot (35 to 42 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3ExtremelyHot43CelsiusAndAbove",
+   "label": "Period 3: Extremely hot (43 Celsius and above)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3ExtremelyFreezing16CelsiusAndBelow",
+   "label": "Period 3: Extremely freezing (-16 Celsius and below)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3VeryFreezing15To8Celsius",
+   "label": "Period 3: Very freezing (-15 to -8 celsius)",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Calm",
+   "label": "Period 3: Calm",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Breezy",
+   "label": "Period 3: Breezy",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Gusty",
+   "label": "Period 3: Gusty",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Strong",
+   "label": "Period 3: Strong",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period3Gale",
+   "label": "Period 3: Gale",
+   "category": "Period 3",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Dry",
+   "label": "Period 4: Dry",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Wet",
+   "label": "Period 4: Wet",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Drizzle",
+   "label": "Period 4: Drizzle",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Shower",
+   "label": "Period 4: Shower",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4DownPour",
+   "label": "Period 4: Down pour",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4StartDay",
+   "label": "Period 4: Start day",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 365
+  },
+  {
+   "key": "Period4Freezing7To0Celsius",
+   "label": "Period 4: Freezing (-7 to 0 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Cold1To6Celsius",
+   "label": "Period 4: Cold (1 to 6 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Mild7To13Celsius",
+   "label": "Period 4: Mild (7 to 13 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Fine14To21Celsius",
+   "label": "Period 4: Fine (14 to 21 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Warm22To28Celsius",
+   "label": "Period 4: Warm (22 to 28 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Hot29To34Celsius",
+   "label": "Period 4: Hot (29 to 34 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4VeryHot35To42Celsius",
+   "label": "Period 4: Very hot (35 to 42 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4ExtremelyHot43CelsiusAndAbove",
+   "label": "Period 4: Extremely hot (43 Celsius and above)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4ExtremelyFreezing16CelsiusAndBelow",
+   "label": "Period 4: Extremely freezing (-16 Celsius and below)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4VeryFreezing15To8Celsius",
+   "label": "Period 4: Very freezing (-15 to -8 celsius)",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Calm",
+   "label": "Period 4: Calm",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Breezy",
+   "label": "Period 4: Breezy",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Gusty",
+   "label": "Period 4: Gusty",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Strong",
+   "label": "Period 4: Strong",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  },
+  {
+   "key": "Period4Gale",
+   "label": "Period 4: Gale",
+   "category": "Period 4",
+   "kind": "Integer",
+   "min": 0,
+   "max": 100
+  }
+ ],
+ "Currency": [
+  {
+   "key": "Name",
+   "label": "Name",
+   "category": "Profile",
+   "kind": "Text"
+  }
+ ]
+}

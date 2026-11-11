@@ -100,11 +100,17 @@ Class names survive patches; only `vtableOffset` and struct offsets may move. Th
 
 A `path` whose pointer is empty (no common name, no contract) makes the field read as empty; it can't be edited for that record.
 
+`"mask": "0x10"` on a `bool` says the flag is one bit of a shared byte. Reading tests that bit, and writing changes only that bit.
+
+`"values": [0, 2, 4, 16]` on a choice field lists the number the game stores for each choice, in the order of the property's choice list. Use it when the game's numbers are not 0, 1, 2… (staff jobs, for example). A stored number that is not in the list reads as empty.
+
 `"readOnly": true` shows a field (in lists, filters and related tabs) but never writes it. Use it for links the game also keeps somewhere else, such as a club's league, which the competition's own team list repeats: changing only one copy would leave the save inconsistent.
 
 `scale` converts the stored value to the one shown: shown = stored ÷ scale. FM has historically stored 1–20 attributes as 1–100 (scale 5). **Confirm this per field.** Mark a field `"verified": true` once you've tested it in-game.
 
-Property keys (`Attr.Finishing`, `Finance.Balance`…) come from [`PropertyCatalog.cs`](../src/FMOpenEditor.Core/Model/PropertyCatalog.cs). [`definitions/_template.json`](../definitions/_template.json) lists them all. A test fails if a definition uses an unknown key.
+Property keys (`Attr.Finishing`, `Finance.Balance`…) come from [`PropertyCatalog.cs`](../src/FMOpenEditor.Core/Model/PropertyCatalog.cs). Properties found by the scripts in [`tools/research`](../tools/research) are listed in [`catalog.generated.json`](../src/FMOpenEditor.Core/Model/catalog.generated.json), which is built into the app and extends that catalog.
+
+Record kinds are `Player`, `Staff`, `Club`, `Competition`, `Nation`, and, since FM27, `Stadium`, `City`, `Team`, `Continent`, `LocalRegion`, `Award`, `Injury`, `Language`, `MediaSource`, `Derby`, `StageName`, `Weather` and `Currency`. A kind appears in the sidebar when the definition gives it a collection with records. [`definitions/_template.json`](../definitions/_template.json) lists them all. A test fails if a definition uses an unknown key.
 
 ## Mapping workflow
 

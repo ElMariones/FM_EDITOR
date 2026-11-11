@@ -184,7 +184,7 @@ public partial class BrowserView : UserControl
         text.Classes.Add("link");
         var cell = new Border { Background = Brushes.Transparent, Child = panel, Cursor = new Cursor(StandardCursorType.Hand) };
         cell.Classes.Add("refcell");
-        ToolTip.SetTip(cell, $"Double-click to open this {refKind switch { EntityKind.Competition => "competition", EntityKind.Nation => "nation", _ => "club" }}");
+        ToolTip.SetTip(cell, $"Double-click to open this {refKind.ToString().ToLowerInvariant()}");
         ToolTip.SetShowDelay(cell, 700);
         cell.DoubleTapped += (_, e) =>
         {

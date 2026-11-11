@@ -7,7 +7,7 @@
     "27.0.0+2493426"
   ],
   "verified": false,
-  "notes": "Mapped live against game_plugin.dll 27.0.1+2494687 (the offsets come from RTTI class names and object layouts, not from RVAs, so they should survive small patches). Collections are found by RTTI (layout rttiInstances); no roots needed. Person records (Player, Staff) use their db::PERSON part as the base: +0x288 in db::ACTUAL_PLAYER, +0x100 in db::ACTUAL_NON_PLAYER, +0x380 in db::ACTUAL_PLAYER_AND_NON_PLAYER, +0x440 in db::HUMAN_NON_PLAYER. Player-managers (ACTUAL_PLAYER_AND_NON_PLAYER) are listed as Staff only: their db::PLAYING_DATA sits 0x238 before the person part instead of 0x140, so player-only fields would read wrong for them. Names: the person points at a shared name-table entry whose first qword is the string, so editing a first name renames everyone who shares it. Strings are FM length-prefixed UTF-8 (fmString). Dates count the day of year from 1 (dateDayBase 1); 1/1900 is the empty date. Checked against real birth dates (Haaland, Mbappé, Bellingham, Yamal, Guardiola). CA/PA checked across all 32,631 players (1 <= CA <= PA <= 200). Attributes are bytes in db::PLAYING_DATA (person-0x129 to -0xF4), stored as 1-100 and shown rounded /5. Outfield attributes were matched against four Real Madrid players' screens (Courtois, Huijsen, Mbappé, Espí), each to a single byte. Goalkeeping attributes were matched against Courtois and Lunin, and are the 11 bytes that are high for the 3,341 keepers and near 1 for outfielders. Hidden attributes, positions and feet are not mapped. Feet are bytes -0x111 (left) and -0x110 (right), x5, checked against the five screenshots. Hidden attributes are NOT confirmed by the game (it never shows them); they are inferred from statistics over 32,631 players: Dirtiness (-0x100) tracks Aggression, Versatility (-0xF8) tracks how many positions a player has, Injury Proneness (-0xF9) runs against Natural Fitness. Consistency and Important Matches are -0xFD and -0xFA in some order, so both stay unmapped. Personality is the 8 bytes at person+0x70, unscaled 1-20, read as Adaptability, Ambition, Loyalty, Pressure, Professionalism, Sportsmanship, Temperament, Controversy; this fits the game's personality labels (Courtois 'Profesional' has 18 Professionalism, Mbappé 'Resuelto' 15) but is not proven. Staff CA/PA: i16 at person-0x26/-0x24 (plausible for all 19,681 staff). Staff Adaptability is the same person+0x70 byte as the players' (checked against four Real Madrid staff screens, which also supports the personality order). Other staff attributes sit in db::NON_PLAYING_DATA (person-0xF0 to -0xBD): a 1-20 run that looks uncorrelated and a 1-100 run whose bytes cluster like abilities (e.g. -0xD4/-0xD3 correlate 0.90). The game shows staff attributes only as bands (Élite, Muy bueno, Bueno, Competente, Decente, Del montón) that do not map to fixed values across staff, so they are not labelled yet. Club finances: db::CLUB_FINANCE at club+0x150. The transfer budget appears three times (+0x7C4, +0x7C8, +0x7D4, all £42,951,596 for Real Madrid); the editor writes +0x7C4, still to be checked in game. +0x7CC is the guaranteed minimum for next season, +0x7D0 the % of transfer income given back, +0x814 the weekly wage bill. Balance is the i32 at finance+0xC (£100,461,188 for Real Madrid, matching the game). The wage budget is weekly at +0x808 (£6,284,565 = £27,233,115 a month); +0x834 holds the same figure, apparently next season's budget. The game shows wages per month (weekly × 52 / 12), and its lowercase 'm' means thousands.",
+  "notes": "Mapped live against game_plugin.dll 27.0.1+2494687 (the offsets come from RTTI class names and object layouts, not from RVAs, so they should survive small patches). Collections are found by RTTI (layout rttiInstances); no roots needed. Person records (Player, Staff) use their db::PERSON part as the base: +0x288 in db::ACTUAL_PLAYER, +0x100 in db::ACTUAL_NON_PLAYER, +0x380 in db::ACTUAL_PLAYER_AND_NON_PLAYER, +0x440 in db::HUMAN_NON_PLAYER. Player-managers (ACTUAL_PLAYER_AND_NON_PLAYER) are listed as Staff only: their db::PLAYING_DATA sits 0x238 before the person part instead of 0x140, so player-only fields would read wrong for them. Names: the person points at a shared name-table entry whose first qword is the string, so editing a first name renames everyone who shares it. Strings are FM length-prefixed UTF-8 (fmString). Dates count the day of year from 1 (dateDayBase 1); 1/1900 is the empty date. Checked against real birth dates (Haaland, Mbappé, Bellingham, Yamal, Guardiola). CA/PA checked across all 32,631 players (1 <= CA <= PA <= 200). Attributes are bytes in db::PLAYING_DATA (person-0x129 to -0xF4), stored as 1-100 and shown rounded /5. Outfield attributes were matched against four Real Madrid players' screens (Courtois, Huijsen, Mbappé, Espí), each to a single byte. Goalkeeping attributes were matched against Courtois and Lunin, and are the 11 bytes that are high for the 3,341 keepers and near 1 for outfielders. Feet are bytes -0x111 (left) and -0x110 (right), x5, checked against the five screenshots. Positions and attributes are one byte array at person-0x138 indexed by the game's attribute number (0-14 positions, stored 1-20; the rest attributes, stored 1-100). The hidden attributes come from the game's own getter: Dirtiness is attribute 0x38 (-0x100), Consistency 0x3B (-0xFD), Important Matches 0x3E (-0xFA), Injury Proneness 0x3F (-0xF9), Versatility 0x40 (-0xF8). Personality is the 8 bytes at person+0x70, unscaled 1-20: Adaptability, Ambition, Loyalty, Pressure, Professionalism, Sportsmanship, Temperament, Controversy (order read from the person getters). Staff CA/PA: i16 at person-0x26/-0x24 (plausible for all 19,681 staff). Staff Adaptability is the same person+0x70 byte as the players' (checked against four Real Madrid staff screens, which also supports the personality order). Staff attributes sit in db::NON_PLAYING_DATA (person-0xF0 to -0xBD) and are labelled from the staff set-field handlers: tendencies stored 1-20 and abilities stored 1-100. The staff job is the byte at person-0x22; its stored numbers are listed in the Role field's values. Club finances: db::CLUB_FINANCE at club+0x150. The transfer budget appears three times (+0x7C4, +0x7C8, +0x7D4, all £42,951,596 for Real Madrid); the editor writes +0x7C4, which is the copy the finance object's own set-field handler writes. +0x7CC is the guaranteed minimum for next season, +0x7D0 the % of transfer income given back, +0x814 the weekly wage bill. Balance is the i32 at finance+0xC (£100,461,188 for Real Madrid, matching the game). The wage budget is weekly at +0x808 (£6,284,565 = £27,233,115 a month); +0x834 holds the same figure, apparently next season's budget. The game shows wages per month (weekly × 52 / 12), and its lowercase 'm' means thousands. Fields added in the second pass come from the game's own per-record get/set property code (the handlers keyed by the 4-character field codes also listed in shared/data/editor.fmf), each checked against a few hundred live records; they are not yet confirmed on screen.",
   "roots": {
     "People": {
       "pattern": null,
@@ -104,6 +104,162 @@
       "classes": [
         {
           "class": "db::NATION",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Stadium": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::STADIUM",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "City": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::CITY",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Team": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::TEAM",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Continent": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::CONTINENT",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "LocalRegion": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::LOCAL_REGION",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Award": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::AWARD",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Injury": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::INJURY",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Language": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::LANGUAGE",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "MediaSource": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::MEDIA_SOURCE",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Derby": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::DERBY",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "StageName": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::STAGE_NAME",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Weather": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::WEATHER",
+          "vtableOffset": "0x0"
+        }
+      ],
+      "stride": 0,
+      "filterValue": 0,
+      "maxCount": 2000000
+    },
+    "Currency": {
+      "layout": "rttiInstances",
+      "classes": [
+        {
+          "class": "db::CURRENCY_RECORD",
           "vtableOffset": "0x0"
         }
       ],
@@ -215,29 +371,29 @@
         "verified": false
       },
       "Reputation.Current": {
-        "offset": null,
+        "offset": "-0x28",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Reputation.Home": {
-        "offset": null,
+        "offset": "-0x2A",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Reputation.World": {
-        "offset": null,
+        "offset": "-0x26",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Value": {
-        "offset": null,
-        "type": "i64",
+        "offset": "-0x54",
+        "type": "i32",
         "scale": 1,
         "maxLength": 64,
         "verified": false
@@ -257,21 +413,21 @@
         "verified": false
       },
       "Looks.SkinTone": {
-        "offset": null,
+        "offset": "0x90",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Looks.HairColour": {
-        "offset": null,
+        "offset": "0x8E",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Looks.HairLength": {
-        "offset": null,
+        "offset": "0x8F",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
@@ -621,7 +777,7 @@
         "verified": false
       },
       "Attr.Consistency": {
-        "offset": null,
+        "offset": "-0xFD",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
@@ -642,7 +798,7 @@
         "verified": false
       },
       "Attr.ImportantMatches": {
-        "offset": null,
+        "offset": "-0xFA",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
@@ -698,126 +854,126 @@
         "verified": false
       },
       "Pos.GK": {
-        "offset": null,
+        "offset": "-0x138",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.DL": {
-        "offset": null,
+        "offset": "-0x136",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.DC": {
-        "offset": null,
+        "offset": "-0x135",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.DR": {
-        "offset": null,
+        "offset": "-0x134",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.WBL": {
-        "offset": null,
+        "offset": "-0x12B",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.WBR": {
-        "offset": null,
+        "offset": "-0x12A",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.DM": {
-        "offset": null,
+        "offset": "-0x133",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.ML": {
-        "offset": null,
+        "offset": "-0x132",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.MC": {
-        "offset": null,
+        "offset": "-0x131",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.MR": {
-        "offset": null,
+        "offset": "-0x130",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.AML": {
-        "offset": null,
+        "offset": "-0x12F",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.AMC": {
-        "offset": null,
+        "offset": "-0x12E",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.AMR": {
-        "offset": null,
+        "offset": "-0x12D",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Pos.ST": {
-        "offset": null,
+        "offset": "-0x12C",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Condition": {
-        "offset": null,
+        "offset": "-0x2C",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "MatchSharpness": {
-        "offset": null,
+        "offset": "-0x30",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Jadedness": {
-        "offset": null,
+        "offset": "-0x2E",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Morale": {
-        "offset": null,
+        "offset": "-0x1C",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
@@ -940,6 +1096,119 @@
         "scale": 1,
         "maxLength": 64,
         "verified": false
+      },
+      "Ethnicity": {
+        "offset": "0x8D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShirtName": {
+        "offset": "-0x198",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BodyType": {
+        "offset": "-0x58",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "InternationalRetirementDate": {
+        "offset": "0x28",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "-0x168"
+        ]
+      },
+      "PreferredCentralPosition": {
+        "offset": "-0x12",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateWhenMovedToBasedNation": {
+        "offset": "0x120",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CityOfBirth": {
+        "offset": "0x80",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateJoined": {
+        "offset": "0x11C",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "InternationalApps": {
+        "offset": "0x134",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "IsFemale": {
+        "offset": "0x19",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "mask": "0x10"
+      },
+      "InternationalGoals": {
+        "offset": "0x136",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "U21InternationalApps": {
+        "offset": "0x138",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "U21InternationalGoals": {
+        "offset": "0x139",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DefaultLanguage": {
+        "offset": "0x0",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x68",
+          "0x48"
+        ]
       }
     },
     "Staff": {
@@ -985,11 +1254,44 @@
         "verified": false
       },
       "Role": {
-        "offset": null,
+        "offset": "-0x22",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "values": [
+          0,
+          2,
+          3,
+          4,
+          6,
+          8,
+          10,
+          12,
+          14,
+          16,
+          17,
+          20,
+          21,
+          22,
+          26,
+          34,
+          35,
+          38,
+          40,
+          44,
+          46,
+          48,
+          50,
+          58,
+          60,
+          62,
+          64,
+          66,
+          80,
+          86,
+          88
+        ]
       },
       "CurrentAbility": {
         "offset": "-0x26",
@@ -1006,42 +1308,42 @@
         "verified": false
       },
       "Reputation.Current": {
-        "offset": null,
+        "offset": "-0x2A",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Reputation.Home": {
-        "offset": null,
+        "offset": "-0x2C",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Reputation.World": {
-        "offset": null,
+        "offset": "-0x28",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Coach.Attacking": {
-        "offset": null,
+        "offset": "-0xCE",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Coach.Defending": {
-        "offset": null,
+        "offset": "-0xCD",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Coach.Fitness": {
-        "offset": null,
+        "offset": "-0xCC",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
@@ -1076,23 +1378,23 @@
         "verified": false
       },
       "Coach.Tactical": {
-        "offset": null,
+        "offset": "-0xC9",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Coach.Technical": {
-        "offset": null,
+        "offset": "-0xCA",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Coach.WorkingWithYoungsters": {
-        "offset": null,
+        "offset": "-0xE4",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
@@ -1104,77 +1406,77 @@
         "verified": false
       },
       "Mental.Determination": {
-        "offset": null,
+        "offset": "-0xE3",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Mental.LevelOfDiscipline": {
-        "offset": null,
+        "offset": "-0xEC",
         "type": "u8",
-        "scale": 5,
+        "scale": 1,
         "maxLength": 64,
         "verified": false
       },
       "Mental.Motivating": {
-        "offset": null,
+        "offset": "-0xD1",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Mental.PeopleManagement": {
-        "offset": null,
+        "offset": "-0xD2",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.JudgingPlayerAbility": {
-        "offset": null,
+        "offset": "-0xD4",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.JudgingPlayerPotential": {
-        "offset": null,
+        "offset": "-0xD3",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.JudgingStaffAbility": {
-        "offset": null,
+        "offset": "-0xBE",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.Negotiating": {
-        "offset": null,
+        "offset": "-0xBF",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.TacticalKnowledge": {
-        "offset": null,
+        "offset": "-0xCF",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.Physiotherapy": {
-        "offset": null,
+        "offset": "-0xD0",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
         "verified": false
       },
       "Knowledge.SportsScience": {
-        "offset": null,
+        "offset": "-0xC1",
         "type": "u8",
         "scale": 5,
         "maxLength": 64,
@@ -1210,6 +1512,419 @@
         "path": [
           "0xA8"
         ]
+      },
+      "Looks.SkinTone": {
+        "offset": "0x90",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Looks.HairColour": {
+        "offset": "0x8E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Looks.HairLength": {
+        "offset": "0x8F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Ethnicity": {
+        "offset": "0x8D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BuyingPlayers": {
+        "offset": "-0xE2",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Business": {
+        "offset": "-0xEF",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Possession": {
+        "offset": "-0xCB",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SetPieces": {
+        "offset": "-0xBD",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DirtinessAllowance": {
+        "offset": "-0xC8",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Depth": {
+        "offset": "-0xDD",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Directness": {
+        "offset": "-0xED",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Flexibility": {
+        "offset": "-0xDB",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "HardnessOfTraining": {
+        "offset": "-0xDA",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Interference": {
+        "offset": "-0xEA",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MindGames": {
+        "offset": "-0xE1",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SideOfGameWillingToWork": {
+        "offset": "-0x16",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AttackingFormation": {
+        "offset": "-0x1E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Patience": {
+        "offset": "-0xE7",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CoachingStyle": {
+        "offset": "-0x17",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DefensiveFormation": {
+        "offset": "-0x1F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Goalkeeping": {
+        "offset": "-0xD5",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AnalysingData": {
+        "offset": "-0xC4",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredFormation": {
+        "offset": "-0x21",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TriggerPress": {
+        "offset": "-0xE6",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SecondPreferredFormation": {
+        "offset": "-0x20",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Versatility": {
+        "offset": "-0xC5",
+        "type": "u8",
+        "scale": 5,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Resources": {
+        "offset": "-0xE5",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SquadRotation": {
+        "offset": "-0xD9",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Tempo": {
+        "offset": "-0xD8",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Width": {
+        "offset": "-0xD7",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AttackingFormationOutOfPossession": {
+        "offset": "-0x1A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DefensiveFormationOutOfPossession": {
+        "offset": "-0x1B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Height": {
+        "offset": "-0x5A",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceDefensiveMarking": {
+        "offset": "-0xF",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceDeliveryTarget": {
+        "offset": "-0x10",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceAttackingNumbers": {
+        "offset": "-0xE",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceDefensiveNumbers": {
+        "offset": "-0xD",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceDeliveryType": {
+        "offset": "-0x12",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPiecePostDefence": {
+        "offset": "-0x11",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredSetPieceDefendingFreeKicks": {
+        "offset": "-0xC",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PreferredFormationOutOfPossession": {
+        "offset": "-0x1D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SecondPreferredFormationOutOfPossession": {
+        "offset": "-0x1C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateWhenMovedToBasedNation": {
+        "offset": "0x120",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Ambition": {
+        "offset": "0x71",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CityOfBirth": {
+        "offset": "0x80",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateJoined": {
+        "offset": "0x11C",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CommonName": {
+        "offset": "0x0",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x60"
+        ]
+      },
+      "Controversy": {
+        "offset": "0x77",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "InternationalApps": {
+        "offset": "0x134",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "InternationalGoals": {
+        "offset": "0x136",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Loyalty": {
+        "offset": "0x72",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Pressure": {
+        "offset": "0x73",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Professionalism": {
+        "offset": "0x74",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Sportsmanship": {
+        "offset": "0x75",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Temperament": {
+        "offset": "0x76",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "U21InternationalApps": {
+        "offset": "0x138",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "U21InternationalGoals": {
+        "offset": "0x139",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DefaultLanguage": {
+        "offset": "0x0",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x68",
+          "0x48"
+        ]
       }
     },
     "Club": {
@@ -1242,22 +1957,27 @@
         "verified": false
       },
       "League": {
-        "offset": "0x48",
+        "offset": "0x50",
         "type": "entityPtr",
         "scale": 1,
         "maxLength": 64,
         "verified": false,
-        "readOnly": true,
         "path": [
-          "0x108"
-        ]
+          "0x18",
+          "0x0"
+        ],
+        "readOnly": true
       },
       "Reputation": {
-        "offset": null,
+        "offset": "0xA8",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0"
+        ]
       },
       "TeamCohesion": {
         "offset": null,
@@ -1304,53 +2024,74 @@
         "verified": false
       },
       "Finance.TicketPrice": {
-        "offset": null,
-        "type": "i64",
+        "offset": "0x10",
+        "type": "f32",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
       },
       "Finance.SeasonTicketPrice": {
-        "offset": null,
-        "type": "i64",
+        "offset": "0x14",
+        "type": "f32",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
       },
       "Facilities.Training": {
-        "offset": null,
+        "offset": "0x120",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
       },
       "Facilities.Youth": {
-        "offset": null,
+        "offset": "0x12B",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
       },
       "Facilities.Corporate": {
-        "offset": null,
+        "offset": "0x8A9",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
       },
       "Facilities.YouthRecruitment": {
-        "offset": null,
+        "offset": "0x12D",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
       },
       "Facilities.JuniorCoaching": {
-        "offset": null,
+        "offset": "0x12C",
         "type": "u8",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
       },
       "Kit.PrimaryColour": {
         "offset": null,
@@ -1367,18 +2108,28 @@
         "verified": false
       },
       "Stadium.Name": {
-        "offset": null,
-        "type": "utf16Ptr",
+        "offset": "0x40",
+        "type": "fmString",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0",
+          "0x78"
+        ]
       },
       "Stadium.Capacity": {
-        "offset": null,
+        "offset": "0x7C",
         "type": "i32",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0",
+          "0x78"
+        ]
       },
       "Standing.Position": {
         "offset": null,
@@ -1435,6 +2186,190 @@
         "scale": 1,
         "maxLength": 64,
         "verified": false
+      },
+      "Finance.EmbargoStart": {
+        "offset": "0x24",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
+      },
+      "Finance.EmbargoEnd": {
+        "offset": "0x28",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
+      },
+      "Finance.EmbargoAppeal": {
+        "offset": "0x2C",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x150"
+        ]
+      },
+      "Stadium": {
+        "offset": "0x78",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x18",
+          "0x0"
+        ],
+        "readOnly": true
+      },
+      "SecondPreferredFormation": {
+        "offset": "0x75",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xB0"
+        ]
+      },
+      "AttackingFormation": {
+        "offset": "0x77",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xB0"
+        ]
+      },
+      "BasedNation": {
+        "offset": "0xE8",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ContinentalCupNation": {
+        "offset": "0xF0",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "City": {
+        "offset": "0xF8",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DefensiveFormation": {
+        "offset": "0x76",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xB0"
+        ]
+      },
+      "LocalRegion": {
+        "offset": "0x38",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xF8"
+        ]
+      },
+      "Morale": {
+        "offset": "0x121",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
+      },
+      "PreferredFormation": {
+        "offset": "0x74",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xB0"
+        ]
+      },
+      "Status": {
+        "offset": "0x16A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          0,
+          1,
+          2,
+          3,
+          20
+        ]
+      },
+      "NumberOfSeasonTicketHolders": {
+        "offset": "0xC0",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
+      },
+      "SixLetterName": {
+        "offset": "0x0",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
+      },
+      "TrainingGround": {
+        "offset": "0x140",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "YearFounded": {
+        "offset": "0xD8",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
+      },
+      "YouthImportance": {
+        "offset": "0x126",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x100"
+        ]
       }
     },
     "Competition": {
@@ -1453,7 +2388,7 @@
         "verified": false
       },
       "ShortName": {
-        "offset": "0x50",
+        "offset": "0x48",
         "type": "fmString",
         "scale": 1,
         "maxLength": 64,
@@ -1467,7 +2402,7 @@
         "verified": false
       },
       "Reputation": {
-        "offset": null,
+        "offset": "0x188",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
@@ -1476,6 +2411,174 @@
       "PrizeMoney": {
         "offset": null,
         "type": "i64",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrophyType": {
+        "offset": "0x100",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LowestOfficialCategoryAllowed": {
+        "offset": "0x102",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PlayerGender": {
+        "offset": "0xF9",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BackgroundColour": {
+        "offset": "0x134",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Continent": {
+        "offset": "0x58",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "EastBoundaryRegionalDivision": {
+        "offset": "0x98",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ForegroundColour": {
+        "offset": "0x130",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumPitchLength": {
+        "offset": "0x164",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumPitchWidth": {
+        "offset": "0x166",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MaximumPitchLength": {
+        "offset": "0x168",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MaximumPitchWidth": {
+        "offset": "0x16A",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "NorthBoundaryRegionalDivision": {
+        "offset": "0x80",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "OverridenSubsRules": {
+        "offset": "0xFD",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ParentCompetition": {
+        "offset": "0x68",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SouthBoundaryRegionalDivision": {
+        "offset": "0x88",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UsesSeatedStadiumsOnly": {
+        "offset": "0xFC",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrimColour": {
+        "offset": "0x138",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UsesExtraOfficials": {
+        "offset": "0xFB",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WestBoundaryRegionalDivision": {
+        "offset": "0x90",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Type": {
+        "offset": "0xF8",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DivisionLevel": {
+        "offset": "0x1AA",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WinterBallColour": {
+        "offset": "0x15C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WinterBallEndDate": {
+        "offset": "0x154",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WinterBallStartDate": {
+        "offset": "0x150",
+        "type": "fmDate",
         "scale": 1,
         "maxLength": 64,
         "verified": false
@@ -1504,11 +2607,16 @@
         "verified": false
       },
       "Reputation": {
-        "offset": null,
+        "offset": "0xA8",
         "type": "i16",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0x108",
+          "0x18",
+          "0x0"
+        ]
       },
       "Rules.EuFreeMovement": {
         "offset": null,
@@ -1527,6 +2635,2130 @@
       "Rules.MaxNonEuInSquad": {
         "offset": null,
         "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ThreeLetterName": {
+        "offset": "0x28",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "YouthRating": {
+        "offset": "0x86C",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "AttackingFormation": {
+        "offset": "0x77",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108",
+          "0xB0"
+        ]
+      },
+      "YearAssociationFormed": {
+        "offset": "0x868",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Attacking": {
+        "offset": "0x889",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Continent_Ncti": {
+        "offset": "0xF0",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Currency": {
+        "offset": "0x100",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Depth": {
+        "offset": "0x88A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "DefensiveFormation": {
+        "offset": "0x76",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108",
+          "0xB0"
+        ]
+      },
+      "Directness": {
+        "offset": "0x88B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "EconomicFactor": {
+        "offset": "0x1F0",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "FaFinancialPower": {
+        "offset": "0x883",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "YearAffiliated": {
+        "offset": "0x864",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "YearAffiliatedToFederation": {
+        "offset": "0x866",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "WorldwideGoverningBodyFullMember": {
+        "offset": "0x87F",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Flamboyancy": {
+        "offset": "0x88C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Flexibility": {
+        "offset": "0x88D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "ForeignManagerLikelihood": {
+        "offset": "0x886",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "FaPatience": {
+        "offset": "0x885",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "FreeRoles": {
+        "offset": "0x88E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "RankingPoints": {
+        "offset": "0x274",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "GainNationalityType": {
+        "offset": "0x1EB",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2
+        ]
+      },
+      "GameImportance": {
+        "offset": "0x87D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Marking": {
+        "offset": "0x88F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "MaxYouthAge": {
+        "offset": "0x884",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "NationalStadium": {
+        "offset": "0x118",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "NationalityName": {
+        "offset": "0x30",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Offside": {
+        "offset": "0x890",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "PreferredFormation": {
+        "offset": "0x74",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108",
+          "0xB0"
+        ]
+      },
+      "Pressing": {
+        "offset": "0x891",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "ShortName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "StateOfDevelopment": {
+        "offset": "0x1EC",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SecondPreferredFormation": {
+        "offset": "0x75",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108",
+          "0xB0"
+        ]
+      },
+      "SittingBack": {
+        "offset": "0x892",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Tempo": {
+        "offset": "0x893",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "AllowMultipleAssistantManagers": {
+        "offset": "0x87E",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "UseOfPlaymaker": {
+        "offset": "0x894",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Width": {
+        "offset": "0x895",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108"
+        ]
+      },
+      "Nickname": {
+        "offset": "0x90",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x108",
+          "0xB0"
+        ]
+      }
+    },
+    "Stadium": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x40",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "DateOfCurrentOwnership": {
+        "offset": "0x38",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BuildDate": {
+        "offset": "0x30",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "CapacityForAllSeaterCompetitions": {
+        "offset": "0x88",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ContinentalName": {
+        "offset": "0x48",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Capacity": {
+        "offset": "0x7C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "City": {
+        "offset": "0x60",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "StadiumDecay": {
+        "offset": "0xAA",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ExpansionCapacity": {
+        "offset": "0x8C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Environment": {
+        "offset": "0xB0",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchLengthForInternationalMatches": {
+        "offset": "0x9C",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Latitude": {
+        "offset": "0x70",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Longitude": {
+        "offset": "0x74",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumPitchLength": {
+        "offset": "0xA0",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumPitchWidth": {
+        "offset": "0xA2",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MaximumPitchLength": {
+        "offset": "0xA4",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MaximumPitchWidth": {
+        "offset": "0xA6",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "NearbyStadium": {
+        "offset": "0x68",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": "0x20",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0x60"
+        ]
+      },
+      "Owner": {
+        "offset": "0x90",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchRelayRequiredDate": {
+        "offset": "0x2C",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchRecoveryRate": {
+        "offset": "0xAE",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchCondition": {
+        "offset": "0xA8",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchType": {
+        "offset": "0xAD",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "PitchWidth": {
+        "offset": "0x9A",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ReBuildDate": {
+        "offset": "0x34",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SeatColour": {
+        "offset": "0x78",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SeatingCapacity": {
+        "offset": "0x80",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "State": {
+        "offset": "0xAF",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "UsedByNationalU19Team": {
+        "offset": "0xB3",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UsedByNationalU21Team": {
+        "offset": "0xB2",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UsedCapacity": {
+        "offset": "0x84",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UsedByNationalTeam": {
+        "offset": "0xB1",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PitchWidthForInternationalMatches": {
+        "offset": "0x9E",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "City": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Altitude": {
+        "offset": "0x50",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Attraction": {
+        "offset": "0x54",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "InhabitantsRange": {
+        "offset": "0x52",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Latitude": {
+        "offset": "0x48",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Language": {
+        "offset": "0x30",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Longitude": {
+        "offset": "0x4C",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LocalRegion": {
+        "offset": "0x38",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": "0x20",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Weather": {
+        "offset": "0x28",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Team": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Club": {
+        "offset": "0x30",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "readOnly": true
+      },
+      "Captain": {
+        "offset": "0x88",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Division": {
+        "offset": "0x50",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MidweekHomeMatchDay": {
+        "offset": "0x116",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA0"
+        ]
+      },
+      "OtherDivision": {
+        "offset": "0x68",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation": {
+        "offset": "0xA8",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Stadium": {
+        "offset": "0x78",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ViceCaptain": {
+        "offset": "0x90",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WeekendHomeMatchDay": {
+        "offset": "0x115",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA0"
+        ]
+      }
+    },
+    "Continent": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ThreeLetterName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BackgroundColour": {
+        "offset": "0x4C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ForegroundColour": {
+        "offset": "0x48",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrimColour": {
+        "offset": "0x50",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "FederationName": {
+        "offset": "0x30",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "RegionalStrength": {
+        "offset": "0xE4",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortFederationName": {
+        "offset": "0x40",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "LocalRegion": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": "0x48",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Population": {
+        "offset": "0x58",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Weather": {
+        "offset": "0x50",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Award": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x30",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AnnouncementDate": {
+        "offset": "0x4C",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AllowPreviousWinner": {
+        "offset": "0x8C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "BackgroundColour": {
+        "offset": "0x1C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Based": {
+        "offset": "0x87",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Continent": {
+        "offset": "0x50",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AwardDate": {
+        "offset": "0x48",
+        "type": "fmDate",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AwardPeriod": {
+        "offset": "0x86",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          8
+        ]
+      },
+      "ForegroundColour": {
+        "offset": "0x18",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Formation": {
+        "offset": "0x92",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumAge": {
+        "offset": "0x94",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumPercentageOfGamesPlayed": {
+        "offset": "0x97",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Competition": {
+        "offset": "0x58",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": "0x60",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "NumberOfPlacings": {
+        "offset": "0x8F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Position": {
+        "offset": "0x7C",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          0,
+          1,
+          2,
+          12,
+          30,
+          96,
+          128,
+          6144,
+          14336,
+          16256,
+          16384
+        ]
+      },
+      "RunBy": {
+        "offset": "0x89",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Reputation": {
+        "offset": "0x80",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LocalRegion": {
+        "offset": "0x68",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AwardRecipientType": {
+        "offset": "0x8D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          6,
+          7,
+          8
+        ]
+      },
+      "Voting": {
+        "offset": "0x84",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      },
+      "ShortName": {
+        "offset": "0x38",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Side": {
+        "offset": "0x88",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "UseStatsFrom": {
+        "offset": "0x8B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "TrimColour": {
+        "offset": "0x20",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "VotingFormat": {
+        "offset": "0x8E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WinnerHomeReputation": {
+        "offset": "0x95",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WinnerWorldReputation": {
+        "offset": "0x96",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MaximumAge": {
+        "offset": "0x93",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Injury": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ExtraDaysMen": {
+        "offset": "0x3A",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumDaysMen": {
+        "offset": "0x38",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "OccurrenceRatio": {
+        "offset": "0x30",
+        "type": "f32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SentenceName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ExtraDaysWomen": {
+        "offset": "0x4E",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "MinimumDaysWomen": {
+        "offset": "0x4C",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Seriousness": {
+        "offset": "0x6C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "SubClassification": {
+        "offset": "0x65",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          253,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          38,
+          39,
+          40,
+          41,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48
+        ]
+      }
+    },
+    "Language": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LanguageDifficulty": {
+        "offset": "0x3C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LanguageFamily": {
+        "offset": "0x34",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "LanguageInfluence": {
+        "offset": "0x3B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Nation": {
+        "offset": "0x28",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "MediaSource": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AttendsPressConferences": {
+        "offset": "0xC3",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Continent": {
+        "offset": "0xB8",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "City": {
+        "offset": "0xB0",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "IsFake": {
+        "offset": "0xC2",
+        "type": "bool",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period": {
+        "offset": "0xE0",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15
+        ]
+      },
+      "Scope": {
+        "offset": "0xE1",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      },
+      "Style": {
+        "offset": "0xC0",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Derby": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AlternativeName": {
+        "offset": "0x30",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "AlternativeShortName": {
+        "offset": "0x28",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "NationalReputation": {
+        "offset": "0x5D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Team1": {
+        "offset": "0x40",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Team2": {
+        "offset": "0x48",
+        "type": "entityPtr",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "WorldReputation": {
+        "offset": "0x5C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "StageName": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "PluralName": {
+        "offset": "0x28",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "ShortName": {
+        "offset": "0x20",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Weather": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Dry": {
+        "offset": "0x27",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Wet": {
+        "offset": "0x28",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Drizzle": {
+        "offset": "0x29",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Shower": {
+        "offset": "0x2A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1DownPour": {
+        "offset": "0x2B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1StartDay": {
+        "offset": "0x20",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Freezing7To0Celsius": {
+        "offset": "0x2E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Cold1To6Celsius": {
+        "offset": "0x2F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Mild7To13Celsius": {
+        "offset": "0x30",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Fine14To21Celsius": {
+        "offset": "0x31",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Warm22To28Celsius": {
+        "offset": "0x32",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Hot29To34Celsius": {
+        "offset": "0x33",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1VeryHot35To42Celsius": {
+        "offset": "0x34",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1ExtremelyHot43CelsiusAndAbove": {
+        "offset": "0x35",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1ExtremelyFreezing16CelsiusAndBelow": {
+        "offset": "0x2C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1VeryFreezing15To8Celsius": {
+        "offset": "0x2D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Calm": {
+        "offset": "0x22",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Breezy": {
+        "offset": "0x23",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Gusty": {
+        "offset": "0x24",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Strong": {
+        "offset": "0x25",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period1Gale": {
+        "offset": "0x26",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Dry": {
+        "offset": "0x3F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Wet": {
+        "offset": "0x40",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Drizzle": {
+        "offset": "0x41",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Shower": {
+        "offset": "0x42",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2DownPour": {
+        "offset": "0x43",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2StartDay": {
+        "offset": "0x38",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Freezing7To0Celsius": {
+        "offset": "0x46",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Cold1To6Celsius": {
+        "offset": "0x47",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Mild7To13Celsius": {
+        "offset": "0x48",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Fine14To21Celsius": {
+        "offset": "0x49",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Warm22To28Celsius": {
+        "offset": "0x4A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Hot29To34Celsius": {
+        "offset": "0x4B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2VeryHot35To42Celsius": {
+        "offset": "0x4C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2ExtremelyHot43CelsiusAndAbove": {
+        "offset": "0x4D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2ExtremelyFreezing16CelsiusAndBelow": {
+        "offset": "0x44",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2VeryFreezing15To8Celsius": {
+        "offset": "0x45",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Calm": {
+        "offset": "0x3A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Breezy": {
+        "offset": "0x3B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Gusty": {
+        "offset": "0x3C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Strong": {
+        "offset": "0x3D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period2Gale": {
+        "offset": "0x3E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Dry": {
+        "offset": "0x57",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Wet": {
+        "offset": "0x58",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Drizzle": {
+        "offset": "0x59",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Shower": {
+        "offset": "0x5A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3DownPour": {
+        "offset": "0x5B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3StartDay": {
+        "offset": "0x50",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Freezing7To0Celsius": {
+        "offset": "0x5E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Cold1To6Celsius": {
+        "offset": "0x5F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Mild7To13Celsius": {
+        "offset": "0x60",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Fine14To21Celsius": {
+        "offset": "0x61",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Warm22To28Celsius": {
+        "offset": "0x62",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Hot29To34Celsius": {
+        "offset": "0x63",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3VeryHot35To42Celsius": {
+        "offset": "0x64",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3ExtremelyHot43CelsiusAndAbove": {
+        "offset": "0x65",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3ExtremelyFreezing16CelsiusAndBelow": {
+        "offset": "0x5C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3VeryFreezing15To8Celsius": {
+        "offset": "0x5D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Calm": {
+        "offset": "0x52",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Breezy": {
+        "offset": "0x53",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Gusty": {
+        "offset": "0x54",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Strong": {
+        "offset": "0x55",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period3Gale": {
+        "offset": "0x56",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Dry": {
+        "offset": "0x6F",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Wet": {
+        "offset": "0x70",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Drizzle": {
+        "offset": "0x71",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Shower": {
+        "offset": "0x72",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4DownPour": {
+        "offset": "0x73",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4StartDay": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Freezing7To0Celsius": {
+        "offset": "0x76",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Cold1To6Celsius": {
+        "offset": "0x77",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Mild7To13Celsius": {
+        "offset": "0x78",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Fine14To21Celsius": {
+        "offset": "0x79",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Warm22To28Celsius": {
+        "offset": "0x7A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Hot29To34Celsius": {
+        "offset": "0x7B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4VeryHot35To42Celsius": {
+        "offset": "0x7C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4ExtremelyHot43CelsiusAndAbove": {
+        "offset": "0x7D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4ExtremelyFreezing16CelsiusAndBelow": {
+        "offset": "0x74",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4VeryFreezing15To8Celsius": {
+        "offset": "0x75",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Calm": {
+        "offset": "0x6A",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Breezy": {
+        "offset": "0x6B",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Gusty": {
+        "offset": "0x6C",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Strong": {
+        "offset": "0x6D",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Period4Gale": {
+        "offset": "0x6E",
+        "type": "u8",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      }
+    },
+    "Currency": {
+      "Id": {
+        "offset": "0xC",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false
+      },
+      "Name": {
+        "offset": "0x18",
+        "type": "fmString",
         "scale": 1,
         "maxLength": 64,
         "verified": false

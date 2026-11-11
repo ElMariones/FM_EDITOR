@@ -119,17 +119,23 @@
       <!-- ===== Sidebar (only once a save is open) ===== -->
       <Border x:Name="TourSidebar" Grid.Row="1" Classes="bar" Width="208" Margin="0,0,12,0" Padding="0,10" IsVisible="{Binding IsConnected}">
         <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Classes="eyebrow" Text="DATABASE" Margin="20,6,0,8" />
           <ListBox Classes="nav" ItemsSource="{Binding Nav}" SelectedItem="{Binding SelectedNav}">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="vm:NavItem">
-                <Grid ColumnDefinitions="Auto,Auto,*" Height="42">
-                  <Border Classes="pip" Margin="0,0,10,0" />
-                  <Panel Grid.Column="1" Classes="navicon" Width="20" Height="20" VerticalAlignment="Center" Margin="2,0,12,0">
-                    <c:Icon Kind="{Binding Icon}" Size="19" />
-                  </Panel>
-                  <TextBlock Grid.Column="2" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Medium" />
-                </Grid>
+                <!-- A group heading sits above the first entry of each section; only the row below it highlights. -->
+                <StackPanel>
+                  <TextBlock Classes="eyebrow" Text="{Binding Section}" Margin="12,12,0,6"
+                             IsVisible="{Binding Section, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                  <Border Classes="navrow">
+                    <Grid ColumnDefinitions="Auto,Auto,*" Height="34">
+                      <Border Classes="pip" Margin="0,0,10,0" />
+                      <Panel Grid.Column="1" Classes="navicon" Width="20" Height="20" VerticalAlignment="Center" Margin="2,0,12,0">
+                        <c:Icon Kind="{Binding Icon}" Size="18" />
+                      </Panel>
+                      <TextBlock Grid.Column="2" Text="{Binding Title}" VerticalAlignment="Center" FontWeight="Medium" />
+                    </Grid>
+                  </Border>
+                </StackPanel>
               </DataTemplate>
             </ListBox.ItemTemplate>
           </ListBox>

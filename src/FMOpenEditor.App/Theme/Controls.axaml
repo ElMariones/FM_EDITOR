@@ -228,11 +228,24 @@
   <Style Selector="ListBox.nav ListBoxItem">
     <Setter Property="Padding" Value="0" />
     <Setter Property="CornerRadius" Value="12" />
-    <Setter Property="Margin" Value="8,2" />
-    <Setter Property="MinHeight" Value="42" />
+    <Setter Property="Margin" Value="8,1" />
+    <Setter Property="MinHeight" Value="34" />
     <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
   </Style>
+  <!-- The highlight lives on the row, not the whole item, so a section heading above it stays plain. -->
   <Style Selector="ListBox.nav ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource InkBrush}" />
+  </Style>
+  <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource InkBrush}" />
+  </Style>
+  <Style Selector="ListBox.nav Border.navrow">
+    <Setter Property="CornerRadius" Value="10" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Transitions">
       <Transitions>
@@ -240,13 +253,11 @@
       </Transitions>
     </Setter>
   </Style>
-  <Style Selector="ListBox.nav ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="ListBox.nav ListBoxItem:pointerover Border.navrow">
     <Setter Property="Background" Value="{DynamicResource HoverBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource InkBrush}" />
   </Style>
-  <Style Selector="ListBox.nav ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+  <Style Selector="ListBox.nav ListBoxItem:selected Border.navrow">
     <Setter Property="Background" Value="{DynamicResource SelectedBrush}" />
-    <Setter Property="Foreground" Value="{DynamicResource InkBrush}" />
   </Style>
   <!-- The marker that slides in beside the selected page -->
   <Style Selector="ListBox.nav Border.pip">

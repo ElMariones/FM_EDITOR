@@ -74,14 +74,11 @@ public sealed partial class BrowserViewModel : ObservableObject
         _navigate = navigate ?? Open;
         _relations = relations;
         Kind = kind;
-        Title = kind switch
-        {
-            EntityKind.Staff => "Staff",
-            EntityKind.Competition => "Competitions",
-            _ => kind + "s",
-        };
+        Title = PropertyCatalog.Plural(kind);
 
-        Columns = DefaultColumns(kind).Where(c => session.IsSupported(kind, c.Key)).ToList();
+        // The five original kinds have hand-picked columns; the rest show their first few mapped fields.
+        var columns = DefaultColumns(kind).Where(c => session.IsSupported(kind, c.Key));
+        Columns = (kind > EntityKind.Nation ? columns.Take(8) : columns).ToList();
         FilterProperties = PropertyCatalog.For(kind).Where(p => session.IsSupported(kind, p.Key)).ToList();
         EditableProperties = PropertyCatalog.For(kind).Where(p => session.CanEdit(kind, p.Key)).ToList();
         _massProperty = EditableProperties.FirstOrDefault();
@@ -133,11 +130,24 @@ public sealed partial class BrowserViewModel : ObservableObject
             new(PropertyCatalog.DisplayName, "Name", 220), new("Nation", "Nation", 120),
             new("Reputation", "Rep", 64), new("PrizeMoney", "Prize money", 100),
         ],
-        _ =>
+        EntityKind.Nation =>
         [
             new(PropertyCatalog.DisplayName, "Name", 200), new("Continent", "Continent", 150),
             new("Reputation", "Rep", 64), new("Rules.EuFreeMovement", "EU free movement", 130),
         ],
+        // No hand-picked list: lead with what identifies a record (links to other records, then
+        // capacities and reputations), and leave dates and colour numbers to the editor.
+        _ => PropertyCatalog.For(kind)
+            .Where(p => p.Key != "Name")
+            .OrderBy(p => p.Key == PropertyCatalog.DisplayName ? 0
+                : p.Category == "Colours" ? 9
+                : p.Kind == ValueKind.Reference ? 1
+                : p.Label.Contains("capacity", StringComparison.OrdinalIgnoreCase) || p.Label.Contains("reputation", StringComparison.OrdinalIgnoreCase) ? 2
+                : p.Kind is ValueKind.Choice or ValueKind.Text ? 3
+                : p.Kind is ValueKind.Integer or ValueKind.Money ? 4
+                : 6)
+            .Select(p => new ColumnDef(p.Key, p.Key == PropertyCatalog.DisplayName ? "Name" : p.Label,
+                p.Key == PropertyCatalog.DisplayName ? 220 : p.Kind is ValueKind.Text or ValueKind.Reference ? 150 : 110)),
     };
 
     public IReadOnlyList<Entity> SelectedEntities => _selection.Select(r => r.Entity).ToList();

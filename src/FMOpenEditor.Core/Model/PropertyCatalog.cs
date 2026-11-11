@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace FMOpenEditor.Core.Model;
 
 /// <summary>Every property the editor knows about, per entity kind, in display order.</summary>
@@ -9,10 +11,18 @@ public static class PropertyCatalog
         "Fringe Player", "Hot Prospect", "Decent Young Player", "Not Needed",
     ];
 
+    /// <summary>
+    /// Staff jobs, in the order of the game's own job numbers (the definition's <c>values</c> list gives
+    /// the number stored for each). "Job 80" and "Job 86" exist in the game but are not identified yet.
+    /// </summary>
     public static readonly string[] StaffRoles =
     [
-        "Manager", "Assistant Manager", "Coach", "Goalkeeping Coach", "Fitness Coach", "Physio",
-        "Sports Scientist", "Scout", "Analyst", "Director of Football", "Head of Youth Development", "Chairman",
+        "None", "Coach", "Player / Coach", "Chairperson", "Director", "Managing Director",
+        "Director of Football", "Physio", "Scout", "Manager", "Player / Manager", "Assistant Manager",
+        "Player / Assistant Manager", "Set Piece Coach", "Fitness Coach", "Goalkeeping Coach",
+        "Player / Goalkeeping Coach", "Head of Sports Medicine", "Head of Sports Science", "Chief Scout",
+        "Doctor", "Sports Scientist", "Head Physio", "Recruitment Analyst", "Performance Analyst",
+        "Chief Analyst", "Head of Youth Development", "Owner", "Job 80", "Job 86", "Technical Director",
     ];
 
     public static readonly string[] Continents =
@@ -65,20 +75,97 @@ public static class PropertyCatalog
         "Tactical Knowledge", "Physiotherapy", "Sports Science",
     ];
 
-    private static readonly Dictionary<EntityKind, IReadOnlyList<PropertyDef>> ByKind = new()
+    private static readonly Dictionary<EntityKind, IReadOnlyList<PropertyDef>> ByKind = Build();
+
+    private static Dictionary<EntityKind, IReadOnlyList<PropertyDef>> Build()
     {
-        [EntityKind.Player] = BuildPlayer(),
-        [EntityKind.Staff] = BuildStaff(),
-        [EntityKind.Club] = BuildClub(),
-        [EntityKind.Competition] = BuildCompetition(),
-        [EntityKind.Nation] = BuildNation(),
-    };
+        var map = new Dictionary<EntityKind, List<PropertyDef>>
+        {
+            [EntityKind.Player] = BuildPlayer(),
+            [EntityKind.Staff] = BuildStaff(),
+            [EntityKind.Club] = BuildClub(),
+            [EntityKind.Competition] = BuildCompetition(),
+            [EntityKind.Nation] = BuildNation(),
+        };
+        foreach (var kind in Enum.GetValues<EntityKind>())
+        {
+            if (!map.ContainsKey(kind)) map[kind] = [Derived(DisplayName, "Name", "Profile", ValueKind.Text)];
+        }
+
+        // Properties found by reading the game's own field tables (tools/research) rather than typed in
+        // by hand. They extend the lists above; a key that is already there is left alone.
+        foreach (var (kind, props) in LoadGenerated())
+        {
+            var list = map[kind];
+            var known = list.Select(p => p.Key).ToHashSet();
+            foreach (var p in props)
+            {
+                if (known.Add(p.Key)) list.Add(p);
+            }
+        }
+        return map.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<PropertyDef>)kv.Value);
+    }
+
+    private sealed class GeneratedProperty
+    {
+        public string Key { get; set; } = "";
+        public string Label { get; set; } = "";
+        public string Category { get; set; } = "Details";
+        public ValueKind Kind { get; set; }
+        public double? Min { get; set; }
+        public double? Max { get; set; }
+        public EntityKind? RefKind { get; set; }
+        public List<string>? Choices { get; set; }
+        public bool IsAttribute { get; set; }
+        public string? Description { get; set; }
+    }
+
+    private static IEnumerable<(EntityKind Kind, List<PropertyDef> Props)> LoadGenerated()
+    {
+        using var stream = typeof(PropertyCatalog).Assembly.GetManifestResourceStream("catalog.generated.json");
+        if (stream is null) yield break;
+        var options = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() },
+        };
+        var data = JsonSerializer.Deserialize<Dictionary<string, List<GeneratedProperty>>>(stream, options) ?? [];
+        foreach (var (kindName, props) in data)
+        {
+            if (!Enum.TryParse<EntityKind>(kindName, out var kind)) continue;
+            yield return (kind, props.Select(g => new PropertyDef(g.Key, g.Label, g.Category, g.Kind)
+            {
+                Min = g.Min ?? (g.Kind == ValueKind.Choice ? 0 : int.MinValue),
+                Max = g.Max ?? (g.Kind == ValueKind.Choice ? (g.Choices?.Count ?? 1) - 1 : int.MaxValue),
+                RefKind = g.RefKind,
+                Choices = g.Choices,
+                IsAttribute = g.IsAttribute,
+                Description = g.Description,
+            }).ToList());
+        }
+    }
 
     private static readonly Dictionary<(EntityKind, string), PropertyDef> ByKey =
         ByKind.SelectMany(kv => kv.Value.Select(p => (kv.Key, p)))
               .ToDictionary(t => (t.Key, t.p.Key), t => t.p);
 
     public static IReadOnlyList<PropertyDef> For(EntityKind kind) => ByKind[kind];
+
+    /// <summary>Plural display name of a kind, e.g. "Media sources".</summary>
+    public static string Plural(EntityKind kind) => kind switch
+    {
+        EntityKind.Staff => "Staff",
+        EntityKind.Stadium => "Stadiums",
+        EntityKind.City => "Cities",
+        EntityKind.LocalRegion => "Local regions",
+        EntityKind.Injury => "Injuries",
+        EntityKind.MediaSource => "Media sources",
+        EntityKind.Derby => "Derbies",
+        EntityKind.StageName => "Stage names",
+        EntityKind.Weather => "Weather",
+        EntityKind.Currency => "Currencies",
+        _ => kind + "s",
+    };
 
     public static PropertyDef? Find(EntityKind kind, string key) =>
         ByKey.TryGetValue((kind, key), out var def) ? def : null;
@@ -144,8 +231,14 @@ public static class PropertyCatalog
         Ref("TrainedAtClub", "Trained at club", "Profile", EntityKind.Club),
         Ref("TrainedInNation", "Trained in nation", "Profile", EntityKind.Nation),
         Int("Looks.SkinTone", "Skin tone", "Looks", 1, 20),
-        Int("Looks.HairColour", "Hair colour", "Looks", 1, 10),
-        Int("Looks.HairLength", "Hair length", "Looks", 1, 5),
+        new PropertyDef("Looks.HairColour", "Hair colour", "Looks", ValueKind.Integer)
+        {
+            Min = 0, Max = 18, Description = "The game's own shade number (1-18).",
+        },
+        new PropertyDef("Looks.HairLength", "Hair length", "Looks", ValueKind.Integer)
+        {
+            Min = 0, Max = 3, Description = "0 bald, 1 short, 2 medium, 3 long.",
+        },
 
         .. Attributes("Attr", "Technical", TechnicalAttributes),
         .. Attributes("Attr", "Mental", MentalAttributes),
@@ -157,7 +250,7 @@ public static class PropertyCatalog
         Int("Condition", "Condition", "Status", 0, 10000),
         Int("MatchSharpness", "Match sharpness", "Status", 0, 10000),
         Int("Jadedness", "Jadedness", "Status", 0, 10000),
-        Int("Morale", "Morale", "Status", 0, 20),
+        Int("Morale", "Morale", "Status", 1, 20),
         Bool("IsInjured", "Injured", "Status"),
         Bool("IsBanned", "Banned", "Status"),
         Bool("IsRetiredFromInternational", "Retired from international football", "Status"),

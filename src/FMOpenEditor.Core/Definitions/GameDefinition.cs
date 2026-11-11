@@ -189,6 +189,19 @@ public sealed class FieldDef
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool ReadOnly { get; set; }
 
+    /// <summary>
+    /// For a <see cref="FieldType.Bool"/> packed into a flags byte: the bit that holds it (e.g. "0x10").
+    /// Reading tests the bit; writing changes only that bit.
+    /// </summary>
+    public string? Mask { get; set; }
+
+    /// <summary>
+    /// For a choice whose stored numbers are not 0, 1, 2…: the stored number of each choice, in the order
+    /// of the property's choice list (e.g. staff jobs are stored as 0, 2, 4, 6…). A stored number that is
+    /// not listed reads as empty.
+    /// </summary>
+    public List<long>? Values { get; set; }
+
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }
 

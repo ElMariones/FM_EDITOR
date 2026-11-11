@@ -13,7 +13,8 @@ using FMOpenEditor.Core.Presets;
 
 namespace FMOpenEditor.App.ViewModels;
 
-public sealed record NavItem(string Title, string Icon, Func<object> CreatePage);
+/// <param name="Section">Heading shown above this entry when it starts a new group in the sidebar.</param>
+public sealed record NavItem(string Title, string Icon, Func<object> CreatePage, string? Section = null);
 
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
@@ -249,12 +250,26 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         Nav.Clear();
         _pages.Clear();
-        Nav.Add(new NavItem("Players", "player", () => NewBrowser(EntityKind.Player)));
-        Nav.Add(new NavItem("Staff", "staff", () => NewBrowser(EntityKind.Staff)));
-        Nav.Add(new NavItem("Clubs", "club", () => NewBrowser(EntityKind.Club)));
-        Nav.Add(new NavItem("Competitions", "trophy", () => NewBrowser(EntityKind.Competition)));
-        Nav.Add(new NavItem("Nations", "globe", () => NewBrowser(EntityKind.Nation)));
-        Nav.Add(new NavItem("Watch list", "snow", () => new WatchListViewModel(session)));
+        // Grouped so eighteen record types read as four short lists. A type is listed only when this
+        // game version has records for it (the demo database has just the first five).
+        (string Section, EntityKind[] Kinds)[] groups =
+        [
+            ("PEOPLE", [EntityKind.Player, EntityKind.Staff]),
+            ("FOOTBALL", [EntityKind.Club, EntityKind.Team, EntityKind.Competition, EntityKind.Stadium, EntityKind.Award, EntityKind.Derby]),
+            ("WORLD", [EntityKind.Nation, EntityKind.Continent, EntityKind.City, EntityKind.LocalRegion, EntityKind.Language, EntityKind.Currency, EntityKind.Weather]),
+            ("GAME DATA", [EntityKind.Injury, EntityKind.MediaSource, EntityKind.StageName]),
+        ];
+        foreach (var (section, kinds) in groups)
+        {
+            var first = true;
+            foreach (var kind in kinds.Where(k => k <= EntityKind.Nation || db.GetAll(k).Count > 0))
+            {
+                var k = kind;
+                Nav.Add(new NavItem(PropertyCatalog.Plural(k), KindIcon(k), () => NewBrowser(k), first ? section : null));
+                first = false;
+            }
+        }
+        Nav.Add(new NavItem("Watch list", "snow", () => new WatchListViewModel(session), "TOOLS"));
         Nav.Add(new NavItem("Research", "flask", () => new ResearchViewModel(_liveMemory, _liveModuleInfo, _liveModuleBase, _liveModuleSize)));
         SelectedNav = Nav[0];
         UpdatePending();
@@ -275,16 +290,22 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         return browser;
     }
 
-    private static readonly Dictionary<EntityKind, string> PageTitles = new()
+    private static string KindIcon(EntityKind kind) => kind switch
     {
-        [EntityKind.Player] = "Players", [EntityKind.Staff] = "Staff", [EntityKind.Club] = "Clubs",
-        [EntityKind.Competition] = "Competitions", [EntityKind.Nation] = "Nations",
+        EntityKind.Player => "player",
+        EntityKind.Staff => "staff",
+        EntityKind.Club or EntityKind.Team or EntityKind.Derby => "club",
+        EntityKind.Competition or EntityKind.Award or EntityKind.StageName => "trophy",
+        EntityKind.Nation or EntityKind.Stadium or EntityKind.City or EntityKind.LocalRegion or EntityKind.Continent => "globe",
+        EntityKind.Injury => "bolt",
+        EntityKind.Weather => "sun",
+        _ => "folder",
     };
 
     /// <summary>Follows a link: switches to the page for <paramref name="entity"/>'s kind and opens it there.</summary>
     public void Navigate(Entity entity)
     {
-        var target = Nav.FirstOrDefault(n => n.Title == PageTitles[entity.Kind]);
+        var target = Nav.FirstOrDefault(n => n.Title == PropertyCatalog.Plural(entity.Kind));
         if (target is null) return;
         Show(new Spot(target, entity));
         Visit(new Spot(target, entity));

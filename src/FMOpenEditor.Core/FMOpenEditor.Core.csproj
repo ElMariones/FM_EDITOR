@@ -3,4 +3,7 @@
     <RootNamespace>FMOpenEditor.Core</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Model\catalog.generated.json" LogicalName="catalog.generated.json" />
+  </ItemGroup>
 </Project>
