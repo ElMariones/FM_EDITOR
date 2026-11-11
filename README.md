@@ -47,7 +47,11 @@ The editor, presets, search, mass edit, freeze/only-up and the live memory engin
 
 Until the definition is mapped, **Connect to Football Manager** attaches to the game and opens the Research tools, but lists stay empty.
 
-## Get started
+## Download
+
+Get the latest `FMOpenEditor-…-win-x64.zip` from [Releases](https://github.com/ElMariones/FM_EDITOR/releases), unzip it anywhere and run `FMOpenEditor.exe`. No .NET install needed (Windows 10/11, 64-bit).
+
+## Build from source
 
 You need the [.NET 10 SDK](https://dotnet.microsoft.com/download).
 

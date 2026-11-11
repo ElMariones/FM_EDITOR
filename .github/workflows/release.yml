@@ -1,0 +1,54 @@
+name: Release
+
+# Push a version tag (git tag v0.1.0 && git push origin v0.1.0) to build the Windows
+# download and publish it as a GitHub release. Run it by hand to rebuild an existing tag.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to (re)build, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test --configuration Release
+
+      # The version comes from the tag, so v0.2.0 shows as v0.2.0 in the app.
+      - name: Publish
+        shell: pwsh
+        run: |
+          $version = $env:TAG.TrimStart('v')
+          dotnet publish src/FMOpenEditor.App -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:DebugType=none `
+            -p:Version=$version -o publish/FMOpenEditor
+          Copy-Item LICENSE, README.md publish/FMOpenEditor/
+          Compress-Archive -Path publish/FMOpenEditor/* -DestinationPath "FMOpenEditor-$env:TAG-win-x64.zip"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: FM OpenEditor ${{ env.TAG }}
+          files: FMOpenEditor-${{ env.TAG }}-win-x64.zip
+          generate_release_notes: true
+          body: |
+            **Download** `FMOpenEditor-${{ env.TAG }}-win-x64.zip`, unzip it anywhere and run `FMOpenEditor.exe`. No .NET install needed (Windows 10/11, 64-bit).
+
+            Back up your save before editing. If Football Manager runs as administrator, run FM OpenEditor as administrator too.
