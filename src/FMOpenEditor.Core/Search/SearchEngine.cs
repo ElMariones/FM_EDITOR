@@ -26,6 +26,13 @@ public sealed class SearchQuery
     public string? Text { get; init; }
     public List<Filter> Filters { get; init; } = [];
     public int Limit { get; init; } = 5000;
+
+    /// <summary>
+    /// Orders every match before <see cref="Limit"/> is applied, so "top 5,000 by CA" really is the
+    /// top of the whole database rather than the first 5,000 read.
+    /// </summary>
+    public string? SortKey { get; init; }
+    public bool SortDescending { get; init; }
 }
 
 public static class SearchEngine
@@ -39,15 +46,29 @@ public static class SearchEngine
             .Select(t => (t.Filter, t.Def, A: CoerceOrNull(t.Def, t.Filter.Value), B: CoerceOrNull(t.Def, t.Filter.Value2)))
             .ToList();
 
+        var sortKey = query.SortKey is { } k && session.IsSupported(query.Kind, k) ? k : null;
         var results = new List<Entity>();
         foreach (var e in session.GetAll(query.Kind))
         {
             if (text.Length > 0 && !Normalize(session.TryRead(e, PropertyCatalog.DisplayName) as string).Contains(text)) continue;
             if (!filters.All(f => Matches(session.TryRead(e, f.Filter.Property), f.Filter.Op, f.A, f.B))) continue;
             results.Add(e);
-            if (results.Count >= query.Limit) break;
+            if (sortKey is null && results.Count >= query.Limit) break;
         }
-        return results;
+        if (sortKey is null) return results;
+
+        var keyed = results.Select(e => (Entity: e, Key: SortValue(session, e, sortKey))).ToList();
+        var sign = query.SortDescending ? -1 : 1;
+        keyed.Sort((a, b) => Values.Compare(a.Key, b.Key) * sign);
+        return keyed.Take(query.Limit).Select(t => t.Entity).ToList();
+    }
+
+    /// <summary>The value a column sorts by: references sort by the name they show, not their id.</summary>
+    public static object? SortValue(EditorSession session, Entity e, string key)
+    {
+        var def = PropertyCatalog.Get(e.Kind, key);
+        var v = session.TryRead(e, key);
+        return def.Kind == ValueKind.Reference && v is int id && def.RefKind is { } k ? session.NameOf(k, id) : v;
     }
 
     public static bool Matches(PropertyDef def, object? value, Filter filter) =>

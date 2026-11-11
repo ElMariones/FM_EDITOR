@@ -33,6 +33,12 @@ public sealed partial class BrowserViewModel : ObservableObject
     private bool _refreshQueued;
     private string? _sortKey;
     private bool _sortDescending;
+    private bool _truncated;
+
+    /// <summary>The column the rows are ordered by, and which way; the view marks its header.</summary>
+    public string? SortKey => _sortKey;
+    public bool SortDescending => _sortDescending;
+    public event Action? SortChanged;
 
     public EntityKind Kind { get; }
     public string Title { get; }
@@ -80,6 +86,19 @@ public sealed partial class BrowserViewModel : ObservableObject
         EditableProperties = PropertyCatalog.For(kind).Where(p => session.CanEdit(kind, p.Key)).ToList();
         _massProperty = EditableProperties.FirstOrDefault();
 
+        // Best first: people by current ability, clubs by bank balance.
+        var defaultSort = kind switch
+        {
+            EntityKind.Player or EntityKind.Staff => "CurrentAbility",
+            EntityKind.Club => "Finance.Balance",
+            _ => null,
+        };
+        if (defaultSort is not null && Columns.Any(c => c.Key == defaultSort))
+        {
+            _sortKey = defaultSort;
+            _sortDescending = true;
+        }
+
         var forKind = presets.Presets.Where(p => p.Target == kind).ToList();
         QuickPresets = forKind.Where(p => p.Quick).ToList();
         OtherPresets = forKind.Where(p => !p.Quick).ToList();
@@ -93,31 +112,31 @@ public sealed partial class BrowserViewModel : ObservableObject
     {
         EntityKind.Player =>
         [
-            new(PropertyCatalog.DisplayName, "Name", 180), new("Age", "Age", 62), new("Contract.Club", "Club", 150),
-            new("Nation", "Nation", 100), new("CurrentAbility", "CA", 58), new("PotentialAbility", "PA", 58),
-            new("Value", "Value", 85), new("Contract.Wage", "Wage", 80), new("Contract.Expiry", "Expires", 100),
+            new(PropertyCatalog.DisplayName, "Name", 180), new("Age", "Age", 50), new("Contract.Club", "Club", 150),
+            new("Nation", "Nation", 110), new("CurrentAbility", "CA", 50), new("PotentialAbility", "PA", 50),
+            new("Value", "Value", 78), new("Contract.Wage", "Wage", 72), new("Contract.Expiry", "Expires", 92),
         ],
         EntityKind.Staff =>
         [
-            new(PropertyCatalog.DisplayName, "Name", 180), new("Age", "Age", 62), new("Role", "Role", 150),
-            new("Contract.Club", "Club", 150), new("Nation", "Nation", 100),
-            new("CurrentAbility", "CA", 58), new("PotentialAbility", "PA", 58),
+            new(PropertyCatalog.DisplayName, "Name", 180), new("Age", "Age", 50), new("Role", "Role", 150),
+            new("Contract.Club", "Club", 150), new("Nation", "Nation", 110),
+            new("CurrentAbility", "CA", 50), new("PotentialAbility", "PA", 50),
         ],
         EntityKind.Club =>
         [
-            new(PropertyCatalog.DisplayName, "Name", 180), new("League", "League", 140), new("Nation", "Nation", 95),
-            new("Reputation", "Rep", 70), new("Finance.Balance", "Balance", 95), new("Finance.TransferBudget", "Transfer", 95),
-            new("Standing.Position", "Pos", 60), new("Standing.Points", "Pts", 60),
+            new(PropertyCatalog.DisplayName, "Name", 180), new("League", "League", 150), new("Nation", "Nation", 110),
+            new("Reputation", "Rep", 64), new("Finance.Balance", "Balance", 90), new("Finance.TransferBudget", "Transfer", 90),
+            new("Standing.Position", "Pos", 48), new("Standing.Points", "Pts", 48),
         ],
         EntityKind.Competition =>
         [
             new(PropertyCatalog.DisplayName, "Name", 220), new("Nation", "Nation", 120),
-            new("Reputation", "Reputation", 90), new("PrizeMoney", "Prize money", 110),
+            new("Reputation", "Rep", 64), new("PrizeMoney", "Prize money", 100),
         ],
         _ =>
         [
-            new(PropertyCatalog.DisplayName, "Name", 200), new("Continent", "Continent", 170),
-            new("Reputation", "Reputation", 90), new("Rules.EuFreeMovement", "EU free movement", 130),
+            new(PropertyCatalog.DisplayName, "Name", 200), new("Continent", "Continent", 150),
+            new("Reputation", "Rep", 64), new("Rules.EuFreeMovement", "EU free movement", 130),
         ],
     };
 
@@ -187,11 +206,11 @@ public sealed partial class BrowserViewModel : ObservableObject
             return;
         }
 
-        var query = new SearchQuery { Kind = Kind, Text = SearchText, Filters = filters };
+        var query = new SearchQuery { Kind = Kind, Text = SearchText, Filters = filters, SortKey = _sortKey, SortDescending = _sortDescending };
         var found = SearchEngine.Run(_session, query);
+        _truncated = found.Count >= query.Limit;
         var rows = found.Select(e => new EntityRow(e)).ToList();
         foreach (var r in rows) r.Refresh(_session, Columns);
-        if (_sortKey is not null) rows = Sort(rows, _sortKey, _sortDescending);
 
         Rows.Clear();
         foreach (var r in rows) Rows.Add(r);
@@ -207,6 +226,13 @@ public sealed partial class BrowserViewModel : ObservableObject
     {
         _sortDescending = _sortKey == key ? !_sortDescending : PropertyCatalog.Get(Kind, key).IsNumeric;
         _sortKey = key;
+        SortChanged?.Invoke();
+        // A capped result list only holds the top of the old order: ask the search for the new top.
+        if (_truncated)
+        {
+            Search();
+            return;
+        }
         var sorted = Sort(Rows, key, _sortDescending);
         Rows.Clear();
         foreach (var r in sorted) Rows.Add(r);

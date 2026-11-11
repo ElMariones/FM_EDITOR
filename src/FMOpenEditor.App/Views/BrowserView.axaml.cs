@@ -28,12 +28,14 @@ public partial class BrowserView : UserControl
             {
                 _vm.PropertyChanged -= OnViewModelChanged;
                 _vm.RevealRequested -= Reveal;
+                _vm.SortChanged -= UpdateHeaders;
             }
             _vm = DataContext as BrowserViewModel;
             if (_vm is not null)
             {
                 _vm.PropertyChanged += OnViewModelChanged;
                 _vm.RevealRequested += Reveal;
+                _vm.SortChanged += UpdateHeaders;
             }
             BuildColumns();
         };
@@ -86,13 +88,26 @@ public partial class BrowserView : UserControl
             var def = PropertyCatalog.Get(vm.Kind, c.Key);
             Grid.Columns.Add(new DataGridTemplateColumn
             {
-                Header = c.Header.ToUpperInvariant(),
                 Tag = c.Key,
                 SortMemberPath = c.Key,
                 CanUserSort = true,
                 Width = new DataGridLength(c.Width + PictureAllowance(vm.Kind, c.Key, def)),
+                MinWidth = 36,
                 CellTemplate = new FuncDataTemplate<EntityRow>((_, _) => BuildCell(vm, c.Key, def), supportsRecycling: true),
             });
+        }
+        UpdateHeaders();
+    }
+
+    /// <summary>Header labels, with an arrow on the column the rows are sorted by.</summary>
+    private void UpdateHeaders()
+    {
+        if (DataContext is not BrowserViewModel vm) return;
+        foreach (var col in Grid.Columns)
+        {
+            if (col.Tag is not string key || vm.Columns.FirstOrDefault(c => c.Key == key) is not { } c) continue;
+            var label = c.Header.ToUpperInvariant();
+            col.Header = key == vm.SortKey ? $"{label} {(vm.SortDescending ? "↓" : "↑")}" : label;
         }
     }
 
@@ -105,7 +120,7 @@ public partial class BrowserView : UserControl
     /// <summary>Extra width for the picture, only when the user's packs have pictures of that kind.</summary>
     private static double PictureAllowance(EntityKind kind, string key, PropertyDef def)
     {
-        const double headerPadding = 10;
+        const double headerPadding = 0;
         if (PictureKind(kind, key, def) is not { } pictureKind || !ImageService.Instance.HasAny(pictureKind)) return headerPadding;
         return headerPadding + (key == PropertyCatalog.DisplayName ? 42 : 28);
     }
@@ -123,7 +138,7 @@ public partial class BrowserView : UserControl
         text.Bind(TextBlock.TextProperty, new Binding($"[{key}]"));
         if (def.IsNumeric) text.Classes.Add("num");
 
-        var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 0), VerticalAlignment = VerticalAlignment.Center };
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(12, 0, 6, 0), VerticalAlignment = VerticalAlignment.Center };
 
         var isName = key == PropertyCatalog.DisplayName;
         if (PictureKind(kind, key, def) is { } pictureKind)

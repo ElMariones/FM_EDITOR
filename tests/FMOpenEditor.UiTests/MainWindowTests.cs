@@ -146,4 +146,51 @@ public class MainWindowTests
 
         w.Close();
     }
+
+    [AvaloniaFact]
+    public void Lists_open_best_first_and_history_steps_back_and_forward()
+    {
+        var vm = new MainWindowViewModel();
+        var w = new MainWindow { DataContext = vm, Width = 1440, Height = 880 };
+        w.Show();
+        vm.OpenDemoCommand.Execute(null);
+        Pump();
+
+        // Players arrive sorted by current ability, highest first, and the header says so.
+        var players = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        Assert.Equal("CurrentAbility", players.SortKey);
+        var ca = players.Rows.Select(r => Convert.ToDouble(r.Raw("CurrentAbility"))).ToList();
+        Assert.Equal(ca.OrderByDescending(x => x), ca);
+        var grid = w.GetVisualDescendants().OfType<DataGrid>().Single();
+        Assert.Equal("CA ↓", grid.Columns.Single(c => (string)c.Tag! == "CurrentAbility").Header);
+        Assert.True(grid.Columns.Single(c => (string)c.Tag! == "Age").ActualWidth <= 50);
+
+        // Opening a row, then another page, are both steps back.
+        grid.SelectedIndex = 0;
+        Pump();
+        var top = players.Editor!.Entity;
+        Assert.False(vm.CanGoBack); // the first pick replaces the empty page
+        vm.SelectedNav = vm.Nav.Single(n => n.Title == "Clubs");
+        Pump();
+        var clubs = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        Assert.Equal("Finance.Balance", clubs.SortKey);
+        var balance = clubs.Rows.Select(r => Convert.ToDouble(r.Raw("Finance.Balance"))).ToList();
+        Assert.Equal(balance.OrderByDescending(x => x), balance);
+        Assert.True(vm.CanGoBack);
+
+        // The mouse's back button returns to the player; forward goes to clubs again.
+        w.MouseDown(new Avalonia.Point(700, 400), MouseButton.XButton1);
+        w.MouseUp(new Avalonia.Point(700, 400), MouseButton.XButton1);
+        Pump();
+        Assert.Same(players, vm.CurrentPage);
+        Assert.Equal(top, players.Editor!.Entity);
+        Assert.True(vm.CanGoForward);
+        w.MouseDown(new Avalonia.Point(700, 400), MouseButton.XButton2);
+        w.MouseUp(new Avalonia.Point(700, 400), MouseButton.XButton2);
+        Pump();
+        Assert.Same(clubs, vm.CurrentPage);
+        Assert.False(vm.CanGoForward);
+
+        w.Close();
+    }
 }

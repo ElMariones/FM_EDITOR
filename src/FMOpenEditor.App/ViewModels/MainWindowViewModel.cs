@@ -25,8 +25,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private long _liveModuleSize;
     private RelationIndex? _relations;
 
-    /// <summary>Where the user was before following a link: the page and the entity it showed.</summary>
-    private readonly Stack<(NavItem Page, Entity? Entity)> _back = new();
+    /// <summary>A place in the app: a page and the entity open on it, if any.</summary>
+    private sealed record Spot(NavItem Page, Entity? Entity);
+
+    // Browser-style history: pages switched to, links followed and rows opened.
+    private readonly Stack<Spot> _back = new();
+    private readonly Stack<Spot> _forward = new();
+    private Spot? _here;
+    private DateTime _lastPick;
+    private bool _restoring;
 
     public PresetLibrary Presets { get; }
     public DefinitionLibrary Definitions { get; }
@@ -36,7 +43,9 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private EditorSession? _session;
     [ObservableProperty] private NavItem? _selectedNav;
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(GoBackCommand))] private bool _canGoBack;
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(GoForwardCommand))] private bool _canGoForward;
     [ObservableProperty] private string? _backTip;
+    [ObservableProperty] private string? _forwardTip;
     [ObservableProperty] private object? _currentPage;
     [ObservableProperty] private string _status = "Ready.";
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasPending))] private int _pendingCount;
@@ -137,6 +146,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         if (value is null) return;
         if (!_pages.TryGetValue(value, out var page)) _pages[value] = page = value.CreatePage();
         CurrentPage = page;
+        if (!_restoring) Visit(new Spot(value, (page as BrowserViewModel)?.Editor?.Entity));
     }
 
     partial void OnAutoSaveChanged(bool value)
@@ -251,9 +261,19 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Status = $"Opened {db.DisplayName}: {db.GetAll(EntityKind.Player).Count:N0} players, {db.GetAll(EntityKind.Club).Count:N0} clubs.";
     }
 
-    private BrowserViewModel NewBrowser(EntityKind kind) =>
-        new(Session!, kind, Presets, s => Status = s, (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)),
-            Navigate, _relations);
+    private BrowserViewModel NewBrowser(EntityKind kind)
+    {
+        var browser = new BrowserViewModel(Session!, kind, Presets, s => Status = s,
+            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations);
+        // Opening a row is a step in the history too, so Back returns to the previous player.
+        browser.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName != nameof(BrowserViewModel.Editor) || _restoring) return;
+            if (!ReferenceEquals(CurrentPage, browser) || SelectedNav is not { } page || browser.Editor?.Entity is not { } entity) return;
+            Visit(new Spot(page, entity), pick: true);
+        };
+        return browser;
+    }
 
     private static readonly Dictionary<EntityKind, string> PageTitles = new()
     {
@@ -266,38 +286,78 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         var target = Nav.FirstOrDefault(n => n.Title == PageTitles[entity.Kind]);
         if (target is null) return;
-        if (SelectedNav is { } here)
-        {
-            var current = (CurrentPage as BrowserViewModel)?.Editor?.Entity;
-            if (current == entity) return;
-            _back.Push((here, current));
-            UpdateHistory();
-        }
-        SelectedNav = target;
-        (CurrentPage as BrowserViewModel)?.Open(entity);
+        Show(new Spot(target, entity));
+        Visit(new Spot(target, entity));
     }
 
-    /// <summary>Back to where the last link was followed from.</summary>
+    /// <summary>Back one step: the previous page, player, club…</summary>
     [RelayCommand(CanExecute = nameof(CanGoBack))]
-    private void GoBack()
+    private void GoBack() => Step(_back, _forward);
+
+    /// <summary>Forward again after going back.</summary>
+    [RelayCommand(CanExecute = nameof(CanGoForward))]
+    private void GoForward() => Step(_forward, _back);
+
+    private void Step(Stack<Spot> from, Stack<Spot> to)
     {
-        if (!_back.TryPop(out var previous)) return;
+        if (!from.TryPop(out var spot)) return;
+        if (_here is { } here) to.Push(here);
+        _here = spot;
+        Show(spot);
         UpdateHistory();
-        SelectedNav = previous.Page;
-        if (previous.Entity is { } e) (CurrentPage as BrowserViewModel)?.Open(e);
     }
+
+    /// <summary>Puts a spot on screen without recording it.</summary>
+    private void Show(Spot spot)
+    {
+        _restoring = true;
+        try
+        {
+            SelectedNav = spot.Page;
+            if (spot.Entity is { } e) (CurrentPage as BrowserViewModel)?.Open(e);
+        }
+        finally
+        {
+            _restoring = false;
+        }
+    }
+
+    /// <summary>
+    /// Records arriving at <paramref name="spot"/>. Rows picked in quick succession (arrowing down the
+    /// list) count as one step, and the first pick on a page replaces the empty page.
+    /// </summary>
+    private void Visit(Spot spot, bool pick = false)
+    {
+        var now = DateTime.UtcNow;
+        if (_here is { } here)
+        {
+            if (here == spot) return;
+            var samePage = here.Page == spot.Page;
+            var replace = samePage && (here.Entity is null || pick && now - _lastPick < TimeSpan.FromMilliseconds(700));
+            if (!replace) _back.Push(here);
+            _forward.Clear();
+        }
+        _here = spot;
+        if (pick) _lastPick = now;
+        UpdateHistory();
+    }
+
+    private string Describe(Spot spot) =>
+        spot.Entity is { } e && Session is { } s ? s.NameOf(e.Kind, e.Id) : spot.Page.Title;
 
     private void UpdateHistory()
     {
         CanGoBack = _back.Count > 0;
-        BackTip = _back.TryPeek(out var p)
-            ? $"Back to {(p.Entity is { } e && Session is { } s ? s.NameOf(e.Kind, e.Id) : p.Page.Title)}"
-            : null;
+        CanGoForward = _forward.Count > 0;
+        BackTip = _back.TryPeek(out var b) ? $"Back to {Describe(b)} (mouse back button, Alt+Left)" : "Back";
+        ForwardTip = _forward.TryPeek(out var f) ? $"Forward to {Describe(f)} (mouse forward button, Alt+Right)" : "Forward";
     }
 
     private void ClearHistory()
     {
         _back.Clear();
+        _forward.Clear();
+        _here = null;
         UpdateHistory();
     }
 

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using FMOpenEditor.App.Controls;
@@ -50,6 +51,22 @@ public partial class MainWindow : Window
             vm.PropertyChanged += OnViewModelChanged;
         };
         Opened += (_, _) => OfferTour();
+        // The mouse's back/forward side buttons step through history, wherever the pointer is.
+        AddHandler(PointerPressedEvent, OnMouseHistory, RoutingStrategies.Tunnel, handledEventsToo: true);
+    }
+
+    private void OnMouseHistory(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is not MainWindowViewModel vm) return;
+        var command = e.GetCurrentPoint(this).Properties.PointerUpdateKind switch
+        {
+            PointerUpdateKind.XButton1Pressed => vm.GoBackCommand,
+            PointerUpdateKind.XButton2Pressed => vm.GoForwardCommand,
+            _ => null,
+        };
+        if (command is null) return;
+        e.Handled = true;
+        if (command.CanExecute(null)) command.Execute(null);
     }
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)

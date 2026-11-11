@@ -13,6 +13,7 @@
 
   <Window.KeyBindings>
     <KeyBinding Gesture="Alt+Left" Command="{Binding GoBackCommand}" />
+    <KeyBinding Gesture="Alt+Right" Command="{Binding GoForwardCommand}" />
   </Window.KeyBindings>
 
   <Window.DataTemplates>
@@ -61,13 +62,18 @@
           </Border>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-            <!-- Back to where the last link (club, nation, a squad row) was followed from. -->
-            <Button Command="{Binding GoBackCommand}" IsVisible="{Binding CanGoBack}" ToolTip.Tip="{Binding BackTip}">
-              <StackPanel Orientation="Horizontal" Spacing="7">
-                <c:Icon Kind="back" Size="15" />
-                <TextBlock Text="Back" />
-              </StackPanel>
-            </Button>
+            <!-- Browser-style history: pages, links followed and rows opened. The mouse's side buttons work too. -->
+            <StackPanel Orientation="Horizontal" Spacing="4" IsVisible="{Binding IsConnected}">
+              <Button Command="{Binding GoBackCommand}" ToolTip.Tip="{Binding BackTip}" ToolTip.ShowOnDisabled="True">
+                <StackPanel Orientation="Horizontal" Spacing="7">
+                  <c:Icon Kind="back" Size="15" />
+                  <TextBlock Text="Back" />
+                </StackPanel>
+              </Button>
+              <Button Command="{Binding GoForwardCommand}" ToolTip.Tip="{Binding ForwardTip}" ToolTip.ShowOnDisabled="True">
+                <c:Icon Kind="forward" Size="15" />
+              </Button>
+            </StackPanel>
             <Button Command="{Binding RefreshCommand}" IsVisible="{Binding IsConnected}"
                     ToolTip.Tip="Re-read the game's lists (new players, transfers)">
               <StackPanel Orientation="Horizontal" Spacing="7">

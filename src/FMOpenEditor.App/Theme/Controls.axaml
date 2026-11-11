@@ -323,6 +323,38 @@
     <Setter Property="RowHeight" Value="40" />
     <Setter Property="ColumnHeaderHeight" Value="36" />
   </Style>
+  <!-- The stock header keeps ~32px free for a sort icon on every column, which made two-digit
+       columns like Age wide. This one is just the label; the sorted column carries an arrow in its text. -->
+  <Styles.Resources>
+    <ControlTheme x:Key="CompactColumnHeader" TargetType="DataGridColumnHeader">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource FaintBrush}" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Padding" Value="12,0,6,0" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Focusable" Value="False" />
+      <Setter Property="MinHeight" Value="32" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Background="{TemplateBinding Background}">
+            <ContentPresenter Content="{TemplateBinding Content}"
+                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+          </Border>
+        </ControlTemplate>
+      </Setter>
+      <Style Selector="^:pointerover">
+        <Setter Property="Foreground" Value="{DynamicResource InkBrush}" />
+      </Style>
+    </ControlTheme>
+  </Styles.Resources>
+  <Style Selector="DataGrid">
+    <Setter Property="ColumnHeaderTheme" Value="{StaticResource CompactColumnHeader}" />
+  </Style>
   <Style Selector="DataGridColumnHeader">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource FaintBrush}" />
