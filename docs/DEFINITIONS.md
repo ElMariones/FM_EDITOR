@@ -100,6 +100,8 @@ Class names survive patches; only `vtableOffset` and struct offsets may move. Th
 
 A `path` whose pointer is empty (no common name, no contract) makes the field read as empty; it can't be edited for that record.
 
+`"readOnly": true` shows a field (in lists, filters and related tabs) but never writes it. Use it for links the game also keeps somewhere else, such as a club's league, which the competition's own team list repeats: changing only one copy would leave the save inconsistent.
+
 `scale` converts the stored value to the one shown: shown = stored ÷ scale. FM has historically stored 1–20 attributes as 1–100 (scale 5). **Confirm this per field.** Mark a field `"verified": true` once you've tested it in-game.
 
 Property keys (`Attr.Finishing`, `Finance.Balance`…) come from [`PropertyCatalog.cs`](../src/FMOpenEditor.Core/Model/PropertyCatalog.cs). [`definitions/_template.json`](../definitions/_template.json) lists them all. A test fails if a definition uses an unknown key.

@@ -226,6 +226,8 @@ public sealed class LiveDatabase : IGameDatabase
 
     public bool Supports(EntityKind kind, string key) => Field(kind, key) is not null;
 
+    public bool CanWrite(EntityKind kind, string key) => Field(kind, key) is { ReadOnly: false };
+
     public object? Read(Entity entity, string key)
     {
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
@@ -236,6 +238,7 @@ public sealed class LiveDatabase : IGameDatabase
     {
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
         var prop = PropertyCatalog.Get(entity.Kind, key);
+        if (field.ReadOnly) throw new NotSupportedException($"{prop.Label} can be read but not changed in this version.");
         var addr = FieldAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
 

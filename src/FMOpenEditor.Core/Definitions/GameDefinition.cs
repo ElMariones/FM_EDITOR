@@ -182,6 +182,13 @@ public sealed class FieldDef
 
     public int MaxLength { get; set; } = 64;
 
+    /// <summary>
+    /// Shown but never written: a link the game keeps elsewhere too (a club's league is also in the
+    /// competition's own team list), so changing only this copy would leave the save inconsistent.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool ReadOnly { get; set; }
+
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }
 

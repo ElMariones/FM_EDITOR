@@ -23,6 +23,9 @@ public interface IGameDatabase : IDisposable
     /// <summary>Whether this source can read and write <paramref name="key"/> for <paramref name="kind"/>.</summary>
     bool Supports(EntityKind kind, string key);
 
+    /// <summary>Whether <paramref name="key"/> may be written, not just read (some links are display-only).</summary>
+    bool CanWrite(EntityKind kind, string key) => Supports(kind, key);
+
     object? Read(Entity entity, string key);
     void Write(Entity entity, string key, object? value);
 

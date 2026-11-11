@@ -46,7 +46,7 @@ public sealed class EditorSession : IDisposable
     }
 
     public bool CanEdit(EntityKind kind, string key) =>
-        PropertyCatalog.Find(kind, key) is { IsDerived: false } && Database.Supports(kind, key);
+        PropertyCatalog.Find(kind, key) is { IsDerived: false } && Database.CanWrite(kind, key);
 
     public object? Read(Entity entity, string key)
     {

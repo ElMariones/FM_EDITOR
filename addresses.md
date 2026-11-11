@@ -43,7 +43,7 @@ Everything here was found by looking at the game's own memory: RTTI class names,
 
 ## Mapped
 
-✅ = matched against in-game screens. 📊 = inferred from statistics over every player; the game never shows the value, so it can't be confirmed.
+✅ = matched against in-game screens. 📋 = matched against known real-world data (league line-ups) but not yet tested in game. 📊 = inferred from statistics over every player; the game never shows the value, so it can't be confirmed.
 
 ### Player: identity and contract
 
@@ -135,6 +135,7 @@ The order fits the personality labels shown in game ("Model professional", "Ambi
 | Balance (£) | [0x150] | 0xC | i32 | ✅ |
 | Transfer budget (£) | [0x150] | 0x7C4 | i32 | ✅ value matches the screen; see the note below |
 | Wage budget (per week, £) | [0x150] | 0x808 | i32 | ✅ |
+| League (first team's) | [0x108] | 0x48 | entityPtr | 📋 read-only. Matched all 20 Premier League and 20 LaLiga clubs; every one of the 238 hits is in its own nation's league. Only clubs in leagues loaded in the save have it: elsewhere [0x108] is null. The slots at 0x278, 0x3E8, 0x558, 0x6C8 (0x170 apart) look like the B/youth teams. |
 
 **Transfer budget copies:** the same value is also stored at +0x7C8 and +0x7D4. It's not yet known which copy the game actually uses, so editing +0x7C4 alone may not stick.
 
@@ -200,7 +201,7 @@ The order fits the personality labels shown in game ("Model professional", "Ambi
 | Field | What's known / next step |
 |---|---|
 | Which transfer-budget copy the game uses | Edit each copy (+0x7C4, +0x7C8, +0x7D4) in turn and see which one the finance screen follows. |
-| League | Not searched yet. |
+| League (clubs in leagues not loaded in the save) | [0x108] is null for them, so their league isn't linked from the club. Probably only on the competition side, if at all. |
 | Reputation, team cohesion | Not searched yet. |
 | Max wage, ticket price, season ticket price | Probably in the finance block at [0x150]; not searched yet. |
 | Facilities (training, youth, corporate, youth recruitment, junior coaching) | Not searched yet. |

@@ -1242,11 +1242,15 @@
         "verified": false
       },
       "League": {
-        "offset": null,
+        "offset": "0x48",
         "type": "entityPtr",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "readOnly": true,
+        "path": [
+          "0x108"
+        ]
       },
       "Reputation": {
         "offset": null,
