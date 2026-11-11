@@ -27,6 +27,8 @@ public sealed partial class BrowserViewModel : ObservableObject
     private readonly EditorSession _session;
     private readonly Action<string> _status;
     private readonly Action<Entity, Entity> _compare;
+    private readonly Action<Entity> _navigate;
+    private readonly RelationIndex? _relations;
     private List<EntityRow> _selection = [];
     private bool _refreshQueued;
     private string? _sortKey;
@@ -58,11 +60,13 @@ public sealed partial class BrowserViewModel : ObservableObject
     [ObservableProperty] private string? _massValue;
 
     public BrowserViewModel(EditorSession session, EntityKind kind, PresetLibrary presets,
-        Action<string> status, Action<Entity, Entity> compare)
+        Action<string> status, Action<Entity, Entity> compare, Action<Entity>? navigate = null, RelationIndex? relations = null)
     {
         _session = session;
         _status = status;
         _compare = compare;
+        _navigate = navigate ?? Open;
+        _relations = relations;
         Kind = kind;
         Title = kind switch
         {
@@ -126,7 +130,45 @@ public sealed partial class BrowserViewModel : ObservableObject
         SelectedCount = _selection.Count;
         var first = _selection.FirstOrDefault();
         if (first is null) return;
-        if (Editor?.Entity != first.Entity) Editor = new EntityEditorViewModel(_session, first.Entity);
+        if (Editor?.Entity != first.Entity) Editor = NewEditor(first.Entity);
+    }
+
+    private EntityEditorViewModel NewEditor(Entity entity) => new(_session, entity, _relations, _navigate);
+
+    /// <summary>Raised when <see cref="Open"/> wants the grid to select and show a row.</summary>
+    public event Action<EntityRow>? RevealRequested;
+
+    /// <summary>
+    /// Shows <paramref name="entity"/> in the editor and selects its row, adding the row on top
+    /// when the current search doesn't include it.
+    /// </summary>
+    public void Open(Entity entity)
+    {
+        if (entity.Kind != Kind) return;
+        var row = Rows.FirstOrDefault(r => r.Entity == entity);
+        if (row is null)
+        {
+            row = new EntityRow(entity);
+            row.Refresh(_session, Columns);
+            Rows.Insert(0, row);
+            IsEmpty = false;
+        }
+        Editor = NewEditor(entity);
+        RevealRequested?.Invoke(row);
+    }
+
+    /// <summary>The entity a reference cell points at (the player's club, the club's nation), if any.</summary>
+    public Entity? ReferenceAt(EntityRow row, string key)
+    {
+        var def = PropertyCatalog.Get(Kind, key);
+        if (def.Kind != ValueKind.Reference || def.RefKind is not { } refKind) return null;
+        return _session.TryRead(row.Entity, key) is int id ? _session.Database.Find(refKind, id) : null;
+    }
+
+    /// <summary>Double-click on a reference cell: open what it points at in its own page.</summary>
+    public void OpenReference(EntityRow row, string key)
+    {
+        if (ReferenceAt(row, key) is { } target) _navigate(target);
     }
 
     partial void OnSearchTextChanged(string? value) => Search();

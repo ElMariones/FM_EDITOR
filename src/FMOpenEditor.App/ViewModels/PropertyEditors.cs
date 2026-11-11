@@ -24,14 +24,14 @@ public abstract partial class PropertyEditorViewModel(EditorSession session, Ent
 
     private bool _loading;
 
-    public static PropertyEditorViewModel Create(EditorSession s, Entity e, PropertyDef d) => d switch
+    public static PropertyEditorViewModel Create(EditorSession s, Entity e, PropertyDef d, Action<Entity>? open = null) => d switch
     {
         { IsDerived: true } => new ReadOnlyEditorViewModel(s, e, d),
         { Kind: ValueKind.Integer or ValueKind.Money or ValueKind.Decimal } => new NumberEditorViewModel(s, e, d),
         { Kind: ValueKind.Boolean } => new BoolEditorViewModel(s, e, d),
         { Kind: ValueKind.Date } => new DateEditorViewModel(s, e, d),
         { Kind: ValueKind.Choice } => new ChoiceEditorViewModel(s, e, d),
-        { Kind: ValueKind.Reference } => new ReferenceEditorViewModel(s, e, d),
+        { Kind: ValueKind.Reference } => new ReferenceEditorViewModel(s, e, d, open),
         _ => new TextEditorViewModel(s, e, d),
     };
 
@@ -145,8 +145,11 @@ public sealed record RefOption(int? Id, string Name)
 
 public sealed partial class ReferenceEditorViewModel : PropertyEditorViewModel
 {
-    public ReferenceEditorViewModel(EditorSession s, Entity e, PropertyDef d) : base(s, e, d)
+    private readonly Action<Entity>? _open;
+
+    public ReferenceEditorViewModel(EditorSession s, Entity e, PropertyDef d, Action<Entity>? open = null) : base(s, e, d)
     {
+        _open = open;
         var kind = d.RefKind!.Value;
         Options = [new RefOption(null, "— none —"),
                    .. s.GetAll(kind).Select(x => new RefOption(x.Id, s.NameOf(kind, x.Id))).OrderBy(o => o.Name)];
@@ -155,12 +158,24 @@ public sealed partial class ReferenceEditorViewModel : PropertyEditorViewModel
 
     public IReadOnlyList<RefOption> Options { get; }
 
-    [ObservableProperty] private RefOption? _selected;
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CanOpen), nameof(OpenTip))] [NotifyCanExecuteChangedFor(nameof(OpenCommand))]
+    private RefOption? _selected;
+
+    /// <summary>Whether there is something to jump to (a value, and a page to show it in).</summary>
+    public bool CanOpen => _open is not null && Selected?.Id is not null;
+    public bool ShowOpen => _open is not null;
+    public string OpenTip => Selected?.Id is null ? "" : $"Open {Selected.Name}";
 
     protected override void LoadValue(object? v) => Selected = Options.FirstOrDefault(o => o.Id == v as int?) ?? Options[0];
     partial void OnSelectedChanged(RefOption? value)
     {
         if (value is not null) Commit(value.Id);
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand(CanExecute = nameof(CanOpen))]
+    private void Open()
+    {
+        if (Selected?.Id is { } id && Session.Database.Find(Def.RefKind!.Value, id) is { } target) _open?.Invoke(target);
     }
 }
 

@@ -98,4 +98,52 @@ public class MainWindowTests
 
         w.Close();
     }
+
+    [AvaloniaFact]
+    public void Links_between_players_clubs_and_nations()
+    {
+        var vm = new MainWindowViewModel();
+        var w = new MainWindow { DataContext = vm, Width = 1440, Height = 880 };
+        w.Show();
+        vm.OpenDemoCommand.Execute(null);
+        Pump();
+
+        // Player → club, as a double-click on the club cell does.
+        var players = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        var player = players.Rows.First(r => players.ReferenceAt(r, "Contract.Club") is not null);
+        var club = players.ReferenceAt(player, "Contract.Club")!;
+        players.OpenReference(player, "Contract.Club");
+        Pump();
+        var clubs = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        Assert.Equal(EntityKind.Club, clubs.Kind);
+        Assert.Equal(club, clubs.Editor!.Entity);
+        Assert.True(vm.CanGoBack);
+        var clubGrid = w.GetVisualDescendants().OfType<DataGrid>().Single();
+        Assert.Equal(club, Assert.IsType<EntityRow>(clubGrid.SelectedItem).Entity);
+
+        // The club's squad lists the player, and clicking the row opens them again.
+        var squad = Assert.IsType<RelatedListViewModel>(clubs.Editor.Tabs.Single(t => t.Name == "Players"));
+        clubs.Editor.SelectedGroup = squad;
+        Shot(w, "club-squad");
+        var row = squad.Items.Single(i => i.Entity == player.Entity);
+        squad.OpenCommand.Execute(row);
+        Pump();
+        Assert.Same(players, vm.CurrentPage);
+        Assert.Equal(player.Entity, players.Editor!.Entity);
+
+        // Club → nation through the editor's reference field.
+        vm.GoBackCommand.Execute(null);
+        Pump();
+        Assert.Same(clubs, vm.CurrentPage);
+        Assert.Equal(club, clubs.Editor!.Entity);
+        var nationField = clubs.Editor.Groups.SelectMany(g => g.Editors).OfType<ReferenceEditorViewModel>().Single(e => e.Def.Key == "Nation");
+        nationField.OpenCommand.Execute(null);
+        Pump();
+        var nations = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        Assert.Equal(EntityKind.Nation, nations.Kind);
+        var nationClubs = Assert.IsType<RelatedListViewModel>(nations.Editor!.Tabs.Single(t => t.Name == "Clubs"));
+        Assert.Contains(nationClubs.Items, i => i.Entity == club);
+
+        w.Close();
+    }
 }

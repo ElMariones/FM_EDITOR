@@ -11,6 +11,10 @@
         Width="1440" Height="880" MinWidth="1040" MinHeight="620"
         WindowStartupLocation="CenterScreen">
 
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Alt+Left" Command="{Binding GoBackCommand}" />
+  </Window.KeyBindings>
+
   <Window.DataTemplates>
     <DataTemplate DataType="vm:MainWindowViewModel"><views:HomeView /></DataTemplate>
     <DataTemplate DataType="vm:BrowserViewModel"><views:BrowserView /></DataTemplate>
@@ -57,6 +61,13 @@
           </Border>
 
           <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <!-- Back to where the last link (club, nation, a squad row) was followed from. -->
+            <Button Command="{Binding GoBackCommand}" IsVisible="{Binding CanGoBack}" ToolTip.Tip="{Binding BackTip}">
+              <StackPanel Orientation="Horizontal" Spacing="7">
+                <c:Icon Kind="back" Size="15" />
+                <TextBlock Text="Back" />
+              </StackPanel>
+            </Button>
             <Button Command="{Binding RefreshCommand}" IsVisible="{Binding IsConnected}"
                     ToolTip.Tip="Re-read the game's lists (new players, transfers)">
               <StackPanel Orientation="Horizontal" Spacing="7">

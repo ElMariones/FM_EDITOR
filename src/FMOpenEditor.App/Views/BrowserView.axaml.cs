@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
 using Avalonia.Data.Converters;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Media;
@@ -23,14 +24,24 @@ public partial class BrowserView : UserControl
         InitializeComponent();
         DataContextChanged += (_, _) =>
         {
-            if (_vm is not null) _vm.PropertyChanged -= OnViewModelChanged;
+            if (_vm is not null)
+            {
+                _vm.PropertyChanged -= OnViewModelChanged;
+                _vm.RevealRequested -= Reveal;
+            }
             _vm = DataContext as BrowserViewModel;
-            if (_vm is not null) _vm.PropertyChanged += OnViewModelChanged;
+            if (_vm is not null)
+            {
+                _vm.PropertyChanged += OnViewModelChanged;
+                _vm.RevealRequested += Reveal;
+            }
             BuildColumns();
         };
         // Columns make room for pictures once the graphics index is ready (or give it back).
         AttachedToVisualTree += (_, _) => ImageService.Instance.Changed += BuildColumns;
         DetachedFromVisualTree += (_, _) => ImageService.Instance.Changed -= BuildColumns;
+        // Below this width the action buttons show icons only (their tooltips still name them).
+        TourSearch.SizeChanged += (_, e) => Toolbar.Classes.Set("compact", e.NewSize.Width < 620);
         Grid.SelectionChanged += (_, _) =>
         {
             if (DataContext is BrowserViewModel vm) vm.SetSelection(Grid.SelectedItems.OfType<EntityRow>());
@@ -41,6 +52,13 @@ public partial class BrowserView : UserControl
             e.Handled = true;
             if (DataContext is BrowserViewModel vm && e.Column.Tag is string key) vm.SortBy(key);
         };
+    }
+
+    /// <summary>Selects a row opened from elsewhere and scrolls it into view.</summary>
+    private void Reveal(EntityRow row)
+    {
+        Grid.SelectedItem = row;
+        Grid.ScrollIntoView(row, null);
     }
 
     private void OnViewModelChanged(object? sender, PropertyChangedEventArgs e)
@@ -73,7 +91,7 @@ public partial class BrowserView : UserControl
                 SortMemberPath = c.Key,
                 CanUserSort = true,
                 Width = new DataGridLength(c.Width + PictureAllowance(vm.Kind, c.Key, def)),
-                CellTemplate = new FuncDataTemplate<EntityRow>((_, _) => BuildCell(vm.Kind, c.Key, def), supportsRecycling: true),
+                CellTemplate = new FuncDataTemplate<EntityRow>((_, _) => BuildCell(vm, c.Key, def), supportsRecycling: true),
             });
         }
     }
@@ -95,9 +113,11 @@ public partial class BrowserView : UserControl
     /// <summary>
     /// A cell is "[picture] text". The picture is bound to the row's image for this column and is
     /// collapsed whenever there isn't one, so a row without a face or badge is simply its name.
+    /// Reference cells (club, nation, league) open what they point at on double-click.
     /// </summary>
-    private static Control BuildCell(EntityKind kind, string key, PropertyDef def)
+    private static Control BuildCell(BrowserViewModel vm, string key, PropertyDef def)
     {
+        var kind = vm.Kind;
         // Reflection bindings: compiled bindings don't support runtime-built indexer paths.
         var text = new TextBlock { VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
         text.Bind(TextBlock.TextProperty, new Binding($"[{key}]"));
@@ -143,6 +163,20 @@ public partial class BrowserView : UserControl
             panel.Children.Add(dot);
         }
 
-        return panel;
+        if (def.Kind != ValueKind.Reference || def.RefKind is not { } refKind) return panel;
+
+        // The whole cell is the target, not just the text, so it needs a hit-testable background.
+        text.Classes.Add("link");
+        var cell = new Border { Background = Brushes.Transparent, Child = panel, Cursor = new Cursor(StandardCursorType.Hand) };
+        cell.Classes.Add("refcell");
+        ToolTip.SetTip(cell, $"Double-click to open this {refKind switch { EntityKind.Competition => "competition", EntityKind.Nation => "nation", _ => "club" }}");
+        ToolTip.SetShowDelay(cell, 700);
+        cell.DoubleTapped += (_, e) =>
+        {
+            if (cell.DataContext is not EntityRow row) return;
+            e.Handled = true;
+            vm.OpenReference(row, key);
+        };
+        return cell;
     }
 }

@@ -23,6 +23,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private string? _liveModuleInfo;
     private nint _liveModuleBase;
     private long _liveModuleSize;
+    private RelationIndex? _relations;
+
+    /// <summary>Where the user was before following a link: the page and the entity it showed.</summary>
+    private readonly Stack<(NavItem Page, Entity? Entity)> _back = new();
 
     public PresetLibrary Presets { get; }
     public DefinitionLibrary Definitions { get; }
@@ -31,6 +35,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsConnected), nameof(ConnectionLabel))]
     private EditorSession? _session;
     [ObservableProperty] private NavItem? _selectedNav;
+    [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(GoBackCommand))] private bool _canGoBack;
+    [ObservableProperty] private string? _backTip;
     [ObservableProperty] private object? _currentPage;
     [ObservableProperty] private string _status = "Ready.";
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(HasPending))] private int _pendingCount;
@@ -226,6 +232,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         var session = new EditorSession(db) { AutoSave = AutoSave };
         session.Changes.Changed += UpdatePending;
         Session = session;
+        _relations = new RelationIndex(session);
+        ClearHistory();
         if (!db.IsLive) _edition = null;
         StartGraphics();
 
@@ -244,7 +252,54 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     }
 
     private BrowserViewModel NewBrowser(EntityKind kind) =>
-        new(Session!, kind, Presets, s => Status = s, (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)));
+        new(Session!, kind, Presets, s => Status = s, (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)),
+            Navigate, _relations);
+
+    private static readonly Dictionary<EntityKind, string> PageTitles = new()
+    {
+        [EntityKind.Player] = "Players", [EntityKind.Staff] = "Staff", [EntityKind.Club] = "Clubs",
+        [EntityKind.Competition] = "Competitions", [EntityKind.Nation] = "Nations",
+    };
+
+    /// <summary>Follows a link: switches to the page for <paramref name="entity"/>'s kind and opens it there.</summary>
+    public void Navigate(Entity entity)
+    {
+        var target = Nav.FirstOrDefault(n => n.Title == PageTitles[entity.Kind]);
+        if (target is null) return;
+        if (SelectedNav is { } here)
+        {
+            var current = (CurrentPage as BrowserViewModel)?.Editor?.Entity;
+            if (current == entity) return;
+            _back.Push((here, current));
+            UpdateHistory();
+        }
+        SelectedNav = target;
+        (CurrentPage as BrowserViewModel)?.Open(entity);
+    }
+
+    /// <summary>Back to where the last link was followed from.</summary>
+    [RelayCommand(CanExecute = nameof(CanGoBack))]
+    private void GoBack()
+    {
+        if (!_back.TryPop(out var previous)) return;
+        UpdateHistory();
+        SelectedNav = previous.Page;
+        if (previous.Entity is { } e) (CurrentPage as BrowserViewModel)?.Open(e);
+    }
+
+    private void UpdateHistory()
+    {
+        CanGoBack = _back.Count > 0;
+        BackTip = _back.TryPeek(out var p)
+            ? $"Back to {(p.Entity is { } e && Session is { } s ? s.NameOf(e.Kind, e.Id) : p.Page.Title)}"
+            : null;
+    }
+
+    private void ClearHistory()
+    {
+        _back.Clear();
+        UpdateHistory();
+    }
 
     private void UpdatePending()
     {
@@ -300,6 +355,8 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
             s.Dispose();
         }
         Session = null;
+        _relations = null;
+        ClearHistory();
         ImageService.Instance.Disable();
         _liveMemory = null;
         SelectedNav = null;

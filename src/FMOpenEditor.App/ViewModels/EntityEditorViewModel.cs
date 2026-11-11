@@ -4,8 +4,10 @@ using FMOpenEditor.Core.Model;
 
 namespace FMOpenEditor.App.ViewModels;
 
-public sealed record PropertyGroupViewModel(string Name, IReadOnlyList<PropertyEditorViewModel> Editors)
+public sealed class PropertyGroupViewModel(string name, IReadOnlyList<PropertyEditorViewModel> editors) : EditorTabViewModel(name)
 {
+    public IReadOnlyList<PropertyEditorViewModel> Editors { get; } = editors;
+
     public bool IsAttributeGrid => Editors.Count > 0 && Editors.All(e => e.Def.IsAttribute);
 }
 
@@ -15,12 +17,16 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     private readonly EditorSession _session;
 
     public Entity Entity { get; }
+    /// <summary>The field groups (Profile, Technical, …).</summary>
     public IReadOnlyList<PropertyGroupViewModel> Groups { get; }
+
+    /// <summary>Every tab: the field groups, then who points here (a club's players, a nation's clubs).</summary>
+    public IReadOnlyList<EditorTabViewModel> Tabs { get; }
 
     [ObservableProperty] private string _title = "";
     [ObservableProperty] private string _subtitle = "";
     [ObservableProperty] private string? _watchState;
-    [ObservableProperty] private PropertyGroupViewModel? _selectedGroup;
+    [ObservableProperty] private EditorTabViewModel? _selectedGroup;
 
     /// <summary>The face or badge shown in the header; hidden when the user has none.</summary>
     public EntityPicture Picture { get; }
@@ -34,7 +40,11 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     /// <summary>Record base address, for contributors working out offsets in Research.</summary>
     public string? AddressText => Entity.Address != 0 ? $"Record at 0x{Entity.Address:X}" : null;
 
-    public EntityEditorViewModel(EditorSession session, Entity entity)
+    public EntityEditorViewModel(EditorSession session, Entity entity) : this(session, entity, null, null) { }
+
+    /// <param name="relations">Reverse lookups for the related-list tabs; none are shown without it.</param>
+    /// <param name="open">Opens another entity (a reference, a related row) in its own page.</param>
+    public EntityEditorViewModel(EditorSession session, Entity entity, RelationIndex? relations, Action<Entity>? open)
     {
         _session = session;
         Entity = entity;
@@ -47,9 +57,15 @@ public sealed partial class EntityEditorViewModel : ObservableObject
         Groups = supported
             .Where(p => p.Key != PropertyCatalog.DisplayName)
             .GroupBy(p => p.Category)
-            .Select(g => new PropertyGroupViewModel(g.Key, g.Select(p => PropertyEditorViewModel.Create(session, entity, p)).ToList()))
+            .Select(g => new PropertyGroupViewModel(g.Key, g.Select(p => PropertyEditorViewModel.Create(session, entity, p, open)).ToList()))
             .ToList();
-        SelectedGroup = Groups.FirstOrDefault();
+        var related = relations is null || open is null
+            ? []
+            : RelationSpec.For(entity.Kind)
+                .Where(r => session.IsSupported(r.Kind, r.Key))
+                .Select(r => (EditorTabViewModel)new RelatedListViewModel(session, relations, r, entity.Id, open));
+        Tabs = [.. Groups, .. related];
+        SelectedGroup = Tabs.FirstOrDefault();
         RefreshHeader();
     }
 

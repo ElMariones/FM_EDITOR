@@ -9,6 +9,17 @@
              x:DataType="vm:BrowserViewModel"
              x:Name="Root">
 
+  <UserControl.Styles>
+    <Style Selector="StackPanel.toolbar.compact TextBlock.label">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- Club / nation / league cells can be followed: hint at it on hover. -->
+    <Style Selector="Border.refcell:pointerover TextBlock.link">
+      <Setter Property="TextDecorations" Value="Underline" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+  </UserControl.Styles>
+
   <UserControl.DataTemplates>
     <DataTemplate DataType="vm:EntityEditorViewModel"><views:EntityEditorView /></DataTemplate>
   </UserControl.DataTemplates>
@@ -17,27 +28,30 @@
     <Border Classes="glass" Padding="18,16,18,10">
       <DockPanel>
         <!-- Header + search -->
-        <Grid x:Name="TourSearch" DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,12">
-          <StackPanel VerticalAlignment="Center" Margin="0,0,18,0">
-            <TextBlock Classes="h1" Text="{Binding Title}" />
-            <TextBlock Classes="muted" Text="{Binding Summary}" FontSize="12.5" />
+        <!-- Title and actions on one row, search full width below. On a narrow
+             panel the actions drop their labels (BrowserView.axaml.cs). -->
+        <Grid x:Name="TourSearch" DockPanel.Dock="Top" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" Margin="0,0,0,12">
+          <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+            <TextBlock Classes="h1" Text="{Binding Title}" TextTrimming="CharacterEllipsis" />
+            <TextBlock Classes="muted" Text="{Binding Summary}" FontSize="12.5" TextTrimming="CharacterEllipsis"
+                       ToolTip.Tip="{Binding Summary}" />
           </StackPanel>
-          <TextBox Grid.Column="1" Classes="search" Watermark="Search by name…" Text="{Binding SearchText}" VerticalAlignment="Center">
+          <StackPanel x:Name="Toolbar" Classes="toolbar" Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <ToggleButton IsChecked="{Binding ShowFilters}" ToolTip.Tip="Advanced search: filter by any field">
+              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="filter" Size="15" /><TextBlock Classes="label" Text="Advanced search" /></StackPanel>
+            </ToggleButton>
+            <ToggleButton IsChecked="{Binding ShowMassEdit}" ToolTip.Tip="Mass edit: change every selected row at once">
+              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="edit" Size="15" /><TextBlock Classes="label" Text="Mass edit" /></StackPanel>
+            </ToggleButton>
+            <Button Command="{Binding CompareCommand}" ToolTip.Tip="Compare: select two rows, then compare them side by side">
+              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="compare" Size="15" /><TextBlock Classes="label" Text="Compare" /></StackPanel>
+            </Button>
+          </StackPanel>
+          <TextBox Grid.Row="1" Grid.ColumnSpan="2" Classes="search" Watermark="Search by name…" Text="{Binding SearchText}" Margin="0,12,0,0">
             <TextBox.InnerLeftContent>
               <c:Icon Kind="search" Size="16" Margin="14,0,-4,0" VerticalAlignment="Center" TextElement.Foreground="{DynamicResource MutedBrush}" />
             </TextBox.InnerLeftContent>
           </TextBox>
-          <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" Margin="10,0,0,0" VerticalAlignment="Center">
-            <ToggleButton IsChecked="{Binding ShowFilters}" ToolTip.Tip="Filter by any field">
-              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="filter" Size="15" /><TextBlock Text="Advanced search" /></StackPanel>
-            </ToggleButton>
-            <ToggleButton IsChecked="{Binding ShowMassEdit}" ToolTip.Tip="Change every selected row at once">
-              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="edit" Size="15" /><TextBlock Text="Mass edit" /></StackPanel>
-            </ToggleButton>
-            <Button Command="{Binding CompareCommand}" ToolTip.Tip="Select two rows, then compare them side by side">
-              <StackPanel Orientation="Horizontal" Spacing="7"><c:Icon Kind="compare" Size="15" /><TextBlock Text="Compare" /></StackPanel>
-            </Button>
-          </StackPanel>
         </Grid>
 
         <!-- Presets -->
