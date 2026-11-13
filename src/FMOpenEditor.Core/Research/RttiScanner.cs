@@ -121,20 +121,39 @@ public static class RttiScanner
         if (offsets.Count == 0) return new InstanceScanResult(counts, samples);
         long min = offsets.Keys.Min(), max = offsets.Keys.Max();
 
-        var regions = memory.Regions().Where(r => r.Writable).Outside(moduleBase, moduleSize);
-        RegionScan.ForEachChunk(memory, regions, 0, (address, data, owned) =>
-        {
-            var first = (int)((8 - (long)address % 8) % 8);
-            for (var i = first; i + 8 <= owned; i += 8)
+        // Reading another process's memory is the slow part, and it runs several times faster from many
+        // threads: each region is scanned on its own, then the hits are merged in address order.
+        var regions = memory.Regions().Where(r => r.Writable).Outside(moduleBase, moduleSize).ToList();
+        var perRegion = new List<(nint Vtable, nint Object)>?[regions.Count];
+        Parallel.For(0, regions.Count, new ParallelOptions { CancellationToken = ct },
+            () => new byte[RegionScan.ChunkSize],
+            (r, _, buffer) =>
             {
-                var v = BinaryPrimitives.ReadInt64LittleEndian(data.Slice(i, 8));
-                if (v < min || v > max || !offsets.TryGetValue(v, out var objectOffset)) continue;
-                var key = (nint)v;
-                counts[key]++;
-                if (samples[key].Count < maxSamplesPerVtable) samples[key].Add(address + i - objectOffset);
-            }
-            return true;
-        }, ct);
+                List<(nint, nint)>? hits = null;
+                var region = regions[r];
+                for (long off = 0; off < region.Size; off += buffer.Length)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var address = region.Start + (nint)off;
+                    var data = buffer.AsSpan(0, (int)Math.Min(buffer.Length, region.Size - off));
+                    if (!memory.Read(address, data)) continue;
+                    var first = (int)((8 - (long)address % 8) % 8);
+                    for (var i = first; i + 8 <= data.Length; i += 8)
+                    {
+                        var v = BinaryPrimitives.ReadInt64LittleEndian(data.Slice(i, 8));
+                        if (v < min || v > max || !offsets.TryGetValue(v, out var objectOffset)) continue;
+                        (hits ??= []).Add(((nint)v, address + i - objectOffset));
+                    }
+                }
+                perRegion[r] = hits;
+                return buffer;
+            },
+            _ => { });
+        foreach (var (vtable, obj) in perRegion.Where(h => h is not null).SelectMany(h => h!))
+        {
+            counts[vtable]++;
+            if (samples[vtable].Count < maxSamplesPerVtable) samples[vtable].Add(obj);
+        }
         return new InstanceScanResult(counts, samples);
     }
 
