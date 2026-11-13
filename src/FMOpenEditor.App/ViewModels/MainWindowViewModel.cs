@@ -281,11 +281,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         foreach (var club in myClubs)
         {
             var c = club;
-            Nav.Add(new NavItem(session.NameOf(EntityKind.Club, c.Id), "club", () => NewBrowser(EntityKind.Club, () => [c]), "MY CLUB"));
-            Nav.Add(new NavItem("Squad", "player",
-                () => NewBrowser(EntityKind.Player, () => relations.Find(EntityKind.Player, "Contract.Club", c.Id).ToList(), "Squad")));
-            Nav.Add(new NavItem("Club staff", "staff",
-                () => NewBrowser(EntityKind.Staff, () => relations.Find(EntityKind.Staff, "Contract.Club", c.Id).ToList(), "Club staff")));
+            var name = session.NameOf(EntityKind.Club, c.Id);
+            // With several human clubs (a network or multi-manager save), say whose squad each one is.
+            var squad = myClubs.Count > 1 ? $"Squad · {name}" : "Squad";
+            var staff = myClubs.Count > 1 ? $"Club staff · {name}" : "Club staff";
+            Nav.Add(new NavItem(name, "club", () => NewBrowser(EntityKind.Club, () => [c]), Nav.Count == 0 ? "MY CLUB" : null));
+            Nav.Add(new NavItem(squad, "player",
+                () => NewBrowser(EntityKind.Player, () => relations.Find(EntityKind.Player, "Contract.Club", c.Id).ToList(), squad)));
+            Nav.Add(new NavItem(staff, "staff",
+                () => NewBrowser(EntityKind.Staff, () => relations.Find(EntityKind.Staff, "Contract.Club", c.Id).ToList(), staff)));
         }
         // Grouped so the record types read as four short lists. A type is listed only when this
         // game version has records for it (the demo database has just the first five).
