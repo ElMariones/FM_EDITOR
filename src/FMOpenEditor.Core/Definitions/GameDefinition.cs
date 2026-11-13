@@ -165,6 +165,13 @@ public enum FieldType
     EntityPtr,
     /// <summary>Pointer to FM's length-prefixed string: an i32 byte count, then that many UTF-8 bytes and a 0.</summary>
     FmString,
+    /// <summary>
+    /// A flag the game keeps as a std::vector of pointers (begin at the offset, end 8 bytes later):
+    /// true while any element has a non-zero counter at <see cref="FieldDef.ElementOffset"/>
+    /// (<see cref="FieldDef.ElementBytes"/> wide). Writing false zeroes those counters and lets the
+    /// game treat the list as empty (FM27 shows the player fit by the next day). It can't be set to true.
+    /// </summary>
+    ListFlag,
 }
 
 public sealed class FieldDef
@@ -201,6 +208,13 @@ public sealed class FieldDef
     /// not listed reads as empty.
     /// </summary>
     public List<long>? Values { get; set; }
+
+    /// <summary>For <see cref="FieldType.ListFlag"/>: where each element's counter sits.</summary>
+    public string? ElementOffset { get; set; }
+
+    /// <summary>For <see cref="FieldType.ListFlag"/>: how many counter bytes to test and clear.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int ElementBytes { get; set; }
 
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }

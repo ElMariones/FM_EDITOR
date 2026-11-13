@@ -75,6 +75,12 @@ Every record starts the same way: vtable, then the row index at +0x8 and the uni
 
 ✅ = matched against in-game screens. 🔧 = read out of the game's field-access code and checked against live records (see above). 📋 = matched against known real-world data (league line-ups) but not yet tested in game. 📊 = inferred from statistics over every player; the game never shows the value, so it can't be confirmed.
 
+### Player: injuries ✅
+
+Current injuries hang off person−0x190: a pointer to an injury holder whose +0x0/+0x8 is a std::vector of pointers, one per current injury (+0x68 is a second vector, past injuries). Most players have no holder; 3,648 of 143,138 had one current injury in the save it was mapped on. Each injury entry: +0x8 → `db::INJURY`, +0x18 → the player's team, +0x20 start date, +0x28 and +0x2A two u16 day counters (12 and 7 for a hamstring strain shown as 2–9 days out). The `Pijl` field code reads `db::STARTING_INJURY`, the database's start-of-game table, which is empty in a running game.
+
+Heal: zeroing both counters (`listFlag`, elementOffset 0x28, 4 bytes). Checked on 27.0.1 (Suk Hyun-Jun, hamstring strain): the game showed him fit after one day. The entry itself was still in the vector then, with both counters at 0; whether the game removes it later is not checked.
+
 ### Player: identity and contract
 
 | Field | Path | Offset | Type | Status |
@@ -777,7 +783,7 @@ Every amount in the game is kept in pounds. `+0x40` points at a list of dated pa
 | Second nationality | Not a single pointer. Person+0x78 is a vector of mixed relation entries (nations, clubs, people); each entry holds a pointer at +0x0 and type bytes at +0xA and +0xB. The getter picks entries of one type. The editor's definition format has no way to say "the entry of type N" yet. |
 | Weight | FM27 has no weight field. Body type (person−0x58, five named shapes) replaced it. |
 | Trained at club / nation | Lists (`Phgc`, `Phgn`), computed from the playing history. |
-| Injured / banned | Lists (`Pijl`, `Pbnl`), not flags. |
+| Banned | A list (`Pbnl`), not a flag. |
 | Retired from international football | The international data block at [−0x168]: date at +0x28, flag byte at +0x34. The flag's bit is not known. |
 | Squad status | Contract +0xC4. Most contracts hold 255 and a few hold 23–26, so the shown status is mostly computed. Left out. |
 | Release clauses, bonuses, contract happiness, future transfer | Lists of clause records on the contract; not traced. |

@@ -980,11 +980,16 @@
         "verified": false
       },
       "IsInjured": {
-        "offset": null,
-        "type": "bool",
+        "offset": "0x0",
+        "type": "listFlag",
+        "path": [
+          "-0x190"
+        ],
+        "elementOffset": "0x28",
+        "elementBytes": 4,
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": true
       },
       "IsBanned": {
         "offset": null,

@@ -239,6 +239,15 @@ public sealed class LiveDatabase : IGameDatabase
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
         var prop = PropertyCatalog.Get(entity.Kind, key);
         if (field.ReadOnly) throw new NotSupportedException($"{prop.Label} can be read but not changed in this version.");
+        if (field.Type == FieldType.ListFlag)
+        {
+            if (value is not null && Values.ToDouble(value) != 0)
+                throw new NotSupportedException($"{prop.Label} can be cleared but not set.");
+            var zeros = new byte[field.ElementBytes];
+            foreach (var element in ListElements(entity.Address, field))
+                _memory.WriteChecked(element + (nint)GameDefinition.ParseOffset(field.ElementOffset!), zeros);
+            return;
+        }
         var addr = FieldAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
 
@@ -330,8 +339,27 @@ public sealed class LiveDatabase : IGameDatabase
     private long ReadRaw(nint recordBase, FieldDef field) =>
         FieldAddress(recordBase, field) is { } addr ? (long)ReadNumber(addr, field.Type) : 0;
 
+    /// <summary>The non-null element pointers of a <see cref="FieldType.ListFlag"/> vector (none when the path is empty).</summary>
+    private List<nint> ListElements(nint recordBase, FieldDef field)
+    {
+        var list = new List<nint>();
+        if (FieldAddress(recordBase, field) is not { } addr) return list;
+        var begin = _memory.ReadPointer(addr);
+        var end = _memory.ReadPointer(addr + 8);
+        var count = (long)(end - begin) / 8;
+        if (begin == 0 || count is < 0 or > 64) return list;   // guard against a wrong definition
+        for (var i = 0; i < count; i++)
+            if (_memory.ReadPointer(begin + (nint)(i * 8)) is var e and not 0) list.Add(e);
+        return list;
+    }
+
     private object? ReadField(nint recordBase, FieldDef field, ValueKind kind)
     {
+        if (field.Type == FieldType.ListFlag)
+        {
+            var at = (nint)GameDefinition.ParseOffset(field.ElementOffset!);
+            return ListElements(recordBase, field).Any(e => _memory.ReadBytes(e + at, field.ElementBytes).Any(b => b != 0));
+        }
         if (FieldAddress(recordBase, field) is not { } addr) return null;
         switch (field.Type)
         {

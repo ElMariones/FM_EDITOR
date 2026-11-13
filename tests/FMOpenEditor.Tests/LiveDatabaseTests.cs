@@ -61,6 +61,14 @@ public class LiveDatabaseTests
         m.I64(Heap + 0x4000, club);
         m.I64(Heap + 0x4008, 12_000);
 
+        // Ana's injuries: record+0x60 -> holder whose std::vector holds one injury with day counters 12 and 7.
+        m.I64(people[0] + 0x60, Heap + 0x5000);
+        m.I64(Heap + 0x5000, Heap + 0x5100);
+        m.I64(Heap + 0x5008, Heap + 0x5108);
+        m.I64(Heap + 0x5100, Heap + 0x5200);
+        m.I16(Heap + 0x5228, 12);
+        m.I16(Heap + 0x522A, 7);
+
         FieldDef F(string offset, FieldType type, double scale = 1, params string[] path) =>
             new() { Offset = offset, Type = type, Scale = scale, Path = path.Length > 0 ? [.. path] : null };
 
@@ -73,6 +81,7 @@ public class LiveDatabaseTests
             ["Attr.Finishing"] = F("0x40", FieldType.U8, 5),
             ["Contract.Club"] = F("0x0", FieldType.EntityPtr, 1, "0x50"),
             ["Contract.Wage"] = F("0x8", FieldType.I64, 1, "0x50"),
+            ["IsInjured"] = new FieldDef { Offset = "0x0", Type = FieldType.ListFlag, Path = ["0x60"], ElementOffset = "0x28", ElementBytes = 4 },
         };
 
         var def = new GameDefinition
@@ -147,6 +156,24 @@ public class LiveDatabaseTests
 
         db.Write(ana, "Contract.Club", null);
         Assert.Null(db.Read(ana, "Contract.Club"));
+    }
+
+    [Fact]
+    public void Injuries_read_from_the_list_and_clear_by_zeroing_the_day_counters()
+    {
+        var (m, db) = Build();
+        var ana = db.Find(EntityKind.Player, 1)!;
+        var ben = db.Find(EntityKind.Player, 3)!;
+        Assert.Equal(true, db.Read(ana, "IsInjured"));
+        Assert.Equal(false, db.Read(ben, "IsInjured"));   // no injury holder at all
+
+        db.Write(ana, "IsInjured", false);
+        Assert.Equal(0, m.ReadInt32(Heap + 0x5228));
+        Assert.Equal(Heap + 0x5200, m.ReadPointer(Heap + 0x5100));   // the entry stays in the list
+        Assert.Equal(false, db.Read(ana, "IsInjured"));
+
+        db.Write(ben, "IsInjured", false);   // nothing to clear is fine
+        Assert.Throws<NotSupportedException>(() => db.Write(ana, "IsInjured", true));
     }
 
     [Fact]

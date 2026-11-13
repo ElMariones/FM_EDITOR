@@ -97,6 +97,7 @@ Class names survive patches; only `vtableOffset` and struct offsets may move. Th
 | `utf16Inline` | characters stored inside the record (`maxLength`) |
 | `fmString` | pointer to FM's length-prefixed string: i32 byte count, UTF-8 bytes, 0. FM27 uses it for every name. Edited in place, never longer than the current text. |
 | `entityPtr` | pointer to another record (club, nation…); the editor shows the name |
+| `listFlag` | a flag the game keeps as a std::vector of pointers (begin at `offset`, end 8 bytes later). True while any element has a non-zero counter at `elementOffset` (`elementBytes` wide). Writing false zeroes those counters (FM27 then shows the player fit by the next day). It can't be set to true. |
 
 A `path` whose pointer is empty (no common name, no contract) makes the field read as empty; it can't be edited for that record.
 
