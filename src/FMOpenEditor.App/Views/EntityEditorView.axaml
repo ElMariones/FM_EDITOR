@@ -103,8 +103,8 @@
 
     <!-- Tabs: a group of fields… -->
     <DataTemplate DataType="vm:PropertyGroupViewModel">
-      <ScrollViewer Padding="8,8,12,8">
-        <Panel>
+      <ScrollViewer>
+        <Panel Margin="8,8,12,8">
           <!-- Attribute groups sit two to a row; other groups one per row. -->
           <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding IsAttributeGrid}">
             <ItemsControl.ItemsPanel>
