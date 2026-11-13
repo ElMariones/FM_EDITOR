@@ -98,10 +98,15 @@ public sealed partial class SettingsViewModel : ObservableObject
 
     /// <summary>
     /// Takes the currencies of the save that was just opened (with the game's own exchange rates), or
-    /// none when no save is open, and switches to the user's saved choice.
+    /// none when no save is open, and switches to the game's own currency or else the user's saved choice.
     /// </summary>
-    public void UseCurrencies(IReadOnlyList<CurrencyDisplay> fromSave)
+    public void UseCurrencies(IReadOnlyList<CurrencyDisplay> fromSave, int? gameCurrencyId = null)
     {
+        if (gameCurrencyId is { } id && fromSave.Any(c => c.Id == id))
+        {
+            _settings.CurrencyId = id;
+            _settings.Save();
+        }
         _allCurrencies = fromSave.OrderBy(c => c.Name, StringComparer.CurrentCultureIgnoreCase).Select(c => new CurrencyOption(c)).ToList();
         // The quick three use the save's rate when it has one.
         CommonCurrencies = Money.Common

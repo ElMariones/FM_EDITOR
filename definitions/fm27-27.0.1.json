@@ -1055,11 +1055,232 @@
         "verified": false
       },
       "Contract.ReleaseClause": {
-        "offset": null,
-        "type": "i64",
+        "offset": "0x68",
+        "type": "i32",
         "scale": 1,
         "maxLength": 64,
-        "verified": false
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x00",
+        "elementOffset": "0x0"
+      },
+      "Contract.AppearanceFee": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x20",
+        "elementOffset": "0x0"
+      },
+      "Contract.GoalBonus": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x21",
+        "elementOffset": "0x0"
+      },
+      "Contract.AssistBonus": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x27",
+        "elementOffset": "0x0"
+      },
+      "Contract.CleanSheetBonus": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x22",
+        "elementOffset": "0x0"
+      },
+      "Contract.UnusedSubFee": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x26",
+        "elementOffset": "0x0"
+      },
+      "Contract.InternationalCapBonus": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x25",
+        "elementOffset": "0x0"
+      },
+      "Contract.ReleaseClauseForeign": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x10",
+        "elementOffset": "0x0"
+      },
+      "Contract.ReleaseClauseDomestic": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x12",
+        "elementOffset": "0x0"
+      },
+      "Contract.RelegationReleaseClause": {
+        "offset": "0x68",
+        "type": "i32",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x01",
+        "elementOffset": "0x0"
+      },
+      "Contract.YearlyWageRise": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x03",
+        "elementOffset": "0x4"
+      },
+      "Contract.PromotionWageRise": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x04",
+        "elementOffset": "0x4"
+      },
+      "Contract.TopDivisionPromotionWageRise": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x0E",
+        "elementOffset": "0x4"
+      },
+      "Contract.RelegationWageDrop": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x05",
+        "elementOffset": "0x4"
+      },
+      "Contract.TopDivisionRelegationWageDrop": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x0F",
+        "elementOffset": "0x4"
+      },
+      "Contract.SellOnFee": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x08",
+        "elementOffset": "0x4"
+      },
+      "Contract.SellOnProfit": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x09",
+        "elementOffset": "0x4"
+      },
+      "Contract.OptionalExtension": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x16",
+        "elementOffset": "0x4"
+      },
+      "Contract.ExtensionAfterGames": {
+        "offset": "0x68",
+        "type": "i16",
+        "scale": 1,
+        "maxLength": 64,
+        "verified": false,
+        "path": [
+          "0xA8"
+        ],
+        "clause": "0x0B",
+        "elementOffset": "0x4"
       },
       "Contract.Happiness": {
         "offset": null,
@@ -4849,5 +5070,7 @@
       }
     }
   },
-  "dateDayBase": 1
+  "dateDayBase": 1,
+  "currencyPreferenceFile": "Sports Interactive/Football Manager 27/Preferences/version 6/selected_currency.xml",
+  "currencyPreferenceIds": [86, 4, 5, 11, 13, 20, 23, 28, 30, 31, 32, 56, 33, 41, 43, 45, 58, 63, 64, 67, 74, 77, 78, 84, 87, 73, 6, 95, 16, 18, 61, 94, 14, 17, 22, 34, 35, 38, 37, 36, 42, 51, 54, 66, 72, 69, 70, 71, 80, 91, 2, 92, 93, 71006962, 15, 62, 57, 79, 68, 85, 19, 96, 48, 65, 89, 26]
 }

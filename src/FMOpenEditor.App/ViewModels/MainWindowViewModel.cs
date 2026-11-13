@@ -267,7 +267,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         session.Changes.Changed += UpdatePending;
         Session = session;
         _relations = new RelationIndex(session);
-        Settings.UseCurrencies(ReadCurrencies(session));
+        Settings.UseCurrencies(ReadCurrencies(session), db.GameCurrencyId);
         ClearHistory();
         if (!db.IsLive) _edition = null;
         StartGraphics();

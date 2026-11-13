@@ -40,6 +40,26 @@ public sealed class GameDefinition
     public FieldDef? GameDate { get; set; }
     public string? GameDateRoot { get; set; }
 
+    /// <summary>
+    /// The game's currency choice: a preferences file under %LOCALAPPDATA% holding a number, which is an
+    /// index into <see cref="CurrencyPreferenceIds"/> (a list in the game's code) giving the currency id.
+    /// </summary>
+    public string? CurrencyPreferenceFile { get; set; }
+    public List<int>? CurrencyPreferenceIds { get; set; }
+
+    /// <summary>The currency id the game shows amounts in, or null when its preferences file can't be read.</summary>
+    public int? ReadGameCurrencyId()
+    {
+        if (CurrencyPreferenceFile is null || CurrencyPreferenceIds is not { Count: > 0 } ids) return null;
+        try
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CurrencyPreferenceFile);
+            var value = System.Xml.Linq.XDocument.Load(path).Descendants("integer").FirstOrDefault()?.Attribute("value")?.Value;
+            return int.TryParse(value, out var i) && i >= 0 && i < ids.Count ? ids[i] : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Xml.XmlException) { return null; }
+    }
+
     [JsonIgnore] public string? SourcePath { get; set; }
 
     public static readonly JsonSerializerOptions JsonOptions = new()
@@ -212,6 +232,15 @@ public sealed class FieldDef
     /// not listed reads as empty.
     /// </summary>
     public List<long>? Values { get; set; }
+
+    /// <summary>
+    /// For one bonus or clause of a contract: the type byte (e.g. "0x21" goal bonus). The offset then points
+    /// at a std::vector of 8-byte entries { i32 amount; i16 count; u8 type; u8 pad }; the value is read at
+    /// <see cref="ElementOffset"/> of the entry with this type, -1 = not used. A contract without this
+    /// clause reads empty and can't be written (adding an entry would need memory in the game).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Clause { get; set; }
 
     /// <summary>For <see cref="FieldType.ListFlag"/>: where each element's counter sits.</summary>
     public string? ElementOffset { get; set; }

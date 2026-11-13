@@ -69,6 +69,12 @@ public class LiveDatabaseTests
         m.I16(Heap + 0x5228, 12);
         m.I16(Heap + 0x522A, 7);
 
+        // Ana's bonus/clause list at contract+0x20: appearance fee 84 (type 0x20) and a 25% raise (type 0x0E).
+        m.I64(Heap + 0x4020, Heap + 0x6000);
+        m.I64(Heap + 0x4028, Heap + 0x6010);
+        m.I32(Heap + 0x6000, 84); m.I16(Heap + 0x6004, -1); m.Bytes(Heap + 0x6006, 0x20);
+        m.I32(Heap + 0x6008, -1); m.I16(Heap + 0x600C, 25); m.Bytes(Heap + 0x600E, 0x0E);
+
         FieldDef F(string offset, FieldType type, double scale = 1, params string[] path) =>
             new() { Offset = offset, Type = type, Scale = scale, Path = path.Length > 0 ? [.. path] : null };
 
@@ -82,6 +88,9 @@ public class LiveDatabaseTests
             ["Contract.Club"] = F("0x0", FieldType.EntityPtr, 1, "0x50"),
             ["Contract.Wage"] = F("0x8", FieldType.I64, 1, "0x50"),
             ["IsInjured"] = new FieldDef { Offset = "0x0", Type = FieldType.ListFlag, Path = ["0x60"], ElementOffset = "0x28", ElementBytes = 4 },
+            ["Contract.AppearanceFee"] = new FieldDef { Offset = "0x20", Type = FieldType.I32, Path = ["0x50"], Clause = "0x20" },
+            ["Contract.TopDivisionPromotionWageRise"] = new FieldDef { Offset = "0x20", Type = FieldType.I16, Path = ["0x50"], Clause = "0x0E", ElementOffset = "0x4" },
+            ["Contract.GoalBonus"] = new FieldDef { Offset = "0x20", Type = FieldType.I32, Path = ["0x50"], Clause = "0x21" },
         };
 
         var def = new GameDefinition
@@ -156,6 +165,36 @@ public class LiveDatabaseTests
 
         db.Write(ana, "Contract.Club", null);
         Assert.Null(db.Read(ana, "Contract.Club"));
+    }
+
+    [Fact]
+    public void Bonuses_read_and_write_their_own_entry_in_the_contract_list()
+    {
+        var (m, db) = Build();
+        var ana = db.Find(EntityKind.Player, 1)!;
+        Assert.Equal(84L, db.Read(ana, "Contract.AppearanceFee"));
+        Assert.Equal(25, db.Read(ana, "Contract.TopDivisionPromotionWageRise"));
+        Assert.Null(db.Read(ana, "Contract.GoalBonus"));   // no such entry
+
+        db.Write(ana, "Contract.AppearanceFee", 200L);
+        db.Write(ana, "Contract.TopDivisionPromotionWageRise", 40);
+        Assert.Equal(200, m.ReadInt32(Heap + 0x6000));
+        Assert.Equal(40, m.ReadInt16(Heap + 0x600C));
+        Assert.Equal(-1, m.ReadInt32(Heap + 0x6008));   // the other half of the entry is untouched
+        Assert.Throws<NotSupportedException>(() => db.Write(ana, "Contract.GoalBonus", 50L));
+    }
+
+    [Fact]
+    public void Game_currency_is_the_preference_index_into_the_game_list()
+    {
+        var file = Path.GetTempFileName();   // an absolute path wins over the LocalAppData base
+        File.WriteAllText(file, "<record>\n\t<integer id=\"value\" value=\"2\"/>\n</record>");
+        var def = new GameDefinition { CurrencyPreferenceFile = file, CurrencyPreferenceIds = [86, 28, 87] };
+        Assert.Equal(87, def.ReadGameCurrencyId());
+        File.WriteAllText(file, "<record><integer id=\"value\" value=\"9\"/></record>");
+        Assert.Null(def.ReadGameCurrencyId());   // outside the list
+        File.Delete(file);
+        Assert.Null(def.ReadGameCurrencyId());   // no file: keep the editor's own choice
     }
 
     [Fact]

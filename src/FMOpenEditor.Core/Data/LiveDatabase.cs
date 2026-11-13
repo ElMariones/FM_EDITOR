@@ -28,6 +28,7 @@ public sealed class LiveDatabase : IGameDatabase
     public string DisplayName { get; }
     public bool IsLive => true;
     public GameDefinition Definition => _def;
+    public int? GameCurrencyId => _def.ReadGameCurrencyId();
 
     /// <summary>Problems found while resolving roots and collections; non-empty means partial support.</summary>
     public List<string> Warnings { get; } = [];
@@ -258,7 +259,7 @@ public sealed class LiveDatabase : IGameDatabase
                 _memory.WriteChecked(element + (nint)GameDefinition.ParseOffset(field.ElementOffset!), zeros);
             return;
         }
-        var addr = FieldAddress(entity.Address, field)
+        var addr = ValueAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
 
         switch (field.Type)
@@ -346,6 +347,23 @@ public sealed class LiveDatabase : IGameDatabase
         return addr + (nint)GameDefinition.ParseOffset(field.Offset!);
     }
 
+    /// <summary>Where the value sits: the field address, or for a <see cref="FieldDef.Clause"/> the value inside that clause's entry.</summary>
+    private nint? ValueAddress(nint recordBase, FieldDef field)
+    {
+        var addr = FieldAddress(recordBase, field);
+        if (addr is null || field.Clause is null) return addr;
+        var begin = _memory.ReadPointer(addr.Value);
+        var count = (long)(_memory.ReadPointer(addr.Value + 8) - begin) / 8;
+        if (begin == 0 || count is < 0 or > 64) return null;   // guard against a wrong definition
+        var type = (byte)GameDefinition.ParseOffset(field.Clause);
+        for (var i = 0; i < count; i++)
+        {
+            var entry = begin + (nint)(i * 8);
+            if (_memory.ReadByte(entry + 6) == type) return entry + (nint)GameDefinition.ParseOffset(field.ElementOffset ?? "0x0");
+        }
+        return null;
+    }
+
     private long ReadRaw(nint recordBase, FieldDef field) =>
         FieldAddress(recordBase, field) is { } addr ? (long)ReadNumber(addr, field.Type) : 0;
 
@@ -370,7 +388,8 @@ public sealed class LiveDatabase : IGameDatabase
             var at = (nint)GameDefinition.ParseOffset(field.ElementOffset!);
             return ListElements(recordBase, field).Any(e => _memory.ReadBytes(e + at, field.ElementBytes).Any(b => b != 0));
         }
-        if (FieldAddress(recordBase, field) is not { } addr) return null;
+        if (ValueAddress(recordBase, field) is not { } addr) return null;
+        if (field.Clause is not null && ReadNumber(addr, field.Type) == -1) return null;
         switch (field.Type)
         {
             case FieldType.FmDate:
