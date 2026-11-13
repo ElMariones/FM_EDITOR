@@ -50,7 +50,7 @@ public static class SearchEngine
         var results = new List<Entity>();
         foreach (var e in session.GetAll(query.Kind))
         {
-            if (text.Length > 0 && !Normalize(session.TryRead(e, PropertyCatalog.DisplayName) as string).Contains(text)) continue;
+            if (text.Length > 0 && !session.SearchNameOf(e).Contains(text, StringComparison.Ordinal)) continue;
             if (!filters.All(f => Matches(session.TryRead(e, f.Filter.Property), f.Filter.Op, f.A, f.B))) continue;
             results.Add(e);
             if (sortKey is null && results.Count >= query.Limit) break;
