@@ -75,6 +75,10 @@ Every record starts the same way: vtable, then the row index at +0x8 and the uni
 
 ✅ = matched against in-game screens. 🔧 = read out of the game's field-access code and checked against live records (see above). 📋 = matched against known real-world data (league line-ups) but not yet tested in game. 📊 = inferred from statistics over every player; the game never shows the value, so it can't be confirmed.
 
+### Human managers ✅
+
+`db::HUMAN_NON_PLAYER` (person part at +0x440) is the class of the managers the players control. It is one of the Staff classes. The definition marks it `"human": true`, and the editor reads `Contract.Club` from each one for **My club**. Checked on 27.0.1: a one-player save had 2 objects. One was the real manager, linked to his club. The other was a profile copy, named in brackets after the online name, with no club.
+
 ### Player: injuries ✅
 
 Current injuries hang off person−0x190: a pointer to an injury holder whose +0x0/+0x8 is a std::vector of pointers, one per current injury (+0x68 is a second vector, past injuries). Most players have no holder; 3,648 of 143,138 had one current injury in the save it was mapped on. Each injury entry: +0x8 → `db::INJURY`, +0x18 → the player's team, +0x20 start date, +0x28 and +0x2A two u16 day counters (12 and 7 for a hamstring strain shown as 2–9 days out). The `Pijl` field code reads `db::STARTING_INJURY`, the database's start-of-game table, which is empty in a running game.

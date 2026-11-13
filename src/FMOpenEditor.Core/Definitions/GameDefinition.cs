@@ -124,6 +124,10 @@ public sealed class RttiSourceDef
     /// db::PERSON) gives every class the same field offsets.
     /// </summary>
     public string VtableOffset { get; set; } = "0x0";
+
+    /// <summary>True for the class of human-controlled managers: their clubs are listed as "My club".</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Human { get; set; }
 }
 
 public sealed class CollectionDef

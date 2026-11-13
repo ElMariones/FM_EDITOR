@@ -84,6 +84,8 @@ Instead of a root, a collection can name C++ classes. At connect, the editor fin
 }
 ```
 
+Add `"human": true` to the class of human-controlled managers (FM27: `db::HUMAN_NON_PLAYER`). The editor then lists each one's club, squad and staff under **My club** at the top of the menu.
+
 Class names survive patches; only `vtableOffset` and struct offsets may move. The Research page's **Classes (RTTI)** tab lists classes, their vtables and object offsets. To read the same RTTI from the DLL on disk without the game running, use `PeFileMemory` with `RttiScanner`.
 
 ### Field types

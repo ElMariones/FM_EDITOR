@@ -68,7 +68,8 @@
         },
         {
           "class": "db::HUMAN_NON_PLAYER",
-          "vtableOffset": "0x440"
+          "vtableOffset": "0x440",
+          "human": true
         }
       ],
       "stride": 0,

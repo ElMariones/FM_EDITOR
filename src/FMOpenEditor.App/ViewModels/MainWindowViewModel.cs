@@ -274,6 +274,19 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 
         Nav.Clear();
         _pages.Clear();
+        // Your own club first: the club of each manager the people playing this save control.
+        var relations = _relations!;
+        var myClubs = db.HumanManagers.Select(h => session.TryRead(h, "Contract.Club")).OfType<int>().Distinct()
+            .Select(id => db.Find(EntityKind.Club, id)).OfType<Entity>().ToList();
+        foreach (var club in myClubs)
+        {
+            var c = club;
+            Nav.Add(new NavItem(session.NameOf(EntityKind.Club, c.Id), "club", () => NewBrowser(EntityKind.Club, () => [c]), "MY CLUB"));
+            Nav.Add(new NavItem("Squad", "player",
+                () => NewBrowser(EntityKind.Player, () => relations.Find(EntityKind.Player, "Contract.Club", c.Id).ToList(), "Squad")));
+            Nav.Add(new NavItem("Club staff", "staff",
+                () => NewBrowser(EntityKind.Staff, () => relations.Find(EntityKind.Staff, "Contract.Club", c.Id).ToList(), "Club staff")));
+        }
         // Grouped so the record types read as four short lists. A type is listed only when this
         // game version has records for it (the demo database has just the first five).
         // Teams have no page: people look for clubs, and a club's page carries its first team's fields.
@@ -301,10 +314,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Status = $"Opened {db.DisplayName}: {db.GetAll(EntityKind.Player).Count:N0} players, {db.GetAll(EntityKind.Club).Count:N0} clubs.";
     }
 
-    private BrowserViewModel NewBrowser(EntityKind kind)
+    private BrowserViewModel NewBrowser(EntityKind kind, Func<IReadOnlyList<Entity>>? source = null, string? title = null)
     {
         var browser = new BrowserViewModel(Session!, kind, Presets, s => Status = s,
-            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations);
+            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations, source, title);
         // Opening a row is a step in the history too, so Back returns to the previous player.
         browser.PropertyChanged += (_, e) =>
         {

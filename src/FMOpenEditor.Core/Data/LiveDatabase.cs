@@ -21,6 +21,9 @@ public sealed class LiveDatabase : IGameDatabase
     private readonly Dictionary<EntityKind, Dictionary<int, Entity>> _byId = [];
     private readonly Dictionary<nint, Entity> _byAddress = [];
     private List<RttiClass>? _rttiClasses;
+    private HashSet<nint> _humanRecords = [];
+
+    public IReadOnlyList<Entity> HumanManagers { get; private set; } = [];
 
     public string DisplayName { get; }
     public bool IsLive => true;
@@ -93,6 +96,7 @@ public sealed class LiveDatabase : IGameDatabase
         _byId.Clear();
         _byAddress.Clear();
         var rttiRecords = ScanRttiCollections();
+        var humans = new List<Entity>();
         foreach (var kind in Enum.GetValues<EntityKind>())
         {
             var list = new List<Entity>();
@@ -116,6 +120,7 @@ public sealed class LiveDatabase : IGameDatabase
                         list.Add(e);
                         ids.TryAdd(id, e);
                         _byAddress.TryAdd(addr, e);
+                        if (_humanRecords.Contains(addr)) humans.Add(e);
                     }
                 }
                 catch (Exception ex)
@@ -126,6 +131,7 @@ public sealed class LiveDatabase : IGameDatabase
             _entities[kind] = list;
             _byId[kind] = ids;
         }
+        HumanManagers = humans;
     }
 
     /// <summary>
@@ -135,6 +141,7 @@ public sealed class LiveDatabase : IGameDatabase
     private Dictionary<string, List<nint>> ScanRttiCollections()
     {
         var result = new Dictionary<string, List<nint>>();
+        _humanRecords = [];
         var wanted = _def.Collections.Where(c => c.Value.Layout == CollectionLayout.RttiInstances).ToList();
         if (wanted.Count == 0) return result;
 
@@ -150,6 +157,7 @@ public sealed class LiveDatabase : IGameDatabase
         var byName = _rttiClasses.GroupBy(c => c.Name).ToDictionary(g => g.Key, g => g.First());
 
         var vtablesByKind = new Dictionary<string, List<nint>>();
+        var humanVtables = new List<nint>();
         foreach (var (kind, col) in wanted)
         {
             var list = vtablesByKind[kind] = [];
@@ -160,12 +168,14 @@ public sealed class LiveDatabase : IGameDatabase
                 var vt = cls.Vtables.FirstOrDefault(v => v.ObjectOffset == offset);
                 if (vt is null) { Warnings.Add($"{kind} list: {src.Class} has no vtable at offset 0x{offset:X}."); continue; }
                 list.Add(vt.Address);
+                if (src.Human) humanVtables.Add(vt.Address);
             }
         }
 
         var all = vtablesByKind.Values.SelectMany(v => v).Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList();
         var max = wanted.Max(c => c.Value.MaxCount);
         var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
+        _humanRecords = humanVtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).ToHashSet();
         foreach (var (kind, vtables) in vtablesByKind)
         {
             var records = vtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).Distinct().Order().ToList();

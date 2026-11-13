@@ -29,6 +29,7 @@ public sealed partial class BrowserViewModel : ObservableObject
     private readonly Action<Entity, Entity> _compare;
     private readonly Action<Entity> _navigate;
     private readonly RelationIndex? _relations;
+    private readonly Func<IReadOnlyList<Entity>>? _source;
     private List<EntityRow> _selection = [];
     private bool _refreshQueued;
     private string? _sortKey;
@@ -66,7 +67,8 @@ public sealed partial class BrowserViewModel : ObservableObject
     [ObservableProperty] private string? _massValue;
 
     public BrowserViewModel(EditorSession session, EntityKind kind, PresetLibrary presets,
-        Action<string> status, Action<Entity, Entity> compare, Action<Entity>? navigate = null, RelationIndex? relations = null)
+        Action<string> status, Action<Entity, Entity> compare, Action<Entity>? navigate = null, RelationIndex? relations = null,
+        Func<IReadOnlyList<Entity>>? source = null, string? title = null)
     {
         _session = session;
         _status = status;
@@ -74,7 +76,8 @@ public sealed partial class BrowserViewModel : ObservableObject
         _navigate = navigate ?? Open;
         _relations = relations;
         Kind = kind;
-        Title = PropertyCatalog.Plural(kind);
+        _source = source;
+        Title = title ?? PropertyCatalog.Plural(kind);
 
         // The five original kinds have hand-picked columns; the rest show their first few mapped fields.
         var columns = DefaultColumns(kind).Where(c => session.IsSupported(kind, c.Key));
@@ -216,7 +219,8 @@ public sealed partial class BrowserViewModel : ObservableObject
             return;
         }
 
-        var query = new SearchQuery { Kind = Kind, Text = SearchText, Filters = filters, SortKey = _sortKey, SortDescending = _sortDescending };
+        var source = _source?.Invoke();
+        var query = new SearchQuery { Kind = Kind, Source = source, Text = SearchText, Filters = filters, SortKey = _sortKey, SortDescending = _sortDescending };
         var found = SearchEngine.Run(_session, query);
         _truncated = found.Count >= query.Limit;
         var rows = found.Select(e => new EntityRow(e)).ToList();
@@ -226,10 +230,11 @@ public sealed partial class BrowserViewModel : ObservableObject
         foreach (var r in rows) Rows.Add(r);
         IsEmpty = Rows.Count == 0;
 
-        var total = _session.GetAll(Kind).Count;
+        var total = source?.Count ?? _session.GetAll(Kind).Count;
+        var plural = PropertyCatalog.Plural(Kind).ToLowerInvariant();
         Summary = found.Count >= query.Limit
             ? $"Showing first {found.Count:N0} of {total:N0} — narrow your search"
-            : found.Count == total ? $"{total:N0} {Title.ToLowerInvariant()}" : $"{found.Count:N0} of {total:N0} {Title.ToLowerInvariant()}";
+            : found.Count == total ? $"{total:N0} {plural}" : $"{found.Count:N0} of {total:N0} {plural}";
     }
 
     public void SortBy(string key)
