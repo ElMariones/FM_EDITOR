@@ -11,7 +11,7 @@ public sealed record PendingChange(Entity Entity, string Key, object? Original, 
 public sealed class ChangeSet
 {
     private readonly Dictionary<(Entity, string), PendingChange> _pending = [];
-    private readonly Stack<IReadOnlyList<PendingChange>> _history = new();
+    private readonly Stack<(IReadOnlyList<PendingChange> Changes, IReadOnlyList<MemoryPatch>? Patches)> _history = new();
 
     public IReadOnlyCollection<PendingChange> Pending => _pending.Values;
     public int Count => _pending.Count;
@@ -47,31 +47,49 @@ public sealed class ChangeSet
     {
         var done = new List<PendingChange>();
         var failed = new List<(PendingChange, Exception)>();
-        foreach (var change in _pending.Values.ToList())
+        var journal = db as IPatchJournal;
+        journal?.StartRecording();
+        try
         {
-            try
+            foreach (var change in _pending.Values.ToList())
             {
-                db.Write(change.Entity, change.Key, change.Value);
-                done.Add(change);
-                _pending.Remove((change.Entity, change.Key));
-            }
-            catch (Exception ex)
-            {
-                failed.Add((change, ex));
+                try
+                {
+                    db.Write(change.Entity, change.Key, change.Value);
+                    done.Add(change);
+                    _pending.Remove((change.Entity, change.Key));
+                }
+                catch (Exception ex)
+                {
+                    failed.Add((change, ex));
+                }
             }
         }
-        if (done.Count > 0) _history.Push(done);
+        finally
+        {
+            var patches = journal?.StopRecording();
+            if (done.Count > 0) _history.Push((done, patches));
+        }
         Changed?.Invoke();
         return failed;
     }
 
-    /// <summary>Writes the original values of the last saved batch back.</summary>
+    /// <summary>
+    /// Undoes the last saved batch. Against a live game this puts back the exact bytes the save
+    /// overwrote, and only while the game still holds what was written. Otherwise nothing is written,
+    /// the batch is dropped from the history (the game has moved past it) and
+    /// <see cref="UndoRefusedException"/> is thrown.
+    /// </summary>
     public int UndoLastCommit(IGameDatabase db)
     {
         if (!_history.TryPop(out var batch)) return 0;
-        foreach (var change in batch) db.Write(change.Entity, change.Key, change.Original);
-        Changed?.Invoke();
-        return batch.Count;
+        try
+        {
+            if (batch.Patches is not null && db is IPatchJournal journal) journal.Revert(batch.Patches);
+            else foreach (var change in batch.Changes) db.Write(change.Entity, change.Key, change.Original);
+        }
+        finally { Changed?.Invoke(); }
+        return batch.Changes.Count;
     }
 
     public void Discard()

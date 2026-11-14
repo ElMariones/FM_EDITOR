@@ -46,11 +46,13 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     /// <param name="relations">Reverse lookups for the related-list tabs; none are shown without it.</param>
     /// <param name="open">Opens another entity (a reference, a related row) in its own page.</param>
     /// <param name="transfer">Opens the Transfer window for a player; no Transfer button without it.</param>
+    /// <param name="status">Shows a message in the status bar (copy and paste stats report there).</param>
     public EntityEditorViewModel(EditorSession session, Entity entity, RelationIndex? relations, Action<Entity>? open,
-        Action<Entity>? transfer = null)
+        Action<Entity>? transfer = null, Action<string>? status = null)
     {
         _session = session;
         _transfer = transfer;
+        _status = status;
         Entity = entity;
         Picture = new EntityPicture(entity, FMOpenEditor.Core.Graphics.GraphicSize.Large);
 
@@ -80,6 +82,45 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     private void Transfer()
     {
         if (CanTransfer) _transfer!(Entity);
+    }
+
+    private readonly Action<string>? _status;
+
+    /// <summary>Shows Copy stats and Paste stats: players only.</summary>
+    public bool IsPlayer => Entity.Kind == EntityKind.Player;
+
+    public bool CanPasteStats => IsPlayer && _session.CopiedStats is not null;
+
+    public string PasteStatsTip => _session.CopiedStats is { } c
+        ? $"Paste {c.From}'s CA, PA, attributes, positions and feet onto this player"
+        : "Paste stats (copy a player's stats first)";
+
+    /// <summary>Called when stats were copied anywhere, so the Paste button wakes up.</summary>
+    public void NotifyCopiedStats()
+    {
+        OnPropertyChanged(nameof(CanPasteStats));
+        OnPropertyChanged(nameof(PasteStatsTip));
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void CopyStats()
+    {
+        if (!IsPlayer) return;
+        _session.CopiedStats = StatsCopy.Copy(_session, Entity);
+        NotifyCopiedStats();
+        _status?.Invoke($"Copied {_session.CopiedStats.From}'s stats ({_session.CopiedStats.Values.Count} values). Open another player and press Paste stats.");
+    }
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void PasteStats()
+    {
+        if (!CanPasteStats) return;
+        var stats = _session.CopiedStats!;
+        var n = StatsCopy.Paste(_session, Entity, stats);
+        Reload();
+        _status?.Invoke(n == 0
+            ? $"{Title} already has {stats.From}'s stats."
+            : $"Pasted {stats.From}'s stats onto {Title}: {n} value(s) changed, ready to save.");
     }
 
     public void Reload()

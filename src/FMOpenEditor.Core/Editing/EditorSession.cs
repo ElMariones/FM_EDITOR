@@ -17,6 +17,16 @@ public sealed class EditorSession : IDisposable
     public TransferService Transfers { get; }
     private readonly AbilityBalancer _ability;
 
+    /// <summary>The stats last copied with Copy stats, ready to paste onto any player; null until then.</summary>
+    public PlayerStats? CopiedStats
+    {
+        get => _copiedStats;
+        set { _copiedStats = value; CopiedStatsChanged?.Invoke(); }
+    }
+    private PlayerStats? _copiedStats;
+
+    public event Action? CopiedStatsChanged;
+
     /// <summary>
     /// When true (the default), editing a player's attributes moves current ability with them and keeps
     /// potential ability at or above it.
@@ -116,12 +126,12 @@ public sealed class EditorSession : IDisposable
     /// <summary>Sets a value: staged by default, or written straight away when <see cref="AutoSave"/> is on.</summary>
     public void Set(Entity entity, string key, object? value)
     {
-        var def = PropertyCatalog.Get(entity.Kind, key);
-        var before = AutoAbility && def.IsAttribute ? TryRead(entity, key) : null;
+        var watched = AutoAbility && _ability.Watches(entity, key);
+        var before = watched ? TryRead(entity, key) : null;
         SetValue(entity, key, value);
 
         if (key == "CurrentAbility") _ability.Forget(entity);
-        else if (AutoAbility && def.IsAttribute)
+        else if (watched)
         {
             foreach (var (k, v) in _ability.OnAttributeSet(entity, key, before).ToList())
             {

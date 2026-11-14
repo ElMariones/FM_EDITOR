@@ -24,6 +24,66 @@ public class TransferTests
         public void Dispose() => inner.Dispose();
     }
 
+    /// <summary>The demo plus the FM27 contract and captaincy fields it doesn't have, kept in a dictionary.</summary>
+    private sealed class WithContractFields(IGameDatabase inner) : IGameDatabase
+    {
+        private static readonly HashSet<string> Extra =
+        [
+            "Contract.Joined", "Contract.SquadNumber", "Contract.TransferListed", "Contract.LoanListed",
+            "Loan.Club", "Captain", "ViceCaptain",
+        ];
+        public readonly Dictionary<(Entity, string), object?> Values = [];
+        public string DisplayName => inner.DisplayName;
+        public bool IsLive => false;
+        public DateOnly GameDate => inner.GameDate;
+        public IReadOnlyList<Entity> GetAll(EntityKind kind) => inner.GetAll(kind);
+        public Entity? Find(EntityKind kind, int id) => inner.Find(kind, id);
+        public bool Supports(EntityKind kind, string key) => Extra.Contains(key) || inner.Supports(kind, key);
+        public object? Read(Entity entity, string key) =>
+            Extra.Contains(key) ? Values.GetValueOrDefault((entity, key)) : inner.Read(entity, key);
+        public void Write(Entity entity, string key, object? value)
+        {
+            if (Extra.Contains(key)) Values[(entity, key)] = value;
+            else inner.Write(entity, key, value);
+        }
+        public void Refresh() => inner.Refresh();
+        public void Dispose() => inner.Dispose();
+    }
+
+    [Fact]
+    public void A_move_clears_the_number_the_listings_and_the_old_clubs_armband()
+    {
+        var db = new WithContractFields(new DemoDatabase());
+        using var s = new EditorSession(db);
+        var (player, from, to) = Pick(s);
+        db.Values[(player, "Contract.SquadNumber")] = 7;
+        db.Values[(player, "Contract.TransferListed")] = true;
+        db.Values[(from, "Captain")] = player.Id;
+        db.Values[(from, "ViceCaptain")] = 999_999;           // someone else: left alone
+
+        s.Transfers.Transfer(new TransferRequest(player, to));
+
+        Assert.Equal(255, Convert.ToInt32(s.Read(player, "Contract.SquadNumber")));
+        Assert.Equal(false, s.Read(player, "Contract.TransferListed"));
+        Assert.Equal(false, s.Read(player, "Contract.LoanListed"));
+        Assert.Equal(s.GameDate, s.Read(player, "Contract.Joined"));
+        Assert.Null(s.Read(from, "Captain"));
+        Assert.Equal(999_999, s.Read(from, "ViceCaptain"));
+    }
+
+    [Fact]
+    public void A_player_out_on_loan_is_not_moved()
+    {
+        var db = new WithContractFields(new DemoDatabase());
+        using var s = new EditorSession(db);
+        var (player, _, to) = Pick(s);
+        db.Values[(player, "Loan.Club")] = to.Id;
+
+        var request = new TransferRequest(player, to);
+        Assert.Contains("loan", s.Transfers.Problem(request));
+        Assert.Throws<InvalidOperationException>(() => s.Transfers.Transfer(request));
+    }
+
     private static (Entity Player, Entity From, Entity To) Pick(EditorSession s)
     {
         var player = s.GetAll(EntityKind.Player).First(p => s.Read(p, "Contract.Club") is int);

@@ -40,6 +40,18 @@ public sealed class GameDefinition
     public FieldDef? GameDate { get; set; }
     public string? GameDateRoot { get; set; }
 
+    /// <summary>A human manager's team selections, emptied of a player who leaves the club. Optional.</summary>
+    public SelectionDef? Selections { get; set; }
+
+    /// <summary>The game's pool of player contracts, from which a free agent's contract is taken. Optional.</summary>
+    public ContractPoolDef? ContractPool { get; set; }
+
+    /// <summary>
+    /// How the game prices a player's attributes into current ability, keyed by position property
+    /// ("Pos.ST"). Optional; without it the editor falls back to a plain average.
+    /// </summary>
+    public Dictionary<string, AbilityWeightsDef> AbilityWeights { get; set; } = [];
+
     [JsonIgnore] public string? SourcePath { get; set; }
 
     public static readonly JsonSerializerOptions JsonOptions = new()
@@ -229,6 +241,9 @@ public sealed class FieldDef
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public MemberListDef? Members { get; set; }
 
+    /// <summary>When set, the field is one keyed entry of a list at <see cref="Offset"/> (see <see cref="ListEntryDef"/>).</summary>
+    public ListEntryDef? Entry { get; set; }
+
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }
 
@@ -263,4 +278,76 @@ public sealed class MemberListDef
     /// its storage is swapped with a roomier one of these instead of growing it.
     /// </summary>
     public string? Donors { get; set; }
+
+    /// <summary>
+    /// The game allocator's block sizes in bytes, smallest first. Its blocks have no headers, so a list
+    /// whose capacity ends short of its block's size has unused room after it, which reads as zeros.
+    /// A full list takes the new member there before any donor is looked for. Only capacities above
+    /// the first size and up to the last one are trusted.
+    /// </summary>
+    public List<int>? BlockSizes { get; set; }
+}
+
+/// <summary>
+/// One entry of a list of fixed-size entries (begin, end, capacity) at the field's offset, picked by a
+/// key: a contract's release clause is the clause whose kind is 0. Reading gives the entry's value,
+/// or null when there is none. Writing changes the value in place; writing null or 0 takes the entry
+/// out. A missing entry can't be added, as that would need room the list may not have.
+/// </summary>
+public sealed class ListEntryDef
+{
+    public int Stride { get; set; } = 8;
+    public string KeyOffset { get; set; } = "0x0";
+    public FieldType KeyType { get; set; } = FieldType.U16;
+    public long Key { get; set; }
+    public string ValueOffset { get; set; } = "0x0";
+
+    /// <summary>The stored value meaning "none" (FM: 0xFFFFFFFF), read as null.</summary>
+    public long? NoValue { get; set; }
+}
+
+/// <summary>How the game prices current ability at one position (see <see cref="GameDefinition.AbilityWeights"/>).</summary>
+public sealed class AbilityWeightsDef
+{
+    /// <summary>Current ability of a player at this position is Const + the sum of weight × displayed value (1–20).</summary>
+    public double Const { get; set; }
+    public Dictionary<string, double> Weights { get; set; } = [];
+}
+
+/// <summary>
+/// Objects holding a team selection: a list (begin, end, capacity) that is sound in live copies, then
+/// <see cref="Count"/> u32 person ids, 0xFFFFFFFF for an empty slot.
+/// </summary>
+public sealed class SelectionDef
+{
+    public string Class { get; set; } = "";
+    public string List { get; set; } = "0x8";
+    public string Slots { get; set; } = "0x28";
+    public int Count { get; set; } = 26;
+
+    /// <summary>Offset of the u32 person id in a player record (the person block).</summary>
+    public string PersonId { get; set; } = "0x8";
+}
+
+/// <summary>
+/// A pool of fixed-size objects in the module's writable data: (begin, end, capacity) of chunk
+/// pointers, then the first free slot (each free slot's first 8 bytes point at the next), then u32
+/// free and used counts, u32 slot size. A new contract is a copy of a team-mate's, made the player's.
+/// </summary>
+public sealed class ContractPoolDef
+{
+    public string Class { get; set; } = "";
+    public int Size { get; set; } = 200;
+    public string Owner { get; set; } = "0x8";
+    public List<string> Teams { get; set; } = [];
+    public string Job { get; set; } = "0x26";
+    public int PlayerJob { get; set; } = 1;
+    public string SquadStatus { get; set; } = "0x54";
+    public List<long> KeeperStatuses { get; set; } = [];
+    public List<string> Dates { get; set; } = [];
+    public string? SquadNumber { get; set; }
+    public string? Listing { get; set; }
+
+    /// <summary>Qwords set to zero: pointers and lists that must not be shared with the template.</summary>
+    public List<string> Cleared { get; set; } = [];
 }

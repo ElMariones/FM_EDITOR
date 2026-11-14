@@ -5,10 +5,16 @@ namespace FMOpenEditor.Core.Model;
 /// <summary>Every property the editor knows about, per entity kind, in display order.</summary>
 public static class PropertyCatalog
 {
+    /// <summary>
+    /// Squad statuses as the FM27 contract screen names them. A definition's <c>values</c> list gives the
+    /// number the game stores for each (FM27: 0, 1, 2, 3, 4, 5, 7, 9, 10, 11, 13, 14, 15, 16, 17, 20, 21, 22).
+    /// </summary>
     public static readonly string[] SquadStatuses =
     [
-        "Not set", "Star Player", "Important Player", "Regular Starter", "Squad Player",
-        "Fringe Player", "Hot Prospect", "Decent Young Player", "Not Needed",
+        "Not set", "Star Player", "Important Player", "Regular Starter", "Squad Player", "Impact Sub",
+        "Fringe Player", "Emergency Backup", "Breakthrough Prospect", "Future Prospect", "Youngster",
+        "B Team Regular", "First-Choice Goalkeeper", "Cup Goalkeeper", "Domestic Cup Goalkeeper",
+        "Backup (goalkeeper)", "Emergency Backup (goalkeeper)", "Surplus to Requirements",
     ];
 
     /// <summary>
@@ -264,9 +270,15 @@ public static class PropertyCatalog
         Date("Contract.Start", "Contract start", "Contract"),
         Date("Contract.Expiry", "Contract expiry", "Contract"),
         Choice("Contract.SquadStatus", "Squad status", "Contract", SquadStatuses),
+        Date("Contract.Joined", "Joined club", "Contract"),
+        Int("Contract.SquadNumber", "Squad number (255 = none)", "Contract", 0, 255),
+        Bool("Contract.TransferListed", "Transfer listed", "Contract"),
+        Bool("Contract.LoanListed", "Loan listed", "Contract"),
+        Ref("Loan.Club", "On loan at", "Contract", EntityKind.Club),
+        Ref("LastClub", "Previous club", "Contract", EntityKind.Club),
         Money("Contract.ReleaseClause", "Release clause", "Contract"),
-        Int("Contract.Happiness", "Contract happiness", "Contract", 0, 100),
-        Int("Contract.PlayingTimeHappiness", "Playing time happiness", "Contract", 0, 100),
+        Int("Contract.Happiness", "Contract happiness", "Contract", -100, 100),
+        Int("Contract.PlayingTimeHappiness", "Playing time happiness", "Contract", -100, 100),
         Int("Contract.UnhappinessReasons", "Unhappiness reasons", "Contract", 0, 20),
         Ref("Transfer.FutureClub", "Future club", "Contract", EntityKind.Club),
         Date("Transfer.FutureDate", "Future transfer date", "Contract"),

@@ -26,7 +26,7 @@ public class LiveTransferTests
     /// are contracted to A's first team and name it as their squad team; player 1 also names a national
     /// team in another slot.
     /// </summary>
-    private static Fixture Build(int room, int donorCapacity = 0)
+    private static Fixture Build(int room, int donorCapacity = 0, List<int>? blockSizes = null)
     {
         var m = new FakeMemory().Map(Module, 0x1000, writable: false).Map(Heap, 0x10000);
         m.I64(Module + 0x800, Heap);          // Players root: vector
@@ -93,7 +93,7 @@ public class LiveTransferTests
                             new FieldLocation { Offset = "0x48" },
                             new FieldLocation { Offset = "0x40" },
                         ],
-                        Members = new MemberListDef { List = "0x38", SiblingsPath = ["0x30"], Siblings = "0x18", Donors = "Team" },
+                        Members = new MemberListDef { List = "0x38", SiblingsPath = ["0x30"], Siblings = "0x18", Donors = "Team", BlockSizes = blockSizes },
                     },
                 },
                 ["Club"] = new() { ["Id"] = new FieldDef { Offset = "0x0", Type = FieldType.I32 } },
@@ -152,6 +152,38 @@ public class LiveTransferTests
         Assert.Equal(4, Capacity(m, f.TeamB));
         Assert.Equal([Heap + 0x7770], Squad(m, f.TeamD));               // the lender keeps its players,
         Assert.Equal(given, m.ReadPointer(f.TeamD + 0x38));              // in the block the borrower gave up
+    }
+
+    [Fact]
+    public void A_full_squad_list_grows_into_the_unused_end_of_its_allocator_block()
+    {
+        // Team B's list holds 1 pointer (8 bytes) in what the allocator hands out as a 32-byte block.
+        var f = Build(room: 0, donorCapacity: 4, blockSizes: [4, 32]);
+        var m = f.Mem;
+        var begin = m.ReadPointer(f.TeamB + 0x38);
+
+        f.Db.Write(f.Player1, "Contract.Club", 20);
+
+        Assert.Equal([Heap + 0x7780, f.P1], Squad(m, f.TeamB));
+        Assert.Equal(begin, m.ReadPointer(f.TeamB + 0x38));             // same block, no borrowing
+        Assert.Equal(4, Capacity(m, f.TeamB));                           // capacity now reaches the block's end
+        Assert.Equal([Heap + 0x7770], Squad(m, f.TeamD));
+        Assert.Equal(Heap + 0x6300, m.ReadPointer(f.TeamD + 0x38));      // the would-be donor is untouched
+    }
+
+    [Fact]
+    public void Room_after_a_full_list_that_is_not_zero_is_left_alone()
+    {
+        var f = Build(room: 0, donorCapacity: 4, blockSizes: [4, 32]);
+        var m = f.Mem;
+        var begin = m.ReadPointer(f.TeamB + 0x38);
+        m.I64(begin + 16, 0x1234);                                       // something else lives there
+
+        f.Db.Write(f.Player1, "Contract.Club", 20);
+
+        Assert.Equal(0x1234, m.ReadInt64(begin + 16));
+        Assert.Equal(Heap + 0x6300, m.ReadPointer(f.TeamB + 0x38));      // fell back to borrowing D's list
+        Assert.Equal([Heap + 0x7780, f.P1], Squad(m, f.TeamB));
     }
 
     [Fact]

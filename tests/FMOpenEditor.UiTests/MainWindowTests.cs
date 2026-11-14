@@ -32,6 +32,35 @@ public class MainWindowTests
     }
 
     [AvaloniaFact]
+    public void Copy_and_paste_stats_are_small_icon_buttons_that_leave_the_name_room()
+    {
+        var vm = new MainWindowViewModel();
+        var w = new MainWindow { DataContext = vm, Width = 1440, Height = 880 };
+        w.Show();
+        vm.OpenDemoCommand.Execute(null);
+        Pump();
+        var browser = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
+        var grid = w.GetVisualDescendants().OfType<DataGrid>().Single();
+        grid.SelectedIndex = 0;
+        Pump();
+
+        var editor = w.GetVisualDescendants().OfType<EntityEditorView>().Single();
+        var copy = editor.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "CopyStatsButton");
+        var paste = editor.GetVisualDescendants().OfType<Button>().Single(b => b.Name == "PasteStatsButton");
+        Assert.True(copy.IsVisible && copy.Bounds.Width <= 32);
+        Assert.False(paste.IsEnabled);
+        var title = editor.GetVisualDescendants().OfType<TextBlock>().First(t => t.Classes.Contains("h1"));
+        Assert.True(title.Bounds.Width >= 120, $"the name only got {title.Bounds.Width}px");
+
+        browser.Editor!.CopyStatsCommand.Execute(null);
+        Pump();
+        Assert.True(paste.IsEnabled);
+
+        var shot = Environment.GetEnvironmentVariable("EDITOR_SHOT");
+        if (!string.IsNullOrEmpty(shot)) w.CaptureRenderedFrame()?.Save(shot);
+    }
+
+    [AvaloniaFact]
     public void Home_then_demo_then_edit_preset_and_save()
     {
         var vm = new MainWindowViewModel();

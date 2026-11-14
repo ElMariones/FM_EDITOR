@@ -80,6 +80,9 @@ public sealed class TransferService(EditorSession session)
         if (request.ToClub.Kind != EntityKind.Club) return "Pick a club to move to.";
         if (session.TryRead(request.Player, Club) is int current && current == request.ToClub.Id)
             return "They already play for that club.";
+        if (session.TryRead(request.Player, "Loan.Club") is int)
+            return "Players out on loan can't be transferred yet. Wait until the loan ends.";
+        if (session.Database.WriteProblem(request.Player, Club, request.ToClub.Id) is { } why) return why;
         if (request.Fee < 0) return "The fee can't be negative.";
         if (request.Wage < 0) return "The wage can't be negative.";
         var start = StartDate(request);
@@ -163,10 +166,22 @@ public sealed class TransferService(EditorSession session)
         var from = session.TryRead(player, Club) is int fromId ? session.Database.Find(EntityKind.Club, fromId) : null;
         var start = StartDate(r);
 
+        // A captain of the club he leaves gives the armband up; the club picks a new one, as the game does.
+        if (from is not null)
+            foreach (var role in new[] { "Captain", "ViceCaptain" })
+                if (Can(from, role) && session.TryRead(from, role) is int id && id == player.Id)
+                    write(from, role, null);
+
         write(player, Club, r.ToClub.Id);
         if (r.Wage is { } wage && Can(player, "Contract.Wage")) write(player, "Contract.Wage", wage);
         if (Can(player, "Contract.Start")) write(player, "Contract.Start", start);
+        if (Can(player, "Contract.Joined")) write(player, "Contract.Joined", start);
         if (Can(player, "DateJoined")) write(player, "DateJoined", start);
+        if (from is not null && Can(player, "LastClub")) write(player, "LastClub", from.Id);
+        // His number belonged to the old club, and he is no longer for sale or loan.
+        if (Can(player, "Contract.SquadNumber")) write(player, "Contract.SquadNumber", 255);
+        if (Can(player, "Contract.TransferListed")) write(player, "Contract.TransferListed", false);
+        if (Can(player, "Contract.LoanListed")) write(player, "Contract.LoanListed", false);
         if (r.ContractExpiry is { } end && Can(player, "Contract.Expiry")) write(player, "Contract.Expiry", end);
         if (Can(player, "Contract.ReleaseClause")) write(player, "Contract.ReleaseClause", 0L);
 

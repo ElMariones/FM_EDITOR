@@ -19,6 +19,7 @@ public sealed record NavItem(string Title, string Icon, Func<object> CreatePage,
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
     private readonly DispatcherTimer _watchTimer;
+    private bool _staleShown;
     private readonly Dictionary<NavItem, object> _pages = [];
     private IMemoryAccess? _liveMemory;
     private string? _liveModuleInfo;
@@ -84,8 +85,20 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         _watchTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
         _watchTimer.Tick += (_, _) =>
         {
-            Session?.Watcher.Tick();
             if (Session is not { } s) return;
+            // A save loaded or the game back at its menu: everything read is gone. Write nothing.
+            if (s.Database is LiveDatabase live && live.CheckStale())
+            {
+                if (!_staleShown)
+                {
+                    _staleShown = true;
+                    Status = "The game loaded another save or went back to its menu. Press Refresh to read it again; " +
+                             "nothing is written until then.";
+                }
+                return;
+            }
+            _staleShown = false;
+            s.Watcher.Tick();
             var done = s.Transfers.Tick();
             var dropped = s.Transfers.TakeDropped();
             if (dropped.Count > 0)
@@ -460,8 +473,15 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     private void Undo()
     {
         if (Session is null) return;
-        var n = Session.UndoLastSave();
-        Status = n > 0 ? $"Undid the last save ({n} value(s) restored)." : "Nothing to undo.";
+        try
+        {
+            var n = Session.UndoLastSave();
+            Status = n > 0 ? $"Undid the last save ({n} value(s) restored)." : "Nothing to undo.";
+        }
+        catch (Exception ex) when (ex is UndoRefusedException or StaleDataException)
+        {
+            Status = ex.Message;
+        }
     }
 
     [RelayCommand]

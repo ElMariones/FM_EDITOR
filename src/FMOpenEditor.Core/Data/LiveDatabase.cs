@@ -8,7 +8,7 @@ using FMOpenEditor.Core.Research;
 namespace FMOpenEditor.Core.Data;
 
 /// <summary>Reads and writes a running game's memory, driven entirely by a <see cref="GameDefinition"/>.</summary>
-public sealed class LiveDatabase : IGameDatabase
+public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
 {
     private readonly IMemoryAccess _memory;
     private readonly GameDefinition _def;
@@ -28,6 +28,8 @@ public sealed class LiveDatabase : IGameDatabase
     public string DisplayName { get; }
     public bool IsLive => true;
     public GameDefinition Definition => _def;
+
+    public IReadOnlyDictionary<string, AbilityWeightsDef>? AbilityWeights => _def.AbilityWeights.Count > 0 ? _def.AbilityWeights : null;
 
     /// <summary>Problems found while resolving roots and collections; non-empty means partial support.</summary>
     public List<string> Warnings { get; } = [];
@@ -130,6 +132,7 @@ public sealed class LiveDatabase : IGameDatabase
             _entities[kind] = list;
             _byId[kind] = ids;
         }
+        TakeFingerprint();
     }
 
     /// <summary>
@@ -152,6 +155,7 @@ public sealed class LiveDatabase : IGameDatabase
             return result;
         }
         var byName = _rttiClasses.GroupBy(c => c.Name).ToDictionary(g => g.Key, g => g.First());
+        NoteMoveClasses(byName);
 
         var vtablesByKind = new Dictionary<string, List<nint>>();
         var offsetOf = new Dictionary<nint, int>();
@@ -169,9 +173,11 @@ public sealed class LiveDatabase : IGameDatabase
             }
         }
 
-        var all = vtablesByKind.Values.SelectMany(v => v).Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList();
+        var all = vtablesByKind.Values.SelectMany(v => v).Append(_selectionVtable).Where(v => v != 0)
+            .Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList();
         var max = wanted.Max(c => c.Value.MaxCount);
         var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
+        _selections = _selectionVtable != 0 ? scan.Samples.GetValueOrDefault(_selectionVtable)?.ToList() ?? [] : [];
         foreach (var (kind, vtables) in vtablesByKind)
         {
             foreach (var v in vtables)
@@ -247,8 +253,20 @@ public sealed class LiveDatabase : IGameDatabase
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
         var prop = PropertyCatalog.Get(entity.Kind, key);
         if (field.ReadOnly) throw new NotSupportedException($"{prop.Label} can be read but not changed in this version.");
+        if (IsStale) throw new StaleDataException();
+        if (field is { Type: FieldType.EntityPtr, StoreAt: not null })
+        {
+            // A move, which may start from no contract at all (a free agent).
+            WriteStoredLink(entity, field, prop, value);
+            return;
+        }
         var addr = FieldAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
+        if (field.Entry is { } entry)
+        {
+            WriteEntry(addr, field, entry, prop, value);
+            return;
+        }
 
         switch (field.Type)
         {
@@ -259,13 +277,13 @@ public sealed class LiveDatabase : IGameDatabase
                 var emptyYear = dayBase == 1 ? 1900 : 0;
                 BinaryPrimitives.WriteUInt16LittleEndian(dateBytes, (ushort)(value is null ? dayBase : d.DayOfYear - 1 + dayBase));
                 BinaryPrimitives.WriteUInt16LittleEndian(dateBytes.AsSpan(2), (ushort)(value is null ? emptyYear : d.Year));
-                _memory.WriteChecked(addr, dateBytes);
+                Put(addr, dateBytes);
                 break;
             case FieldType.Utf16Inline:
                 var text = ((string?)value ?? "")[..Math.Min(((string?)value ?? "").Length, field.MaxLength - 1)];
                 var textBytes = new byte[field.MaxLength * 2];
                 Encoding.Unicode.GetBytes(text, textBytes);
-                _memory.WriteChecked(addr, textBytes);
+                Put(addr, textBytes);
                 break;
             case FieldType.Utf16Ptr or FieldType.Utf8Ptr:
                 // Growing a heap string means allocating in the game; overwrite in place when it fits.
@@ -276,7 +294,7 @@ public sealed class LiveDatabase : IGameDatabase
                 if (next.Length > current.Length)
                     throw new NotSupportedException($"{prop.Label} can be at most {current.Length} characters in a live game.");
                 var bytes = enc.GetBytes(next + "\0");
-                _memory.WriteChecked(target, bytes);
+                Put(target, bytes);
                 break;
             case FieldType.FmString:
             {
@@ -290,7 +308,7 @@ public sealed class LiveDatabase : IGameDatabase
                 var block = new byte[4 + currentBytes + 1];
                 BinaryPrimitives.WriteInt32LittleEndian(block, newBytes.Length);
                 newBytes.CopyTo(block, 4);
-                _memory.WriteChecked(str, block);
+                Put(str, block);
                 break;
             }
             case FieldType.EntityPtr when field.StoreAt is not null:
@@ -299,7 +317,7 @@ public sealed class LiveDatabase : IGameDatabase
             case FieldType.EntityPtr:
                 var refKind = prop.RefKind ?? throw new InvalidDataException($"{key} has no reference kind.");
                 var ptr = value is int id && Find(refKind, id) is { } refEntity ? refEntity.Address : 0;
-                _memory.WriteChecked(addr, BitConverter.GetBytes((long)ptr));
+                Put(addr, BitConverter.GetBytes((long)ptr));
                 break;
             case FieldType.Bool when !string.IsNullOrWhiteSpace(field.Mask):
             {
@@ -307,7 +325,7 @@ public sealed class LiveDatabase : IGameDatabase
                 var mask = (byte)GameDefinition.ParseOffset(field.Mask);
                 var flags = _memory.ReadByte(addr);
                 var on = value is not null && Values.ToDouble(value) != 0;
-                _memory.WriteChecked(addr, [(byte)(on ? flags | mask : flags & ~mask)]);
+                Put(addr, [(byte)(on ? flags | mask : flags & ~mask)]);
                 break;
             }
             case var _ when field.Values is { Count: > 0 } stored:
@@ -334,14 +352,24 @@ public sealed class LiveDatabase : IGameDatabase
         if (value is not int id || Find(refKind, id) is not { } target)
             throw new NotSupportedException($"{prop.Label} can't be emptied in a live game; release the player on a free instead.");
 
-        var store = Locate(entity.Address, field.StoreAt!)
-                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
         var next = Follow(target.Address, field.StoreTarget)
                    ?? throw new NotSupportedException($"{prop.Label}: that {refKind.ToString().ToLowerInvariant()} has nothing to link to here.");
-        var previous = _memory.ReadPointer(store);
+        var members = field.Members;
+        var store = Locate(entity.Address, field.StoreAt!);
+
+        // No contract: a free agent. He gets one from the game's pool, already pointing at the new team.
+        (nint Slot, byte[] Bytes, nint Header, byte[] HeaderBytes)? signing = null;
+        nint holderOfContract = 0;
+        if (store is null)
+        {
+            if (field.StoreAt!.Path is not { Count: 1 } hops || members is null)
+                throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
+            holderOfContract = entity.Address + (nint)GameDefinition.ParseOffset(hops[0]);
+            signing = PlanSigning(entity.Address, next, members.List, hops[0]);
+        }
+        var previous = store is { } at0 ? _memory.ReadPointer(at0) : 0;
 
         // The old owner and its siblings (a club's other teams): links into this group move with the record.
-        var members = field.Members;
         var oldGroup = new HashSet<nint>();
         if (previous != 0)
         {
@@ -354,13 +382,21 @@ public sealed class LiveDatabase : IGameDatabase
         var member = entity.Address - _objectOffset.GetValueOrDefault(entity.Address);
         var list = members is null ? 0 : (nint)GameDefinition.ParseOffset(members.List);
         var add = members is null ? null : PlanAdd(next + list, member, members, oldGroup.Select(o => o + list).ToHashSet(), prop.Label);
+        var selections = members is null || oldGroup.Count == 0 ? [] : PlanSelectionClears(entity.Address, oldGroup, members.List);
 
-        _memory.WriteChecked(store, BitConverter.GetBytes((long)next));
+        if (signing is { } sign)
+        {
+            Put(sign.Slot, sign.Bytes);
+            Put(sign.Header, sign.HeaderBytes);
+            Put(holderOfContract, BitConverter.GetBytes((long)sign.Slot));
+        }
+        else Put(store!.Value, BitConverter.GetBytes((long)next));
+        foreach (var slot in selections) Put(slot, [0xFF, 0xFF, 0xFF, 0xFF]);
         foreach (var also in field.AlsoStoreAt ?? [])
         {
             if (Locate(entity.Address, also) is not { } at) continue;
             var current = _memory.ReadPointer(at);
-            if (current == previous || oldGroup.Contains(current)) _memory.WriteChecked(at, BitConverter.GetBytes((long)next));
+            if (current == previous || oldGroup.Contains(current)) Put(at, BitConverter.GetBytes((long)next));
         }
         if (members is null) return;
         foreach (var owner in oldGroup) RemoveFromList(owner + list, member);
@@ -398,8 +434,18 @@ public sealed class LiveDatabase : IGameDatabase
         if (target.Capacity > target.Count)
             return () =>
             {
-                _memory.WriteChecked(target.Begin + target.Count * 8, BitConverter.GetBytes((long)item));
-                _memory.WriteChecked(vector + 8, BitConverter.GetBytes((long)(target.Begin + (target.Count + 1) * 8)));
+                Put(target.Begin + target.Count * 8, BitConverter.GetBytes((long)item));
+                Put(vector + 8, BitConverter.GetBytes((long)(target.Begin + (target.Count + 1) * 8)));
+            };
+
+        if (BlockRoom(target, members.BlockSizes) is { } blockEnd)
+            return () =>
+            {
+                Put(target.Begin + target.Count * 8, BitConverter.GetBytes((long)item));
+                var b = new byte[16];
+                BinaryPrimitives.WriteInt64LittleEndian(b, target.Begin + (target.Count + 1) * 8);
+                BinaryPrimitives.WriteInt64LittleEndian(b.AsSpan(8), blockEnd);
+                Put(vector + 8, b);
             };
 
         if (members.Donors is not { } donorKind || !Enum.TryParse<EntityKind>(donorKind, out var kind))
@@ -425,16 +471,36 @@ public sealed class LiveDatabase : IGameDatabase
             for (var i = 0; i < target.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(mine.AsSpan(i * 8), items[i]);
             BinaryPrimitives.WriteInt64LittleEndian(mine.AsSpan(target.Count * 8), item);
 
-            _memory.WriteChecked(give.Begin, mine);
+            Put(give.Begin, mine);
             if (donorItems.Count > 0)
             {
                 var theirs = new byte[donorItems.Count * 8];
                 for (var i = 0; i < donorItems.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(theirs.AsSpan(i * 8), donorItems[i]);
-                _memory.WriteChecked(target.Begin, theirs);
+                Put(target.Begin, theirs);
             }
-            _memory.WriteChecked(vector, Triple(give.Begin, target.Count + 1, give.Capacity));
-            _memory.WriteChecked(give.Vector, Triple(target.Begin, donorItems.Count, target.Capacity));
+            Put(vector, Triple(give.Begin, target.Count + 1, give.Capacity));
+            Put(give.Vector, Triple(target.Begin, donorItems.Count, target.Capacity));
         };
+    }
+
+    /// <summary>
+    /// Where the allocator block holding a full list ends, when the room between its capacity and that
+    /// end is unused (all zeros) and holds at least one more pointer; null otherwise. See
+    /// <see cref="MemberListDef.BlockSizes"/>.
+    /// </summary>
+    private nint? BlockRoom(ListState list, List<int>? sizes)
+    {
+        if (sizes is not { Count: > 0 }) return null;
+        var used = list.Capacity * 8;
+        if (used <= sizes[0] || used > sizes[^1]) return null;
+        var block = sizes.First(s => s >= used);
+        if (block - used < 8) return null;
+        var capEnd = list.Begin + used;
+        byte[] tail;
+        try { tail = _memory.ReadBytes(capEnd, block - used); }
+        catch (Exception) { return null; }
+        if (tail.Length != block - used || tail.Any(x => x != 0)) return null;
+        return list.Begin + block / 8 * 8;
     }
 
     private static byte[] Triple(nint begin, int count, int capacity)
@@ -479,8 +545,8 @@ public sealed class LiveDatabase : IGameDatabase
         items.RemoveAt(index);
         var bytes = new byte[(items.Count + 1) * 8];
         for (var i = 0; i < items.Count; i++) BinaryPrimitives.WriteInt64LittleEndian(bytes.AsSpan(i * 8), items[i]);
-        _memory.WriteChecked(begin + index * 8, bytes.AsSpan(index * 8));
-        _memory.WriteChecked(vector + 8, BitConverter.GetBytes((long)(begin + items.Count * 8)));
+        Put(begin + index * 8, bytes.AsSpan(index * 8));
+        Put(vector + 8, BitConverter.GetBytes((long)(begin + items.Count * 8)));
     }
 
     /// <summary>The field's address, or null when a pointer along its <see cref="FieldDef.Path"/> is empty.</summary>
@@ -504,6 +570,7 @@ public sealed class LiveDatabase : IGameDatabase
     private object? ReadField(nint recordBase, FieldDef field, ValueKind kind)
     {
         if (FieldAddress(recordBase, field) is not { } addr) return null;
+        if (field.Entry is { } entry) return ReadEntry(addr, field, entry);
         switch (field.Type)
         {
             case FieldType.FmDate:
@@ -579,7 +646,7 @@ public sealed class LiveDatabase : IGameDatabase
             FieldType.F64 => BitConverter.GetBytes(raw),
             _ => throw new NotSupportedException($"{field.Type} is not numeric."),
         };
-        _memory.WriteChecked(addr, bytes);
+        Put(addr, bytes);
     }
 
     public void Dispose() => _owner?.Dispose();

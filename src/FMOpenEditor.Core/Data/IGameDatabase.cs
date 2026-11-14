@@ -26,6 +26,15 @@ public interface IGameDatabase : IDisposable
     /// <summary>Whether <paramref name="key"/> may be written, not just read (some links are display-only).</summary>
     bool CanWrite(EntityKind kind, string key) => Supports(kind, key);
 
+    /// <summary>
+    /// Why writing <paramref name="value"/> to <paramref name="key"/> can't work right now, checked cheaply
+    /// before anything is staged; null when nothing stands in the way that can be known in advance.
+    /// </summary>
+    string? WriteProblem(Entity entity, string key, object? value) => null;
+
+    /// <summary>The game's per-position ability weights (see <see cref="Definitions.GameDefinition.AbilityWeights"/>), or null.</summary>
+    IReadOnlyDictionary<string, Definitions.AbilityWeightsDef>? AbilityWeights => null;
+
     object? Read(Entity entity, string key);
     void Write(Entity entity, string key, object? value);
 

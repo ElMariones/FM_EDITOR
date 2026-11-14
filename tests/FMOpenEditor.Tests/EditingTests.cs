@@ -114,6 +114,138 @@ public class EditingTests
         Assert.Equal(100, s.Read(p, "CurrentAbility"));
     }
 
+    /// <summary>The demo data priced with FM27's own ability weights.</summary>
+    private sealed class Priced(IGameDatabase inner) : IGameDatabase
+    {
+        public static readonly IReadOnlyDictionary<string, AbilityWeightsDef> Fm27 =
+            GameDefinition.Load(Path.Combine(RepoFolder("definitions"), "fm27-27.0.1.json")).AbilityWeights;
+        public IReadOnlyDictionary<string, AbilityWeightsDef>? AbilityWeights => Fm27;
+        public string DisplayName => inner.DisplayName;
+        public bool IsLive => false;
+        public DateOnly GameDate => inner.GameDate;
+        public IReadOnlyList<Entity> GetAll(EntityKind kind) => inner.GetAll(kind);
+        public Entity? Find(EntityKind kind, int id) => inner.Find(kind, id);
+        public bool Supports(EntityKind kind, string key) => inner.Supports(kind, key);
+        public object? Read(Entity entity, string key) => inner.Read(entity, key);
+        public void Write(Entity entity, string key, object? value) => inner.Write(entity, key, value);
+        public void Refresh() => inner.Refresh();
+        public void Dispose() => inner.Dispose();
+    }
+
+    /// <summary>A player whose only natural position is <paramref name="position"/>, with mid-range attributes.</summary>
+    private static Entity OnlyAt(EditorSession s, string position)
+    {
+        var p = Outfielder(s);
+        s.AutoAbility = false;
+        foreach (var k in Priced.Fm27.Keys) s.Set(p, k, k == position ? 20 : 1);
+        foreach (var k in Priced.Fm27.Values.SelectMany(w => w.Weights.Keys).Distinct()) s.Set(p, k, 10);
+        foreach (var k in CountingAttributes()) s.Set(p, k, 10);
+        s.Set(p, "CurrentAbility", 100);
+        s.Set(p, "PotentialAbility", 180);
+        s.AutoAbility = true;
+        return p;
+    }
+
+    [Fact]
+    public void Ability_is_priced_with_the_games_weights_for_the_position()
+    {
+        using var s = new EditorSession(new Priced(new DemoDatabase()));
+        var p = OnlyAt(s, "Pos.ST");
+        var w = Priced.Fm27["Pos.ST"].Weights;
+
+        s.Set(p, "Attr.Finishing", 15);
+        Assert.Equal((int)Math.Round(100 + 5 * w["Attr.Finishing"]), s.Read(p, "CurrentAbility"));
+        s.Set(p, "Attr.Finishing", 10);
+        Assert.Equal(100, s.Read(p, "CurrentAbility"));
+
+        // Pace costs a striker far more than corners; hidden attributes cost nothing.
+        s.Set(p, "Attr.Pace", 15);
+        var pace = (int)s.Read(p, "CurrentAbility")! - 100;
+        s.Set(p, "Attr.Pace", 10);
+        s.Set(p, "Attr.Corners", 15);
+        var corners = (int)s.Read(p, "CurrentAbility")! - 100;
+        s.Set(p, "Attr.Corners", 10);
+        Assert.True(pace > 3 * corners, $"pace +{pace}, corners +{corners}");
+        s.Set(p, "Attr.Consistency", 20);
+        Assert.Equal(100, s.Read(p, "CurrentAbility"));
+
+        // His weaker foot counts too.
+        s.Set(p, "LeftFoot", 15);
+        Assert.True((int)s.Read(p, "CurrentAbility")! > 100);
+    }
+
+    [Fact]
+    public void A_player_is_priced_at_his_dearest_natural_position()
+    {
+        using var s = new EditorSession(new Priced(new DemoDatabase()));
+        var p = OnlyAt(s, "Pos.DC");
+        var dc = Priced.Fm27["Pos.DC"].Weights;
+        var st = Priced.Fm27["Pos.ST"].Weights;
+
+        // Finishing barely matters to a centre-back...
+        s.Set(p, "Attr.Finishing", 20);
+        var asDefender = (int)s.Read(p, "CurrentAbility")!;
+        Assert.Equal((int)Math.Round(100 + 10 * dc["Attr.Finishing"]), asDefender);
+
+        // ...but once he is a natural striker as well, the striker's price of it is the one that counts.
+        s.Set(p, "Pos.ST", 20);
+        Assert.True((int)s.Read(p, "CurrentAbility")! > asDefender);
+        Assert.True(st["Attr.Finishing"] > dc["Attr.Finishing"]);
+
+        // Back to centre-back only: back where he was.
+        s.Set(p, "Pos.ST", 1);
+        Assert.Equal(asDefender, s.Read(p, "CurrentAbility"));
+    }
+
+    [Fact]
+    public void Every_position_has_weights_and_hidden_attributes_cost_nothing()
+    {
+        foreach (var pos in new[] { "GK", "DL", "DC", "DR", "WBL", "WBR", "DM", "ML", "MC", "MR", "AML", "AMC", "AMR", "ST" })
+        {
+            var w = Priced.Fm27["Pos." + pos];
+            Assert.True(w.Weights["Attr.Decisions"] > 0.5, pos);
+            Assert.DoesNotContain("Attr.Consistency", w.Weights.Keys);
+            Assert.DoesNotContain("Attr.Determination", w.Weights.Keys);
+            Assert.All(w.Weights.Keys, k => Assert.True(PropertyCatalog.Find(EntityKind.Player, k) is not null, k));
+        }
+    }
+
+    [Fact]
+    public void Copy_and_paste_stats_moves_abilities_and_nothing_else()
+    {
+        using var s = new EditorSession(new Priced(new DemoDatabase()));
+        var players = s.GetAll(EntityKind.Player);
+        var (from, to) = (players[0], players[1]);
+        s.AutoAbility = false;
+        s.Set(from, "CurrentAbility", 157);
+        s.Set(from, "PotentialAbility", 181);
+        s.Set(from, "Attr.Finishing", 19);
+        s.Set(from, "Pos.ST", 20);
+        s.Set(to, "Attr.Finishing", 4);
+        s.AutoAbility = true;
+        var name = s.Read(to, "LastName");
+        var birth = s.Read(to, "DateOfBirth");
+        var club = s.Read(to, "Contract.Club");
+        var reputation = s.Read(to, "Reputation.Current");
+
+        s.CopiedStats = StatsCopy.Copy(s, from);
+        Assert.DoesNotContain("LastName", s.CopiedStats.Values.Keys);
+        Assert.DoesNotContain("Contract.Club", s.CopiedStats.Values.Keys);
+        Assert.Contains("Pos.ST", s.CopiedStats.Values.Keys);
+        Assert.Contains("RightFoot", s.CopiedStats.Values.Keys);
+
+        Assert.True(StatsCopy.Paste(s, to, s.CopiedStats) > 0);
+        foreach (var (key, value) in s.CopiedStats.Values) Assert.Equal(value, s.Read(to, key));
+        Assert.Equal(157, s.Read(to, "CurrentAbility"));   // as copied, not re-priced
+        Assert.Equal(181, s.Read(to, "PotentialAbility"));
+        Assert.Equal(name, s.Read(to, "LastName"));
+        Assert.Equal(birth, s.Read(to, "DateOfBirth"));
+        Assert.Equal(club, s.Read(to, "Contract.Club"));
+        Assert.Equal(reputation, s.Read(to, "Reputation.Current"));
+        Assert.True(s.AutoAbility);
+        Assert.Equal(0, StatsCopy.Paste(s, to, s.CopiedStats));
+    }
+
     [Fact]
     public void Derived_age_and_name_follow_their_sources()
     {

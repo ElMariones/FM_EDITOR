@@ -104,6 +104,7 @@ public sealed partial class BrowserViewModel : ObservableObject
         OtherPresets = forKind.Where(p => !p.Quick).ToList();
 
         session.ValuesChanged += QueueRefresh;
+        session.CopiedStatsChanged += () => Editor?.NotifyCopiedStats();
         ImageService.Instance.Changed += OnPicturesChanged;
         Search();
     }
@@ -165,7 +166,7 @@ public sealed partial class BrowserViewModel : ObservableObject
         if (Editor?.Entity != first.Entity) Editor = NewEditor(first.Entity);
     }
 
-    private EntityEditorViewModel NewEditor(Entity entity) => new(_session, entity, _relations, _navigate, _transfer);
+    private EntityEditorViewModel NewEditor(Entity entity) => new(_session, entity, _relations, _navigate, _transfer, _status);
 
     /// <summary>Players can be moved to another club from the row menu.</summary>
     public bool CanTransfer => _transfer is not null && Kind == EntityKind.Player && _session.Transfers.CanTransfer;
