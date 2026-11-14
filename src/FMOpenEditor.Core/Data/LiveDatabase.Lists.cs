@@ -22,12 +22,13 @@ public sealed partial class LiveDatabase
         return null;
     }
 
-    private object? ReadEntry(nint list, FieldDef field, ListEntryDef entry)
+    private object? ReadEntry(nint list, FieldDef field, ListEntryDef entry, ValueKind kind)
     {
         if (FindEntry(list, entry) is not { } found) return null;
         var raw = (long)ReadNumber(found.Entry + (nint)GameDefinition.ParseOffset(entry.ValueOffset), field.Type);
         if (entry.NoValue is { } none && raw == none) return null;
-        return (long)Math.Round(raw / field.Scale);
+        var shown = Math.Round(raw / field.Scale);
+        return kind == ValueKind.Money ? (object)(long)shown : (int)shown;
     }
 
     private void WriteEntry(nint list, FieldDef field, ListEntryDef entry, PropertyDef prop, object? value)

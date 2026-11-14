@@ -52,6 +52,26 @@ public sealed class GameDefinition
     /// </summary>
     public Dictionary<string, AbilityWeightsDef> AbilityWeights { get; set; } = [];
 
+    /// <summary>
+    /// The game's currency choice: a preferences file under %LOCALAPPDATA% holding a number, which is an
+    /// index into <see cref="CurrencyPreferenceIds"/> (a list in the game's code) giving the currency id.
+    /// </summary>
+    public string? CurrencyPreferenceFile { get; set; }
+    public List<int>? CurrencyPreferenceIds { get; set; }
+
+    /// <summary>The currency id the game shows amounts in, or null when its preferences file can't be read.</summary>
+    public int? ReadGameCurrencyId()
+    {
+        if (CurrencyPreferenceFile is null || CurrencyPreferenceIds is not { Count: > 0 } ids) return null;
+        try
+        {
+            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CurrencyPreferenceFile);
+            var value = System.Xml.Linq.XDocument.Load(path).Descendants("integer").FirstOrDefault()?.Attribute("value")?.Value;
+            return int.TryParse(value, out var i) && i >= 0 && i < ids.Count ? ids[i] : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Xml.XmlException) { return null; }
+    }
+
     [JsonIgnore] public string? SourcePath { get; set; }
 
     public static readonly JsonSerializerOptions JsonOptions = new()
@@ -136,6 +156,10 @@ public sealed class RttiSourceDef
     /// db::PERSON) gives every class the same field offsets.
     /// </summary>
     public string VtableOffset { get; set; } = "0x0";
+
+    /// <summary>True for the class of human-controlled managers: their clubs are listed as "My club".</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Human { get; set; }
 }
 
 public sealed class CollectionDef
@@ -177,6 +201,13 @@ public enum FieldType
     EntityPtr,
     /// <summary>Pointer to FM's length-prefixed string: an i32 byte count, then that many UTF-8 bytes and a 0.</summary>
     FmString,
+    /// <summary>
+    /// A flag the game keeps as a std::vector of pointers (begin at the offset, end 8 bytes later):
+    /// true while any element has a non-zero counter at <see cref="FieldDef.ElementOffset"/>
+    /// (<see cref="FieldDef.ElementBytes"/> wide). Writing false zeroes those counters and lets the
+    /// game treat the list as empty (FM27 shows the player fit by the next day). It can't be set to true.
+    /// </summary>
+    ListFlag,
 }
 
 public sealed class FieldDef
@@ -242,7 +273,38 @@ public sealed class FieldDef
     public MemberListDef? Members { get; set; }
 
     /// <summary>When set, the field is one keyed entry of a list at <see cref="Offset"/> (see <see cref="ListEntryDef"/>).</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ListEntryDef? Entry { get; set; }
+
+    /// <summary>
+    /// Shorthand for an <see cref="Entry"/> in a contract's bonus and clause list: the kind byte (e.g. "0x21"
+    /// goal bonus). The list holds 8-byte entries { i32 amount; i16 count or percent; u8 kind; u8 pad };
+    /// the value is read at <see cref="ElementOffset"/> ("0x0" for money, "0x4" for a percent or count) and
+    /// -1 means not used.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Clause { get; set; }
+
+    /// <summary>The list entry this field reads: <see cref="Entry"/>, or the one <see cref="Clause"/> stands for.</summary>
+    [JsonIgnore]
+    public ListEntryDef? ListEntry => Entry ?? (Clause is null ? null : _clauseEntry ??= new ListEntryDef
+    {
+        Stride = 8,
+        KeyOffset = "0x6",
+        KeyType = FieldType.U8,
+        Key = GameDefinition.ParseOffset(Clause),
+        ValueOffset = ElementOffset ?? "0x0",
+        NoValue = -1,
+    });
+    private ListEntryDef? _clauseEntry;
+
+    /// <summary>For <see cref="FieldType.ListFlag"/>, where each element's counter sits; for a <see cref="Clause"/>, where its value sits.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ElementOffset { get; set; }
+
+    /// <summary>For <see cref="FieldType.ListFlag"/>: how many counter bytes to test and clear.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public int ElementBytes { get; set; }
 
     /// <summary>Set by whoever verified this field in-game.</summary>
     public bool Verified { get; set; }

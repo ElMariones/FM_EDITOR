@@ -10,6 +10,7 @@ namespace FMOpenEditor.Core.Editing;
 public sealed class EditorSession : IDisposable
 {
     private readonly Dictionary<(EntityKind, int), string> _names = [];
+    private readonly Dictionary<Entity, string> _searchNames = [];
 
     public IGameDatabase Database { get; }
     public ChangeSet Changes { get; } = new();
@@ -117,6 +118,16 @@ public sealed class EditorSession : IDisposable
         return name;
     }
 
+    /// <summary>
+    /// The display name as search compares it (see <see cref="Search.SearchEngine.Normalize"/>), kept
+    /// until the next edit, save or refresh, so typing doesn't re-read every name from the game.
+    /// </summary>
+    public string SearchNameOf(Entity entity)
+    {
+        if (_searchNames.TryGetValue(entity, out var cached)) return cached;
+        return _searchNames[entity] = Search.SearchEngine.Normalize(TryRead(entity, PropertyCatalog.DisplayName) as string);
+    }
+
     public string Format(Entity entity, string key)
     {
         var def = PropertyCatalog.Get(entity.Kind, key);
@@ -148,7 +159,7 @@ public sealed class EditorSession : IDisposable
             throw new NotSupportedException($"{def.Label} isn't supported for this game version yet.");
 
         var coerced = Values.Coerce(def, value);
-        if (key is "Name" or "FirstName" or "LastName" or "CommonName") _names.Remove((entity.Kind, entity.Id));
+        if (key is "Name" or "FirstName" or "LastName" or "CommonName") { _names.Remove((entity.Kind, entity.Id)); _searchNames.Remove(entity); }
 
         if (AutoSave)
         {
@@ -168,6 +179,7 @@ public sealed class EditorSession : IDisposable
     {
         var failed = Changes.Commit(Database);
         _names.Clear();
+        _searchNames.Clear();
         return failed;
     }
 
@@ -176,6 +188,7 @@ public sealed class EditorSession : IDisposable
         var n = Changes.UndoLastCommit(Database);
         _names.Clear();
         _ability.Reset();
+        _searchNames.Clear();
         return n;
     }
 
@@ -184,6 +197,7 @@ public sealed class EditorSession : IDisposable
         Changes.Discard();
         _names.Clear();
         _ability.Reset();
+        _searchNames.Clear();
     }
 
     public void Refresh()
@@ -191,6 +205,7 @@ public sealed class EditorSession : IDisposable
         Database.Refresh();
         _names.Clear();
         _ability.Reset();
+        _searchNames.Clear();
         ValuesChanged?.Invoke();
     }
 

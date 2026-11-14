@@ -24,10 +24,14 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
     // and squad lists hold the start of the whole object.
     private readonly Dictionary<nint, int> _objectOffset = [];
     private List<RttiClass>? _rttiClasses;
+    private HashSet<nint> _humanRecords = [];
+
+    public IReadOnlyList<Entity> HumanManagers { get; private set; } = [];
 
     public string DisplayName { get; }
     public bool IsLive => true;
     public GameDefinition Definition => _def;
+    public int? GameCurrencyId => _def.ReadGameCurrencyId();
 
     public IReadOnlyDictionary<string, AbilityWeightsDef>? AbilityWeights => _def.AbilityWeights.Count > 0 ? _def.AbilityWeights : null;
 
@@ -99,6 +103,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
         _byAddress.Clear();
         _objectOffset.Clear();
         var rttiRecords = ScanRttiCollections();
+        var humans = new List<Entity>();
         foreach (var kind in Enum.GetValues<EntityKind>())
         {
             var list = new List<Entity>();
@@ -122,6 +127,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
                         list.Add(e);
                         ids.TryAdd(id, e);
                         _byAddress.TryAdd(addr, e);
+                        if (_humanRecords.Contains(addr)) humans.Add(e);
                     }
                 }
                 catch (Exception ex)
@@ -133,6 +139,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
             _byId[kind] = ids;
         }
         TakeFingerprint();
+        HumanManagers = humans;
     }
 
     /// <summary>
@@ -142,6 +149,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
     private Dictionary<string, List<nint>> ScanRttiCollections()
     {
         var result = new Dictionary<string, List<nint>>();
+        _humanRecords = [];
         var wanted = _def.Collections.Where(c => c.Value.Layout == CollectionLayout.RttiInstances).ToList();
         if (wanted.Count == 0) return result;
 
@@ -159,6 +167,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
 
         var vtablesByKind = new Dictionary<string, List<nint>>();
         var offsetOf = new Dictionary<nint, int>();
+        var humanVtables = new List<nint>();
         foreach (var (kind, col) in wanted)
         {
             var list = vtablesByKind[kind] = [];
@@ -170,6 +179,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
                 if (vt is null) { Warnings.Add($"{kind} list: {src.Class} has no vtable at offset 0x{offset:X}."); continue; }
                 list.Add(vt.Address);
                 offsetOf[vt.Address] = offset;
+                if (src.Human) humanVtables.Add(vt.Address);
             }
         }
 
@@ -178,6 +188,7 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
         var max = wanted.Max(c => c.Value.MaxCount);
         var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
         _selections = _selectionVtable != 0 ? scan.Samples.GetValueOrDefault(_selectionVtable)?.ToList() ?? [] : [];
+        _humanRecords = humanVtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).ToHashSet();
         foreach (var (kind, vtables) in vtablesByKind)
         {
             foreach (var v in vtables)
@@ -260,9 +271,18 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
             WriteStoredLink(entity, field, prop, value);
             return;
         }
+        if (field.Type == FieldType.ListFlag)
+        {
+            if (value is not null && Values.ToDouble(value) != 0)
+                throw new NotSupportedException($"{prop.Label} can be cleared but not set.");
+            var zeros = new byte[field.ElementBytes];
+            foreach (var element in ListElements(entity.Address, field))
+                Put(element + (nint)GameDefinition.ParseOffset(field.ElementOffset!), zeros);
+            return;
+        }
         var addr = FieldAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
-        if (field.Entry is { } entry)
+        if (field.ListEntry is { } entry)
         {
             WriteEntry(addr, field, entry, prop, value);
             return;
@@ -567,10 +587,29 @@ public sealed partial class LiveDatabase : IGameDatabase, IPatchJournal
     private long ReadRaw(nint recordBase, FieldDef field) =>
         FieldAddress(recordBase, field) is { } addr ? (long)ReadNumber(addr, field.Type) : 0;
 
+    /// <summary>The non-null element pointers of a <see cref="FieldType.ListFlag"/> vector (none when the path is empty).</summary>
+    private List<nint> ListElements(nint recordBase, FieldDef field)
+    {
+        var list = new List<nint>();
+        if (FieldAddress(recordBase, field) is not { } addr) return list;
+        var begin = _memory.ReadPointer(addr);
+        var end = _memory.ReadPointer(addr + 8);
+        var count = (long)(end - begin) / 8;
+        if (begin == 0 || count is < 0 or > 64) return list;   // guard against a wrong definition
+        for (var i = 0; i < count; i++)
+            if (_memory.ReadPointer(begin + (nint)(i * 8)) is var e and not 0) list.Add(e);
+        return list;
+    }
+
     private object? ReadField(nint recordBase, FieldDef field, ValueKind kind)
     {
+        if (field.Type == FieldType.ListFlag)
+        {
+            var at = (nint)GameDefinition.ParseOffset(field.ElementOffset!);
+            return ListElements(recordBase, field).Any(e => _memory.ReadBytes(e + at, field.ElementBytes).Any(b => b != 0));
+        }
         if (FieldAddress(recordBase, field) is not { } addr) return null;
-        if (field.Entry is { } entry) return ReadEntry(addr, field, entry);
+        if (field.ListEntry is { } entry) return ReadEntry(addr, field, entry, kind);
         switch (field.Type)
         {
             case FieldType.FmDate:

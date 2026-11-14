@@ -127,6 +127,29 @@ public class ResearchToolTests
         Assert.Equal(objects, result.Samples[vtable]);
     }
 
+    [Theory]
+    [InlineData(false, 0)]
+    [InlineData(true, 3)]
+    public void Records_of_a_human_class_are_the_human_managers(bool human, int expected)
+    {
+        var (mem, _, objects) = BuildRttiFixture();
+        var def = new Core.Definitions.GameDefinition
+        {
+            Collections =
+            {
+                ["Staff"] = new Core.Definitions.CollectionDef
+                {
+                    Layout = Core.Definitions.CollectionLayout.RttiInstances,
+                    Classes = [new Core.Definitions.RttiSourceDef { Class = "fm::player", Human = human }],
+                },
+            },
+        };
+        using var db = new Core.Data.LiveDatabase(mem, def, Module, 0x10000, "test");
+        Assert.Equal(3, db.GetAll(Core.Model.EntityKind.Staff).Count);
+        Assert.Equal(expected, db.HumanManagers.Count);
+        if (human) Assert.Equal(objects, db.HumanManagers.Select(e => e.Address));
+    }
+
     [Fact]
     public void Rtti_object_bases_account_for_the_vtable_offset()
     {

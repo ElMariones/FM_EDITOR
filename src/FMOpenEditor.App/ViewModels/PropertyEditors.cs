@@ -16,8 +16,10 @@ public abstract partial class PropertyEditorViewModel(EditorSession session, Ent
     public bool IsEditable => Session.CanEdit(Entity.Kind, Def.Key);
 
     // Attributes sit two to a row, so they get a narrower label and spinner.
-    public double LabelWidth => Def.IsAttribute ? 96 : 160;
-    public double EditorWidth => Def.IsAttribute ? 108 : 170;
+    public double LabelWidth => Def.IsAttribute ? 96 : 250;
+    // The arrows take about 90 px; 150 leaves room for "$ 1,500" next to them, or "$ 1,500,000,000"
+    // in a box without arrows (big money, see ShowSpinner). Attributes are 1-20 and need less.
+    public double EditorWidth => Def.IsAttribute ? 108 : 150;
 
     [ObservableProperty] private bool _isPending;
     [ObservableProperty] private string? _error;
@@ -72,7 +74,7 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
         var rate = IsMoney ? Money.Current.Rate : 1;
         _minimum = (decimal)Math.Max(d.Min * rate, -1e24);
         _maximum = (decimal)Math.Min(d.Max * rate, 1e24);
-        Increment = d.Kind == ValueKind.Money ? 100_000 : d.Max >= 1000 ? 100 : 1;
+        Increment = d.Kind == ValueKind.Money && d.Max > 1_000_000 ? 100_000 : d.Kind == ValueKind.Money ? 10 : d.Max >= 1000 ? 100 : 1;
         FormatString = d.Kind == ValueKind.Decimal ? "0.##" : "N0";
         Load();
     }
@@ -84,6 +86,9 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
     public decimal Increment { get; }
     public string FormatString { get; }
     public bool IsMoney => Def.Kind == ValueKind.Money;
+    public string CurrencySymbol => Money.Current.Symbol;
+    // Wages, values and release clauses are typed, not stepped.
+    public bool ShowSpinner => !(IsMoney && Def.Max > 1_000_000);
 
     [ObservableProperty] private decimal? _value;
 
@@ -114,7 +119,8 @@ public sealed partial class NumberEditorViewModel : PropertyEditorViewModel
         OnPropertyChanged(nameof(MoneyText));
     }
 
-    public string MoneyText => Value is { } v && IsMoney ? Values.FormatMoney(Money.ToBase((double)v)) : "";
+    // The short form (€1.5M) helps read big numbers; for small ones it would only repeat the box.
+    public string MoneyText => Value is { } v && IsMoney && Math.Abs(v) >= 10_000 ? Values.FormatMoney(Money.ToBase((double)v)) : "";
 }
 
 public sealed partial class BoolEditorViewModel : PropertyEditorViewModel

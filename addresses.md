@@ -63,7 +63,7 @@ Every record starts the same way: vtable, then the row index at +0x8 and the uni
 
 **Contracts and squads.** A player's contract (person+0xA8) points at a team at +0x10, and that is the club's *first* team for 98% of players (30,173 of 31,258 checked), including B-team and youth players. Nothing else points at the contract. Who actually plays for each of the club's teams is a separate vector of player-object pointers at `db::TEAM`+0x38 (begin, end, capacity), so Real Madrid's first team had 89 contracts against squads of 29, 34 and 30 across its three teams. The object pointer is the start of `db::ACTUAL_PLAYER` (person−0x288), not the person part. A transfer therefore changes contract+0x10 to the new club's first team and moves the player between squad vectors. Writing the club pointer the read path ends on (team+0x30) would move the whole team. Three more links name the team the player is in, and the game's profile and squad screens follow them rather than the contract: contract+0x18 (usually the same team as +0x10), person−0x158 (the squad team: that team's squad vector always contains the player) and person−0x150 (usually the same as −0x158). A transfer that only changes contract+0x10 leaves the player listed nowhere in the game, so the editor moves all four together. The squad vectors are nearly always full (4,532 full against 95 with slack, out of 79,062 teams, most of which have none). Growing one would mean allocating inside the game, which the editor never does. Before borrowing, the editor uses the room the game's allocator left: it hands out blocks in size classes (144, 160, 192, 224, 256, 288, 320, 384, 448 and 512 bytes) with no headers. So a list whose capacity ends short of its class, such as 27 players (216 bytes) in a 224-byte block, has zeroed bytes after it. The editor writes the player there and raises the capacity to the block's end, but only when those bytes are all zero. Only when that room is missing does it swap storage with another team's roomier vector (the donor gets the old storage, which still fits its squad). If no team can donate, nothing is written.
 
-**More of the contract** (from the Windows notes of [FMLibreEditor](https://github.com/tozmoz/FMLibreEditor), GPL-3.0, whose `docs/recon` also gave the allocator's size classes; checked live on 27.0.1): +0x4C the date he joined the club, +0x54 squad status (codes 1–5, 7, 9–11, 13–17, 20–22; all 4,889 sampled contracts read as one of them), +0x57 listing flags (bit 0 transfer listed, bit 1 loan listed), +0x5A happiness and +0x5C playing-time happiness (both i8), +0x5D squad number (255 for none). +0x68 is a vector of 8-byte clauses: u32 amount (0xFFFFFFFF for none), u16 condition, u16 kind; kind 0 is the minimum-fee release clause. Removing one shifts the rest up. +0x80 is the vector of competition bonuses. A player on loan has a record at person+0xB0 whose first pointer is the loan contract, laid out like a contract: its +0x10 is the team he is on loan to (2,189 loans read this way). A move clears the squad number and both listings, sets the joined dates and empties the old club's captaincy and vice-captaincy if he held them. Players out on loan are refused.
+**More of the contract** (from the Windows notes of [FMLibreEditor](https://github.com/tozmoz/FMLibreEditor), GPL-3.0, whose `docs/recon` also gave the allocator's size classes; checked live on 27.0.1): +0x4C the date he joined the club, +0x54 squad status (codes 1–5, 7, 9–11, 13–17, 20–22; all 4,889 sampled contracts read as one of them), +0x57 listing flags (bit 0 transfer listed, bit 1 loan listed), +0x5A happiness and +0x5C playing-time happiness (both i8), +0x5D squad number (255 for none). +0x68 is the vector of bonuses and clauses (see *Contract bonuses and clauses* below); kind 0 is the minimum-fee release clause, and a move takes it out (the entries after it shift up). +0x80 is the vector of competition bonuses. A player on loan has a record at person+0xB0 whose first pointer is the loan contract, laid out like a contract: its +0x10 is the team he is on loan to (2,189 loans read this way). A move clears the squad number and both listings, sets the joined dates and empties the old club's captaincy and vice-captaincy if he held them. Players out on loan are refused.
 
 **Previous club.** person+0x108 points at the club he came from (Trent: Liverpool, Gyökeres: Sporting, Mbappé: PSG, Huijsen: Bournemouth). A move sets it to the club he left.
 
@@ -90,6 +90,16 @@ Every record starts the same way: vtable, then the row index at +0x8 and the uni
 ## Mapped
 
 ✅ = matched against in-game screens. 🔧 = read out of the game's field-access code and checked against live records (see above). 📋 = matched against known real-world data (league line-ups) but not yet tested in game. 📊 = inferred from statistics over every player; the game never shows the value, so it can't be confirmed.
+
+### Human managers ✅
+
+`db::HUMAN_NON_PLAYER` (person part at +0x440) is the class of the managers the players control. It is one of the Staff classes. The definition marks it `"human": true`, and the editor reads `Contract.Club` from each one for **My club**. Checked on 27.0.1: a one-player save had 2 objects. One was the real manager, linked to his club. The other was a profile copy, named in brackets after the online name, with no club.
+
+### Player: injuries ✅
+
+Current injuries hang off person−0x190: a pointer to an injury holder whose +0x0/+0x8 is a std::vector of pointers, one per current injury (+0x68 is a second vector, past injuries). Most players have no holder; 3,648 of 143,138 had one current injury in the save it was mapped on. Each injury entry: +0x8 → `db::INJURY`, +0x18 → the player's team, +0x20 start date, +0x28 and +0x2A two u16 day counters (12 and 7 for a hamstring strain shown as 2–9 days out). The `Pijl` field code reads `db::STARTING_INJURY`, the database's start-of-game table, which is empty in a running game.
+
+Heal: zeroing both counters (`listFlag`, elementOffset 0x28, 4 bytes). Checked on 27.0.1 (Suk Hyun-Jun, hamstring strain): the game showed him fit after one day. The entry itself was still in the vector then, with both counters at 0; whether the game removes it later is not checked.
 
 ### Player: identity and contract
 
@@ -782,6 +792,28 @@ The *Code* column is the game's own field code from `editor.fmf`; rows without o
 
 Every amount in the game is kept in pounds. `+0x40` points at a list of dated past rates (8 bytes each: date, then f32 rate).
 
+### Contract bonuses and clauses
+
+Contract = person+0xA8.
+
+Bonuses and clauses are a std::vector at contract+0x68 (end at +0x70) of 8-byte entries: i32 amount (+0, -1 = not used), i16 count or percent (+4, -1 = not used), u8 type (+6), u8 0. Names come from the game's switch on the type (game_plugin 0x1ac2580). Amounts are in pounds.
+
+| Type | Clause | Value at |
+|---|---|---|
+| 0x00 / 0x10 / 0x12 | Minimum fee release (any / foreign / domestic clubs) | +0 |
+| 0x01 | Relegation release clause | +0 |
+| 0x03 / 0x04 / 0x05 | Yearly wage rise / promotion rise / relegation drop (%) | +4 |
+| 0x08 / 0x09 | Sell-on fee / sell-on profit (%) | +4 |
+| 0x0B | One-year extension after N league games | +4 |
+| 0x0E / 0x0F | Top division promotion rise / relegation drop (%) | +4 |
+| 0x16 | Optional extension by club (years) | +4 |
+| 0x20 / 0x21 / 0x22 | Appearance fee / goal bonus / clean sheet bonus | +0 |
+| 0x25 / 0x26 / 0x27 | International cap bonus / unused sub fee / assist bonus | +0 |
+
+Other types seen: 0x02 non-promotion release, 0x06 non-playing job release, 0x0A landmark goal bonus, 0x0C match highest earner, 0x0D / 0x13 wage after N club / international games, 0x11 release (higher division), 0x14 % wages paid by sponsor, 0x15 % gate receipts, 0x17 / 0x18 managerial role compensation, 0x19 / 0x1A / 0x1D extensions, 0x1E injury release, 0x1F release (continental clubs), 0x23 / 0x24 team of the year / top scorer bonus, 0x28 / 0x29 landmark assist / goal+assist bonus, 0x37 / 0x38 active relegation / non-promotion release.
+
+The editor changes an entry the contract has. It can't add one: that needs memory in the game.
+
 ---
 
 ## Missing
@@ -793,10 +825,10 @@ Every amount in the game is kept in pounds. `+0x40` points at a list of dated pa
 | Second nationality | Not a single pointer. Person+0x78 is a vector of mixed relation entries (nations, clubs, people); each entry holds a pointer at +0x0 and type bytes at +0xA and +0xB. The getter picks entries of one type. The editor's definition format has no way to say "the entry of type N" yet. |
 | Weight | FM27 has no weight field. Body type (person−0x58, five named shapes) replaced it. |
 | Trained at club / nation | Lists (`Phgc`, `Phgn`), computed from the playing history. |
-| Injured / banned | Lists (`Pijl`, `Pbnl`), not flags. |
+| Banned | A list (`Pbnl`), not a flag. |
 | Retired from international football | The international data block at [−0x168]: date at +0x28, flag byte at +0x34. The flag's bit is not known. |
-| Squad status | Contract +0xC4. Most contracts hold 255 and a few hold 23–26, so the shown status is mostly computed. Left out. |
-| Release clauses, bonuses, contract happiness, future transfer | Lists of clause records on the contract; not traced. |
+| Squad status (agreed playing time) | Not mapped. Contract +0x54 holds the agreed status (1 Star Player, 2 Important Player, 3 Regular Starter, 4 Squad Player, 5 Impact Sub, 7 Fringe Player, 9 Emergency Backup, 11 / 13 Youngster, 15 First-Choice Goalkeeper, 16 Cup Goalkeeper, 20 Backup, 22 Surplus to Requirements; 10, 14, 17, 21 unnamed). FM's Agreed Playing Time button writes +0x54, the previous value at +0x55 and a date at +0xB4, but writing +0x54 alone changes nothing in game, even after a day: the button also changes a second place, not found yet. +0x56 looks like the actual playing time. |
+| Contract happiness, future transfer | Not traced. |
 
 ### Staff
 

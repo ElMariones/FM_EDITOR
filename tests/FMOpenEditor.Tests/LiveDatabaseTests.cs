@@ -61,6 +61,20 @@ public class LiveDatabaseTests
         m.I64(Heap + 0x4000, club);
         m.I64(Heap + 0x4008, 12_000);
 
+        // Ana's injuries: record+0x60 -> holder whose std::vector holds one injury with day counters 12 and 7.
+        m.I64(people[0] + 0x60, Heap + 0x5000);
+        m.I64(Heap + 0x5000, Heap + 0x5100);
+        m.I64(Heap + 0x5008, Heap + 0x5108);
+        m.I64(Heap + 0x5100, Heap + 0x5200);
+        m.I16(Heap + 0x5228, 12);
+        m.I16(Heap + 0x522A, 7);
+
+        // Ana's bonus/clause list at contract+0x20: appearance fee 84 (type 0x20) and a 25% raise (type 0x0E).
+        m.I64(Heap + 0x4020, Heap + 0x6000);
+        m.I64(Heap + 0x4028, Heap + 0x6010);
+        m.I32(Heap + 0x6000, 84); m.I16(Heap + 0x6004, -1); m.Bytes(Heap + 0x6006, 0x20);
+        m.I32(Heap + 0x6008, -1); m.I16(Heap + 0x600C, 25); m.Bytes(Heap + 0x600E, 0x0E);
+
         FieldDef F(string offset, FieldType type, double scale = 1, params string[] path) =>
             new() { Offset = offset, Type = type, Scale = scale, Path = path.Length > 0 ? [.. path] : null };
 
@@ -73,6 +87,10 @@ public class LiveDatabaseTests
             ["Attr.Finishing"] = F("0x40", FieldType.U8, 5),
             ["Contract.Club"] = F("0x0", FieldType.EntityPtr, 1, "0x50"),
             ["Contract.Wage"] = F("0x8", FieldType.I64, 1, "0x50"),
+            ["IsInjured"] = new FieldDef { Offset = "0x0", Type = FieldType.ListFlag, Path = ["0x60"], ElementOffset = "0x28", ElementBytes = 4 },
+            ["Contract.AppearanceFee"] = new FieldDef { Offset = "0x20", Type = FieldType.I32, Path = ["0x50"], Clause = "0x20" },
+            ["Contract.TopDivisionPromotionWageRise"] = new FieldDef { Offset = "0x20", Type = FieldType.I16, Path = ["0x50"], Clause = "0x0E", ElementOffset = "0x4" },
+            ["Contract.GoalBonus"] = new FieldDef { Offset = "0x20", Type = FieldType.I32, Path = ["0x50"], Clause = "0x21" },
         };
 
         var def = new GameDefinition
@@ -147,6 +165,66 @@ public class LiveDatabaseTests
 
         db.Write(ana, "Contract.Club", null);
         Assert.Null(db.Read(ana, "Contract.Club"));
+    }
+
+    [Fact]
+    public void Bonuses_read_and_write_their_own_entry_in_the_contract_list()
+    {
+        var (m, db) = Build();
+        var ana = db.Find(EntityKind.Player, 1)!;
+        Assert.Equal(84L, db.Read(ana, "Contract.AppearanceFee"));
+        Assert.Equal(25, db.Read(ana, "Contract.TopDivisionPromotionWageRise"));
+        Assert.Null(db.Read(ana, "Contract.GoalBonus"));   // no such entry
+
+        db.Write(ana, "Contract.AppearanceFee", 200L);
+        db.Write(ana, "Contract.TopDivisionPromotionWageRise", 40);
+        Assert.Equal(200, m.ReadInt32(Heap + 0x6000));
+        Assert.Equal(40, m.ReadInt16(Heap + 0x600C));
+        Assert.Equal(-1, m.ReadInt32(Heap + 0x6008));   // the other half of the entry is untouched
+        Assert.Throws<NotSupportedException>(() => db.Write(ana, "Contract.GoalBonus", 50L));
+    }
+
+    [Fact]
+    public void Writing_zero_to_a_clause_takes_the_entry_out_rather_than_leaving_a_free_clause()
+    {
+        var (m, db) = Build();
+        var ana = db.Find(EntityKind.Player, 1)!;
+        db.Write(ana, "Contract.AppearanceFee", 0L);
+        Assert.Null(db.Read(ana, "Contract.AppearanceFee"));
+        Assert.Equal(25, db.Read(ana, "Contract.TopDivisionPromotionWageRise"));   // moved up into the first slot
+        Assert.Equal(Heap + 0x6008, m.ReadPointer(Heap + 0x4028));                 // the list is one entry shorter
+        db.Write(ana, "Contract.GoalBonus", 0L);                                   // nothing to take out is fine
+    }
+
+    [Fact]
+    public void Game_currency_is_the_preference_index_into_the_game_list()
+    {
+        var file = Path.GetTempFileName();   // an absolute path wins over the LocalAppData base
+        File.WriteAllText(file, "<record>\n\t<integer id=\"value\" value=\"2\"/>\n</record>");
+        var def = new GameDefinition { CurrencyPreferenceFile = file, CurrencyPreferenceIds = [86, 28, 87] };
+        Assert.Equal(87, def.ReadGameCurrencyId());
+        File.WriteAllText(file, "<record><integer id=\"value\" value=\"9\"/></record>");
+        Assert.Null(def.ReadGameCurrencyId());   // outside the list
+        File.Delete(file);
+        Assert.Null(def.ReadGameCurrencyId());   // no file: keep the editor's own choice
+    }
+
+    [Fact]
+    public void Injuries_read_from_the_list_and_clear_by_zeroing_the_day_counters()
+    {
+        var (m, db) = Build();
+        var ana = db.Find(EntityKind.Player, 1)!;
+        var ben = db.Find(EntityKind.Player, 3)!;
+        Assert.Equal(true, db.Read(ana, "IsInjured"));
+        Assert.Equal(false, db.Read(ben, "IsInjured"));   // no injury holder at all
+
+        db.Write(ana, "IsInjured", false);
+        Assert.Equal(0, m.ReadInt32(Heap + 0x5228));
+        Assert.Equal(Heap + 0x5200, m.ReadPointer(Heap + 0x5100));   // the entry stays in the list
+        Assert.Equal(false, db.Read(ana, "IsInjured"));
+
+        db.Write(ben, "IsInjured", false);   // nothing to clear is fine
+        Assert.Throws<NotSupportedException>(() => db.Write(ana, "IsInjured", true));
     }
 
     [Fact]
