@@ -267,13 +267,30 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         session.Changes.Changed += UpdatePending;
         Session = session;
         _relations = new RelationIndex(session);
-        Settings.UseCurrencies(ReadCurrencies(session));
+        Settings.UseCurrencies(ReadCurrencies(session), db.GameCurrencyId);
         ClearHistory();
         if (!db.IsLive) _edition = null;
         StartGraphics();
 
         Nav.Clear();
         _pages.Clear();
+        // Your own club first: the club of each manager the people playing this save control.
+        var relations = _relations!;
+        var myClubs = db.HumanManagers.Select(h => session.TryRead(h, "Contract.Club")).OfType<int>().Distinct()
+            .Select(id => db.Find(EntityKind.Club, id)).OfType<Entity>().ToList();
+        foreach (var club in myClubs)
+        {
+            var c = club;
+            var name = session.NameOf(EntityKind.Club, c.Id);
+            // With several human clubs (a network or multi-manager save), say whose squad each one is.
+            var squad = myClubs.Count > 1 ? $"Squad · {name}" : "Squad";
+            var staff = myClubs.Count > 1 ? $"Club staff · {name}" : "Club staff";
+            Nav.Add(new NavItem(name, "club", () => NewBrowser(EntityKind.Club, () => [c]), Nav.Count == 0 ? "MY CLUB" : null));
+            Nav.Add(new NavItem(squad, "player",
+                () => NewBrowser(EntityKind.Player, () => relations.Find(EntityKind.Player, "Contract.Club", c.Id).ToList(), squad)));
+            Nav.Add(new NavItem(staff, "staff",
+                () => NewBrowser(EntityKind.Staff, () => relations.Find(EntityKind.Staff, "Contract.Club", c.Id).ToList(), staff)));
+        }
         // Grouped so the record types read as four short lists. A type is listed only when this
         // game version has records for it (the demo database has just the first five).
         // Teams have no page: people look for clubs, and a club's page carries its first team's fields.
@@ -301,10 +318,10 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
         Status = $"Opened {db.DisplayName}: {db.GetAll(EntityKind.Player).Count:N0} players, {db.GetAll(EntityKind.Club).Count:N0} clubs.";
     }
 
-    private BrowserViewModel NewBrowser(EntityKind kind)
+    private BrowserViewModel NewBrowser(EntityKind kind, Func<IReadOnlyList<Entity>>? source = null, string? title = null)
     {
         var browser = new BrowserViewModel(Session!, kind, Presets, s => Status = s,
-            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations);
+            (a, b) => CompareRequested?.Invoke(new CompareViewModel(Session!, a, b)), Navigate, _relations, source, title);
         // Opening a row is a step in the history too, so Back returns to the previous player.
         browser.PropertyChanged += (_, e) =>
         {

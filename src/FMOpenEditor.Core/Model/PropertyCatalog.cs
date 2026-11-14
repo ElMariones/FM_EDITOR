@@ -184,6 +184,8 @@ public static class PropertyCatalog
         new(key, label, cat, ValueKind.Integer) { Min = min, Max = max };
     private static PropertyDef Money(string key, string label, string cat) =>
         new(key, label, cat, ValueKind.Money) { Min = -1_000_000_000_000, Max = 1_000_000_000_000 };
+    // Per-game or per-goal bonuses: small amounts, so a narrow box and small steps.
+    private static PropertyDef Bonus(string key, string label, string cat) => Money(key, label, cat) with { Max = 1_000_000 };
     private static PropertyDef Bool(string key, string label, string cat) => new(key, label, cat, ValueKind.Boolean);
     private static PropertyDef Date(string key, string label, string cat) => new(key, label, cat, ValueKind.Date);
     private static PropertyDef Ref(string key, string label, string cat, EntityKind to) =>
@@ -260,13 +262,33 @@ public static class PropertyCatalog
         Date("Contract.Start", "Contract start", "Contract"),
         Date("Contract.Expiry", "Contract expiry", "Contract"),
         Choice("Contract.SquadStatus", "Squad status", "Contract", SquadStatuses),
-        Money("Contract.ReleaseClause", "Release clause", "Contract"),
         Int("Contract.Happiness", "Contract happiness", "Contract", 0, 100),
         Int("Contract.PlayingTimeHappiness", "Playing time happiness", "Contract", 0, 100),
         Int("Contract.UnhappinessReasons", "Unhappiness reasons", "Contract", 0, 20),
         Ref("Transfer.FutureClub", "Future club", "Contract", EntityKind.Club),
         Date("Transfer.FutureDate", "Future transfer date", "Contract"),
         Money("Transfer.FutureFee", "Future transfer fee", "Contract"),
+
+        // One entry each in the contract's bonus/clause list. The editor hides the ones a contract lacks.
+        Bonus("Contract.AppearanceFee", "Appearance fee", "Bonuses"),
+        Bonus("Contract.GoalBonus", "Goal bonus", "Bonuses"),
+        Bonus("Contract.AssistBonus", "Assist bonus", "Bonuses"),
+        Bonus("Contract.CleanSheetBonus", "Clean sheet bonus", "Bonuses"),
+        Bonus("Contract.UnusedSubFee", "Unused substitute fee", "Bonuses"),
+        Bonus("Contract.InternationalCapBonus", "International cap bonus", "Bonuses"),
+        Money("Contract.ReleaseClause", "Release clause (all clubs)", "Bonuses"),
+        Money("Contract.ReleaseClauseForeign", "Release clause (foreign clubs)", "Bonuses"),
+        Money("Contract.ReleaseClauseDomestic", "Release clause (domestic clubs)", "Bonuses"),
+        Money("Contract.RelegationReleaseClause", "Relegation release clause", "Bonuses"),
+        Int("Contract.YearlyWageRise", "Yearly wage rise (%)", "Bonuses", 0, 100),
+        Int("Contract.PromotionWageRise", "Promotion wage rise (%)", "Bonuses", 0, 100),
+        Int("Contract.TopDivisionPromotionWageRise", "Top division promotion wage rise (%)", "Bonuses", 0, 100),
+        Int("Contract.RelegationWageDrop", "Relegation wage drop (%)", "Bonuses", 0, 100),
+        Int("Contract.TopDivisionRelegationWageDrop", "Top division relegation wage drop (%)", "Bonuses", 0, 100),
+        Int("Contract.SellOnFee", "Sell-on fee (%)", "Bonuses", 0, 100),
+        Int("Contract.SellOnProfit", "Sell-on fee from profit (%)", "Bonuses", 0, 100),
+        Int("Contract.OptionalExtension", "Optional extension by club (years)", "Bonuses", 0, 10),
+        Int("Contract.ExtensionAfterGames", "One-year extension after league games", "Bonuses", 0, 100),
     ];
 
     private static List<PropertyDef> BuildStaff() =>

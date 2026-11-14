@@ -56,6 +56,8 @@ public sealed partial class EntityEditorViewModel : ObservableObject
 
         Groups = supported
             .Where(p => p.Key != PropertyCatalog.DisplayName)
+            // A bonus the contract lacks can't be added in a live game (no room in its list), so it is not shown.
+            .Where(p => p.Category != "Bonuses" || session.TryRead(entity, p.Key) is not null)
             .GroupBy(p => p.Category)
             .Select(g => new PropertyGroupViewModel(g.Key, g.Select(p => PropertyEditorViewModel.Create(session, entity, p, open)).ToList()))
             .ToList();

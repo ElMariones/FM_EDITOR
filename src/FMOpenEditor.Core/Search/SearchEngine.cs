@@ -22,6 +22,9 @@ public sealed class SearchQuery
 {
     public EntityKind Kind { get; init; }
 
+    /// <summary>The records to search, when not all of <see cref="Kind"/> (e.g. one club's players).</summary>
+    public IEnumerable<Entity>? Source { get; init; }
+
     /// <summary>Free text matched against the display name (accent- and case-insensitive).</summary>
     public string? Text { get; init; }
     public List<Filter> Filters { get; init; } = [];
@@ -48,9 +51,9 @@ public static class SearchEngine
 
         var sortKey = query.SortKey is { } k && session.IsSupported(query.Kind, k) ? k : null;
         var results = new List<Entity>();
-        foreach (var e in session.GetAll(query.Kind))
+        foreach (var e in query.Source ?? session.GetAll(query.Kind))
         {
-            if (text.Length > 0 && !Normalize(session.TryRead(e, PropertyCatalog.DisplayName) as string).Contains(text)) continue;
+            if (text.Length > 0 && !session.SearchNameOf(e).Contains(text, StringComparison.Ordinal)) continue;
             if (!filters.All(f => Matches(session.TryRead(e, f.Filter.Property), f.Filter.Op, f.A, f.B))) continue;
             results.Add(e);
             if (sortKey is null && results.Count >= query.Limit) break;

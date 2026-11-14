@@ -84,6 +84,8 @@ Instead of a root, a collection can name C++ classes. At connect, the editor fin
 }
 ```
 
+Add `"human": true` to the class of human-controlled managers (FM27: `db::HUMAN_NON_PLAYER`). The editor then lists each one's club, squad and staff under **My club** at the top of the menu.
+
 Class names survive patches; only `vtableOffset` and struct offsets may move. The Research page's **Classes (RTTI)** tab lists classes, their vtables and object offsets. To read the same RTTI from the DLL on disk without the game running, use `PeFileMemory` with `RttiScanner`.
 
 ### Field types
@@ -97,12 +99,17 @@ Class names survive patches; only `vtableOffset` and struct offsets may move. Th
 | `utf16Inline` | characters stored inside the record (`maxLength`) |
 | `fmString` | pointer to FM's length-prefixed string: i32 byte count, UTF-8 bytes, 0. FM27 uses it for every name. Edited in place, never longer than the current text. |
 | `entityPtr` | pointer to another record (club, nation…); the editor shows the name |
+| `listFlag` | a flag the game keeps as a std::vector of pointers (begin at `offset`, end 8 bytes later). True while any element has a non-zero counter at `elementOffset` (`elementBytes` wide). Writing false zeroes those counters (FM27 then shows the player fit by the next day). It can't be set to true. |
 
 A `path` whose pointer is empty (no common name, no contract) makes the field read as empty; it can't be edited for that record.
 
 `"mask": "0x10"` on a `bool` says the flag is one bit of a shared byte. Reading tests that bit, and writing changes only that bit.
 
 `"values": [0, 2, 4, 16]` on a choice field lists the number the game stores for each choice, in the order of the property's choice list. Use it when the game's numbers are not 0, 1, 2… (staff jobs, for example). A stored number that is not in the list reads as empty.
+
+`"clause": "0x21"` reads one entry of a contract's bonus/clause list. `offset` points at the std::vector (end 8 bytes later) of 8-byte entries; the entry whose type byte (+6) is the clause number holds the value at `elementOffset`, as `type` (`i32` at 0x0 for money, `i16` at 0x4 for percent or count). -1 there, or no such entry, reads as empty. A missing entry can't be written.
+
+`"currencyPreferenceFile"` (under %LOCALAPPDATA%) and `"currencyPreferenceIds"` tell the editor which currency the game shows. The file holds a number; it is an index into the id list, which is a table in the game code (FM27: Pound first, Euro 7, Dollar 24). On connect the editor switches to that currency.
 
 `"readOnly": true` shows a field (in lists, filters and related tabs) but never writes it. Use it for links the game also keeps somewhere else, such as a club's league, which the competition's own team list repeats: changing only one copy would leave the save inconsistent.
 

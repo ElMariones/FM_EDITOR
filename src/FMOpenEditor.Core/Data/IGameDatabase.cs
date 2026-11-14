@@ -20,6 +20,12 @@ public interface IGameDatabase : IDisposable
     IReadOnlyList<Entity> GetAll(EntityKind kind);
     Entity? Find(EntityKind kind, int id);
 
+    /// <summary>The managers the people playing this save control (none when the game version doesn't say).</summary>
+    IReadOnlyList<Entity> HumanManagers => [];
+
+    /// <summary>The currency id the game itself shows amounts in, when known.</summary>
+    int? GameCurrencyId => null;
+
     /// <summary>Whether this source can read and write <paramref name="key"/> for <paramref name="kind"/>.</summary>
     bool Supports(EntityKind kind, string key);
 

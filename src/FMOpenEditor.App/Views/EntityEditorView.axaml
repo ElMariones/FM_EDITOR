@@ -47,7 +47,13 @@
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
           <NumericUpDown Value="{Binding Value}" Minimum="{Binding Minimum}" Maximum="{Binding Maximum}"
                          Increment="{Binding Increment}" FormatString="{Binding FormatString}"
-                         IsEnabled="{Binding IsEditable}" Width="{Binding EditorWidth}" ClipValueToMinMax="True" />
+                         IsEnabled="{Binding IsEditable}" Width="{Binding EditorWidth}" ClipValueToMinMax="True"
+                         ShowButtonSpinner="{Binding ShowSpinner}">
+            <NumericUpDown.InnerLeftContent>
+              <TextBlock Text="{Binding CurrencySymbol}" Classes="muted" VerticalAlignment="Center" Margin="8,0,0,0"
+                         IsVisible="{Binding IsMoney}" />
+            </NumericUpDown.InnerLeftContent>
+          </NumericUpDown>
           <TextBlock Text="{Binding MoneyText}" Classes="muted" VerticalAlignment="Center" IsVisible="{Binding IsMoney}" />
         </StackPanel>
         <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="error" Text="{Binding Error}"
@@ -103,8 +109,8 @@
 
     <!-- Tabs: a group of fields… -->
     <DataTemplate DataType="vm:PropertyGroupViewModel">
-      <ScrollViewer Padding="8,8,12,8">
-        <Panel>
+      <ScrollViewer>
+        <Panel Margin="8,8,12,8">
           <!-- Attribute groups sit two to a row; other groups one per row. -->
           <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding IsAttributeGrid}">
             <ItemsControl.ItemsPanel>

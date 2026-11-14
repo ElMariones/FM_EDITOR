@@ -162,6 +162,7 @@ public class EditingTests
         Assert.All(young, p => Assert.True((int)s.Read(p, "Age")! <= 19 && (int)s.Read(p, "PotentialAbility")! >= 120));
 
         var target = s.GetAll(EntityKind.Player)[10];
+        SearchEngine.Run(s, new SearchQuery { Kind = EntityKind.Player, Text = "x" }); // fills the name cache a rename must clear
         s.Set(target, "LastName", "Fernández");
         s.Set(target, "FirstName", "Íker");
         var byName = SearchEngine.Run(s, new SearchQuery { Kind = EntityKind.Player, Text = "iker fernandez" });

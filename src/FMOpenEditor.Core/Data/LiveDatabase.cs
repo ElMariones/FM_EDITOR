@@ -21,10 +21,14 @@ public sealed class LiveDatabase : IGameDatabase
     private readonly Dictionary<EntityKind, Dictionary<int, Entity>> _byId = [];
     private readonly Dictionary<nint, Entity> _byAddress = [];
     private List<RttiClass>? _rttiClasses;
+    private HashSet<nint> _humanRecords = [];
+
+    public IReadOnlyList<Entity> HumanManagers { get; private set; } = [];
 
     public string DisplayName { get; }
     public bool IsLive => true;
     public GameDefinition Definition => _def;
+    public int? GameCurrencyId => _def.ReadGameCurrencyId();
 
     /// <summary>Problems found while resolving roots and collections; non-empty means partial support.</summary>
     public List<string> Warnings { get; } = [];
@@ -93,6 +97,7 @@ public sealed class LiveDatabase : IGameDatabase
         _byId.Clear();
         _byAddress.Clear();
         var rttiRecords = ScanRttiCollections();
+        var humans = new List<Entity>();
         foreach (var kind in Enum.GetValues<EntityKind>())
         {
             var list = new List<Entity>();
@@ -116,6 +121,7 @@ public sealed class LiveDatabase : IGameDatabase
                         list.Add(e);
                         ids.TryAdd(id, e);
                         _byAddress.TryAdd(addr, e);
+                        if (_humanRecords.Contains(addr)) humans.Add(e);
                     }
                 }
                 catch (Exception ex)
@@ -126,6 +132,7 @@ public sealed class LiveDatabase : IGameDatabase
             _entities[kind] = list;
             _byId[kind] = ids;
         }
+        HumanManagers = humans;
     }
 
     /// <summary>
@@ -135,6 +142,7 @@ public sealed class LiveDatabase : IGameDatabase
     private Dictionary<string, List<nint>> ScanRttiCollections()
     {
         var result = new Dictionary<string, List<nint>>();
+        _humanRecords = [];
         var wanted = _def.Collections.Where(c => c.Value.Layout == CollectionLayout.RttiInstances).ToList();
         if (wanted.Count == 0) return result;
 
@@ -150,6 +158,7 @@ public sealed class LiveDatabase : IGameDatabase
         var byName = _rttiClasses.GroupBy(c => c.Name).ToDictionary(g => g.Key, g => g.First());
 
         var vtablesByKind = new Dictionary<string, List<nint>>();
+        var humanVtables = new List<nint>();
         foreach (var (kind, col) in wanted)
         {
             var list = vtablesByKind[kind] = [];
@@ -160,12 +169,14 @@ public sealed class LiveDatabase : IGameDatabase
                 var vt = cls.Vtables.FirstOrDefault(v => v.ObjectOffset == offset);
                 if (vt is null) { Warnings.Add($"{kind} list: {src.Class} has no vtable at offset 0x{offset:X}."); continue; }
                 list.Add(vt.Address);
+                if (src.Human) humanVtables.Add(vt.Address);
             }
         }
 
         var all = vtablesByKind.Values.SelectMany(v => v).Distinct().Select(v => new RttiVtable(v, 0, 0)).ToList();
         var max = wanted.Max(c => c.Value.MaxCount);
         var scan = RttiScanner.FindInstances(_memory, all, _moduleBase, _moduleSize, max);
+        _humanRecords = humanVtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).ToHashSet();
         foreach (var (kind, vtables) in vtablesByKind)
         {
             var records = vtables.SelectMany(v => scan.Samples.GetValueOrDefault(v) ?? []).Distinct().Order().ToList();
@@ -239,7 +250,16 @@ public sealed class LiveDatabase : IGameDatabase
         var field = Field(entity.Kind, key) ?? throw new NotSupportedException($"{entity.Kind}.{key} is not mapped for {_def.Version}.");
         var prop = PropertyCatalog.Get(entity.Kind, key);
         if (field.ReadOnly) throw new NotSupportedException($"{prop.Label} can be read but not changed in this version.");
-        var addr = FieldAddress(entity.Address, field)
+        if (field.Type == FieldType.ListFlag)
+        {
+            if (value is not null && Values.ToDouble(value) != 0)
+                throw new NotSupportedException($"{prop.Label} can be cleared but not set.");
+            var zeros = new byte[field.ElementBytes];
+            foreach (var element in ListElements(entity.Address, field))
+                _memory.WriteChecked(element + (nint)GameDefinition.ParseOffset(field.ElementOffset!), zeros);
+            return;
+        }
+        var addr = ValueAddress(entity.Address, field)
                    ?? throw new NotSupportedException($"{prop.Label} is empty for this record, so there is nothing to edit in place.");
 
         switch (field.Type)
@@ -327,12 +347,49 @@ public sealed class LiveDatabase : IGameDatabase
         return addr + (nint)GameDefinition.ParseOffset(field.Offset!);
     }
 
+    /// <summary>Where the value sits: the field address, or for a <see cref="FieldDef.Clause"/> the value inside that clause's entry.</summary>
+    private nint? ValueAddress(nint recordBase, FieldDef field)
+    {
+        var addr = FieldAddress(recordBase, field);
+        if (addr is null || field.Clause is null) return addr;
+        var begin = _memory.ReadPointer(addr.Value);
+        var count = (long)(_memory.ReadPointer(addr.Value + 8) - begin) / 8;
+        if (begin == 0 || count is < 0 or > 64) return null;   // guard against a wrong definition
+        var type = (byte)GameDefinition.ParseOffset(field.Clause);
+        for (var i = 0; i < count; i++)
+        {
+            var entry = begin + (nint)(i * 8);
+            if (_memory.ReadByte(entry + 6) == type) return entry + (nint)GameDefinition.ParseOffset(field.ElementOffset ?? "0x0");
+        }
+        return null;
+    }
+
     private long ReadRaw(nint recordBase, FieldDef field) =>
         FieldAddress(recordBase, field) is { } addr ? (long)ReadNumber(addr, field.Type) : 0;
 
+    /// <summary>The non-null element pointers of a <see cref="FieldType.ListFlag"/> vector (none when the path is empty).</summary>
+    private List<nint> ListElements(nint recordBase, FieldDef field)
+    {
+        var list = new List<nint>();
+        if (FieldAddress(recordBase, field) is not { } addr) return list;
+        var begin = _memory.ReadPointer(addr);
+        var end = _memory.ReadPointer(addr + 8);
+        var count = (long)(end - begin) / 8;
+        if (begin == 0 || count is < 0 or > 64) return list;   // guard against a wrong definition
+        for (var i = 0; i < count; i++)
+            if (_memory.ReadPointer(begin + (nint)(i * 8)) is var e and not 0) list.Add(e);
+        return list;
+    }
+
     private object? ReadField(nint recordBase, FieldDef field, ValueKind kind)
     {
-        if (FieldAddress(recordBase, field) is not { } addr) return null;
+        if (field.Type == FieldType.ListFlag)
+        {
+            var at = (nint)GameDefinition.ParseOffset(field.ElementOffset!);
+            return ListElements(recordBase, field).Any(e => _memory.ReadBytes(e + at, field.ElementBytes).Any(b => b != 0));
+        }
+        if (ValueAddress(recordBase, field) is not { } addr) return null;
+        if (field.Clause is not null && ReadNumber(addr, field.Type) == -1) return null;
         switch (field.Type)
         {
             case FieldType.FmDate:
