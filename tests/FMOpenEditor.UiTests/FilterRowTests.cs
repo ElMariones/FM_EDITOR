@@ -19,6 +19,17 @@ public class FilterRowTests
         Assert.False(row.NeedsValue);
         Assert.Equal(new Filter("Pos.ST", FilterOp.AtLeast, 2), row.ToFilter());
 
+        // Or a number test on the rating, like any other number.
+        row.PositionOp = OpOption.ForPosition.Single(o => o.Label == "between");
+        Assert.True(row.NeedsValue);
+        Assert.True(row.NeedsSecondValue);
+        row.Value = "10";
+        row.Value2 = "15";
+        Assert.Equal("Pos.ST between 10 and 15", row.ToFilter()!.Description);
+        row.PositionOp = OpOption.ForPosition.Single(o => o.Label == "is");
+        Assert.False(row.NeedsSecondValue);
+        Assert.Equal("Pos.ST Equals 10", row.ToFilter()!.Description);
+
         row.SelectedProperty = props.First(p => p.Key == "Age");
         Assert.True(row.HasOp);
         Assert.True(row.NeedsValue);

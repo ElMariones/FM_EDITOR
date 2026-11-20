@@ -17,6 +17,10 @@ public sealed record OpOption(FilterOp Op, string Label)
     /// <summary>Operators for a fixed-list field (Squad status, Continent…).</summary>
     public static readonly IReadOnlyList<OpOption> ForChoice = [All[3], All[4]];
 
+    /// <summary>Position rows: "plays there" (rated 2+, no value) first, then the number operators.</summary>
+    public static readonly OpOption Plays = new(FilterOp.AtLeast, "plays there");
+    public static readonly IReadOnlyList<OpOption> ForPosition = [Plays, .. All.Take(5)];
+
     public override string ToString() => Label;
 }
 
@@ -59,14 +63,17 @@ public sealed partial class FilterRowViewModel : ObservableObject
     }
     public IReadOnlyList<OpOption> Ops => OpOption.All;
     public IReadOnlyList<OpOption> ChoiceOps => OpOption.ForChoice;
+    public IReadOnlyList<OpOption> PositionOps => OpOption.ForPosition;
 
-    /// <summary>Position rows need no operator or value: they find players rated 2+ there.</summary>
+    /// <summary>Position rows: "plays there" (rated 2+) or a number test on the 1-20 rating.</summary>
     public bool IsPosition => SelectedProperty?.Category == "Positions";
     /// <summary>Yes/no fields: one Yes / No box, no operator.</summary>
     public bool IsBool => SelectedProperty?.Kind == ValueKind.Boolean;
     /// <summary>Fixed-list fields: is / is not, then a box with the game's list.</summary>
     public bool IsChoice => SelectedProperty?.Kind == ValueKind.Choice && SelectedProperty.Choices is { Count: > 0 };
     public bool HasOp => !IsPosition && !IsBool && !IsChoice;
+    private bool HasTextValue => HasOp || IsPosition && PositionOp != OpOption.Plays;
+    private FilterOp CurrentOp => IsPosition ? PositionOp.Op : Op.Op;
     public bool HasValueChoices => IsBool || IsChoice;
     public IReadOnlyList<string> ValueChoices => IsBool ? ["Yes", "No"] : IsChoice ? SelectedProperty!.Choices! : [];
 
@@ -74,13 +81,14 @@ public sealed partial class FilterRowViewModel : ObservableObject
         nameof(HasValueChoices), nameof(NeedsValue), nameof(NeedsSecondValue))]
     private PropertyDef? _selectedProperty;
     [ObservableProperty] private OpOption _choiceOp = OpOption.ForChoice[0];
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(NeedsSecondValue), nameof(NeedsValue))] private OpOption _positionOp = OpOption.Plays;
     [ObservableProperty] private string? _selectedValueChoice;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(NeedsSecondValue), nameof(NeedsValue))] private OpOption _op;
     [ObservableProperty] private string? _value;
     [ObservableProperty] private string? _value2;
 
-    public bool NeedsValue => HasOp && Op.Op is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
-    public bool NeedsSecondValue => HasOp && Op.Op == FilterOp.Between;
+    public bool NeedsValue => HasTextValue && CurrentOp is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
+    public bool NeedsSecondValue => HasTextValue && CurrentOp == FilterOp.Between;
 
     public string Hint => SelectedProperty?.Kind switch
     {
@@ -94,16 +102,17 @@ public sealed partial class FilterRowViewModel : ObservableObject
     public Filter? ToFilter()
     {
         if (SelectedProperty is null) return null;
-        if (IsPosition) return new Filter(SelectedProperty.Key, FilterOp.AtLeast, 2);
+        if (IsPosition && PositionOp == OpOption.Plays) return new Filter(SelectedProperty.Key, FilterOp.AtLeast, 2);
         if (IsBool) return SelectedValueChoice is null ? null : new Filter(SelectedProperty.Key, FilterOp.Equals, SelectedValueChoice == "Yes");
         if (IsChoice)
         {
             var i = SelectedProperty.Choices!.ToList().IndexOf(SelectedValueChoice ?? "");
             return i < 0 ? null : new Filter(SelectedProperty.Key, ChoiceOp.Op, i);
         }
-        if (!NeedsValue) return new Filter(SelectedProperty.Key, Op.Op);
+        var op = CurrentOp;
+        if (!NeedsValue) return new Filter(SelectedProperty.Key, op);
         if (string.IsNullOrWhiteSpace(Value)) return null;
-        object? Parse(string? t) => Op.Op is FilterOp.Contains or FilterOp.OneOf ? t : ValueParser.Parse(_session, SelectedProperty, t);
-        return new Filter(SelectedProperty.Key, Op.Op, Parse(Value), NeedsSecondValue ? Parse(Value2) : null);
+        object? Parse(string? t) => op is FilterOp.Contains or FilterOp.OneOf ? t : ValueParser.Parse(_session, SelectedProperty, t);
+        return new Filter(SelectedProperty.Key, op, Parse(Value), NeedsSecondValue ? Parse(Value2) : null);
     }
 }

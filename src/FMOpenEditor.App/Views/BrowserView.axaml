@@ -25,9 +25,10 @@
   </UserControl.DataTemplates>
 
   <Grid>
-    <!-- The editor never gets narrower than two Roles-tab columns (2 × 226 with margins, plus padding). -->
+    <!-- The list never gets narrower than one whole search row ("Age between … and …", 776 + padding);
+         the editor never narrower than two Roles-tab columns (2 × 226 with margins, plus padding). -->
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" MinWidth="850" />
       <ColumnDefinition Width="12" />
       <ColumnDefinition Width="500" MinWidth="500" />
     </Grid.ColumnDefinitions>
@@ -103,25 +104,27 @@
             <ItemsControl ItemsSource="{Binding Filters}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:FilterRowViewModel">
-                  <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="140" />
-                    <ComboBox ItemsSource="{Binding CategoryProperties}" SelectedItem="{Binding SelectedProperty}" Width="190">
+                  <!-- Wraps onto a second line when the panel is too narrow for a whole row (e.g. "between … and …"). -->
+                  <WrapPanel ItemSpacing="6" LineSpacing="6" Margin="0,2">
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="130" />
+                    <ComboBox ItemsSource="{Binding CategoryProperties}" SelectedItem="{Binding SelectedProperty}" Width="170">
                       <ComboBox.ItemTemplate>
                         <DataTemplate x:DataType="model:PropertyDef"><TextBlock Text="{Binding Label}" /></DataTemplate>
                       </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" IsVisible="{Binding HasOp}" />
+                    <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="120" IsVisible="{Binding HasOp}" />
                     <ComboBox ItemsSource="{Binding ChoiceOps}" SelectedItem="{Binding ChoiceOp}" Width="85" IsVisible="{Binding IsChoice}" />
+                    <ComboBox ItemsSource="{Binding PositionOps}" SelectedItem="{Binding PositionOp}" Width="120" IsVisible="{Binding IsPosition}" />
                     <ComboBox ItemsSource="{Binding ValueChoices}" SelectedItem="{Binding SelectedValueChoice}" Width="140" IsVisible="{Binding HasValueChoices}" />
-                    <TextBox Text="{Binding Value}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsValue}" />
+                    <TextBox Text="{Binding Value}" Watermark="{Binding Hint}" Width="130" IsVisible="{Binding NeedsValue}" />
                     <TextBlock Text="and" VerticalAlignment="Center" IsVisible="{Binding NeedsSecondValue}" />
-                    <TextBox Text="{Binding Value2}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsSecondValue}" />
+                    <TextBox Text="{Binding Value2}" Watermark="{Binding Hint}" Width="130" IsVisible="{Binding NeedsSecondValue}" />
                     <Button Classes="icon ghost" ToolTip.Tip="Remove this condition"
                             Command="{Binding #Root.((vm:BrowserViewModel)DataContext).RemoveFilterCommand}"
                             CommandParameter="{Binding}">
                       <c:Icon Kind="close" Size="14" />
                     </Button>
-                  </StackPanel>
+                  </WrapPanel>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>

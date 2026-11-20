@@ -8,7 +8,7 @@
         x:DataType="vm:MainWindowViewModel"
         Title="FM OpenEditor"
         Icon="/Assets/icon.ico"
-        Width="1440" Height="880" MinWidth="1040" MinHeight="620"
+        Width="1640" Height="880" MinWidth="1620" MinHeight="620"
         WindowStartupLocation="CenterScreen">
 
   <Window.KeyBindings>
