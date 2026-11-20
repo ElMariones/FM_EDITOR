@@ -111,6 +111,8 @@
                       </ComboBox.ItemTemplate>
                     </ComboBox>
                     <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" IsVisible="{Binding HasOp}" />
+                    <ComboBox ItemsSource="{Binding ChoiceOps}" SelectedItem="{Binding ChoiceOp}" Width="85" IsVisible="{Binding IsChoice}" />
+                    <ComboBox ItemsSource="{Binding ValueChoices}" SelectedItem="{Binding SelectedValueChoice}" Width="140" IsVisible="{Binding HasValueChoices}" />
                     <TextBox Text="{Binding Value}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsValue}" />
                     <TextBlock Text="and" VerticalAlignment="Center" IsVisible="{Binding NeedsSecondValue}" />
                     <TextBox Text="{Binding Value2}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsSecondValue}" />

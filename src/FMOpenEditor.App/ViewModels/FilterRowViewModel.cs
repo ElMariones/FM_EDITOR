@@ -14,6 +14,9 @@ public sealed record OpOption(FilterOp Op, string Label)
         new(FilterOp.OneOf, "one of (a|b)"), new(FilterOp.IsEmpty, "is empty"), new(FilterOp.IsNotEmpty, "is set"),
     ];
 
+    /// <summary>Operators for a fixed-list field (Squad status, Continent…).</summary>
+    public static readonly IReadOnlyList<OpOption> ForChoice = [All[3], All[4]];
+
     public override string ToString() => Label;
 }
 
@@ -46,31 +49,44 @@ public sealed partial class FilterRowViewModel : ObservableObject
     }
 
     // The property box writes null while its list is swapped; keep the category then.
+    // The value list box swaps its items too, so it gets its new list before its new pick.
     partial void OnSelectedPropertyChanged(PropertyDef? value)
     {
-        if (value is not null) SelectedCategory = value.Category;
+        if (value is null) return;
+        SelectedCategory = value.Category;
+        OnPropertyChanged(nameof(ValueChoices));
+        SelectedValueChoice = ValueChoices.FirstOrDefault();
     }
     public IReadOnlyList<OpOption> Ops => OpOption.All;
+    public IReadOnlyList<OpOption> ChoiceOps => OpOption.ForChoice;
 
     /// <summary>Position rows need no operator or value: they find players rated 2+ there.</summary>
     public bool IsPosition => SelectedProperty?.Category == "Positions";
-    public bool HasOp => !IsPosition;
+    /// <summary>Yes/no fields: one Yes / No box, no operator.</summary>
+    public bool IsBool => SelectedProperty?.Kind == ValueKind.Boolean;
+    /// <summary>Fixed-list fields: is / is not, then a box with the game's list.</summary>
+    public bool IsChoice => SelectedProperty?.Kind == ValueKind.Choice && SelectedProperty.Choices is { Count: > 0 };
+    public bool HasOp => !IsPosition && !IsBool && !IsChoice;
+    public bool HasValueChoices => IsBool || IsChoice;
+    public IReadOnlyList<string> ValueChoices => IsBool ? ["Yes", "No"] : IsChoice ? SelectedProperty!.Choices! : [];
 
-    [ObservableProperty] [NotifyPropertyChangedFor(nameof(Hint), nameof(IsPosition), nameof(HasOp), nameof(NeedsValue), nameof(NeedsSecondValue))]
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(Hint), nameof(IsPosition), nameof(IsBool), nameof(IsChoice), nameof(HasOp),
+        nameof(HasValueChoices), nameof(NeedsValue), nameof(NeedsSecondValue))]
     private PropertyDef? _selectedProperty;
+    [ObservableProperty] private OpOption _choiceOp = OpOption.ForChoice[0];
+    [ObservableProperty] private string? _selectedValueChoice;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(NeedsSecondValue), nameof(NeedsValue))] private OpOption _op;
     [ObservableProperty] private string? _value;
     [ObservableProperty] private string? _value2;
 
-    public bool NeedsValue => !IsPosition && Op.Op is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
-    public bool NeedsSecondValue => !IsPosition && Op.Op == FilterOp.Between;
+    public bool NeedsValue => HasOp && Op.Op is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
+    public bool NeedsSecondValue => HasOp && Op.Op == FilterOp.Between;
 
     public string Hint => SelectedProperty?.Kind switch
     {
         ValueKind.Date => "yyyy-mm-dd",
         ValueKind.Reference => "name",
         ValueKind.Money => "e.g. 5M",
-        ValueKind.Boolean => "yes / no",
         _ => "",
     };
 
@@ -79,6 +95,12 @@ public sealed partial class FilterRowViewModel : ObservableObject
     {
         if (SelectedProperty is null) return null;
         if (IsPosition) return new Filter(SelectedProperty.Key, FilterOp.AtLeast, 2);
+        if (IsBool) return SelectedValueChoice is null ? null : new Filter(SelectedProperty.Key, FilterOp.Equals, SelectedValueChoice == "Yes");
+        if (IsChoice)
+        {
+            var i = SelectedProperty.Choices!.ToList().IndexOf(SelectedValueChoice ?? "");
+            return i < 0 ? null : new Filter(SelectedProperty.Key, ChoiceOp.Op, i);
+        }
         if (!NeedsValue) return new Filter(SelectedProperty.Key, Op.Op);
         if (string.IsNullOrWhiteSpace(Value)) return null;
         object? Parse(string? t) => Op.Op is FilterOp.Contains or FilterOp.OneOf ? t : ValueParser.Parse(_session, SelectedProperty, t);
