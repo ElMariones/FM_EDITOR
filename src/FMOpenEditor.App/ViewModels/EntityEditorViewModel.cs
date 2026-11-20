@@ -16,7 +16,6 @@ public sealed partial class EntityEditorViewModel : ObservableObject
 {
     private readonly EditorSession _session;
     private readonly Action<Entity>? _transfer;
-    private readonly RolesTabViewModel? _roles;
 
     public Entity Entity { get; }
     /// <summary>The field groups (Profile, Technical, …).</summary>
@@ -73,10 +72,33 @@ public sealed partial class EntityEditorViewModel : ObservableObject
             : RelationSpec.For(entity.Kind)
                 .Where(r => session.IsSupported(r.Kind, r.Key))
                 .Select(r => (EditorTabViewModel)new RelatedListViewModel(session, relations, r, entity.Id, open));
-        _roles = entity.Kind == EntityKind.Player && RoleDef.All.Value.Count > 0 ? new RolesTabViewModel(session, entity, RoleDef.All.Value) : null;
-        Tabs = [.. Groups, .. (_roles is null ? [] : new EditorTabViewModel[] { _roles }), .. related];
+        Tabs = [.. (entity.Kind == EntityKind.Player ? PlayerTabs(session, entity) : Groups), .. related];
         SelectedGroup = Tabs.FirstOrDefault();
         RefreshHeader();
+    }
+
+    /// <summary>A player's field groups folded into five tabs, the attributes ones into one Attributes tab.</summary>
+    private static readonly (string Tab, string[] Categories)[] PlayerTabLayout =
+    [
+        ("Overview", ["Profile", "Looks", "International", "Details"]),
+        ("Attributes", AttributesTabViewModel.Categories),
+        ("Positions", ["Positions"]),
+        ("Contract", ["Contract", "Bonuses"]),
+        ("Hidden & Status", ["Hidden", "Status"]),
+    ];
+
+    private IEnumerable<EditorTabViewModel> PlayerTabs(EditorSession session, Entity entity)
+    {
+        foreach (var (tab, cats) in PlayerTabLayout)
+        {
+            var groups = Groups.Where(g => cats.Contains(g.Name)).OrderBy(g => Array.IndexOf(cats, g.Name)).ToList();
+            if (groups.Count == 0) continue;
+            yield return tab == "Attributes"
+                ? new AttributesTabViewModel(session, entity, groups, RoleDef.All.Value)
+                : new SectionsTabViewModel(tab, groups);
+        }
+        // Anything a newer catalog adds still gets a tab.
+        foreach (var g in Groups.Where(g => !PlayerTabLayout.Any(t => t.Categories.Contains(g.Name)))) yield return g;
     }
 
     /// <summary>Shows the Transfer button: players, when this game version can move them.</summary>
@@ -131,7 +153,6 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     {
         foreach (var g in Groups)
             foreach (var e in g.Editors) e.Load();
-        _roles?.Refresh();
         RefreshHeader();
     }
 

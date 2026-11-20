@@ -25,11 +25,11 @@
   </UserControl.DataTemplates>
 
   <Grid>
-    <!-- The editor never gets narrower than two Roles-tab columns (2 × 220 with margins, plus padding). -->
+    <!-- The editor never gets narrower than two Roles-tab columns (2 × 226 with margins, plus padding). -->
     <Grid.ColumnDefinitions>
       <ColumnDefinition Width="*" />
       <ColumnDefinition Width="12" />
-      <ColumnDefinition Width="500" MinWidth="490" />
+      <ColumnDefinition Width="500" MinWidth="500" />
     </Grid.ColumnDefinitions>
     <Border Classes="glass" Padding="18,16,18,10">
       <DockPanel>

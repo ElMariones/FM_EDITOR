@@ -94,7 +94,7 @@ public class MainWindowTests
 
         browser.ApplyPresetCommand.Execute(vm.Presets.Presets.Single(p => p.Name == "Make WonderKid"));
         Assert.True(vm.PendingCount > 1);
-        browser.Editor.SelectedGroup = browser.Editor.Groups.Single(g => g.Name == "Technical");
+        browser.Editor.SelectedGroup = browser.Editor.Tabs.Single(t => t.Name == "Attributes");
         Shot(w, "player-editor");
 
         vm.SaveCommand.Execute(null);
