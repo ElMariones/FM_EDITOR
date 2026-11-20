@@ -115,6 +115,24 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     /// <summary>Shows Copy stats and Paste stats: players only.</summary>
     public bool IsPlayer => Entity.Kind == EntityKind.Player;
 
+    /// <summary>Starred players: kept in the settings file and listed on the Favorites page.</summary>
+    public bool IsFavorite => IsPlayer && FMOpenEditor.App.Services.AppServices.Settings.FavoritePlayers.Contains(Entity.Id);
+    public string FavoriteTip => IsFavorite ? "Remove from favorites" : "Add to favorites";
+
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void ToggleFavorite()
+    {
+        if (!IsPlayer) return;
+        var settings = FMOpenEditor.App.Services.AppServices.Settings;
+        var was = IsFavorite;
+        if (was) settings.FavoritePlayers.Remove(Entity.Id);
+        else settings.FavoritePlayers.Add(Entity.Id);
+        settings.Save();
+        OnPropertyChanged(nameof(IsFavorite));
+        OnPropertyChanged(nameof(FavoriteTip));
+        _status?.Invoke(was ? $"Removed {Title} from favorites." : $"Added {Title} to favorites.");
+    }
+
     public bool CanPasteStats => IsPlayer && _session.CopiedStats is not null;
 
     public string PasteStatsTip => _session.CopiedStats is { } c

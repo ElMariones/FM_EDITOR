@@ -55,6 +55,7 @@
       <Setter Property="Background" Value="#333B7DDD" />
       <Setter Property="BorderBrush" Value="#3B7DDD" />
     </Style>
+    <Style Selector="Button.favorite c|Icon"><Setter Property="TextElement.Foreground" Value="#F5B83D" /></Style>
     <Style Selector="Border.roleskip"><Setter Property="Opacity" Value="0.5" /></Style>
   </UserControl.Styles>
 
@@ -289,6 +290,10 @@
         </StackPanel>
         <!-- Actions on this record -->
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top" Margin="12,0,0,0">
+          <Button x:Name="FavoriteButton" Classes="icon ghost" Classes.favorite="{Binding IsFavorite}" Width="32" Height="32" VerticalAlignment="Center"
+                  Command="{Binding ToggleFavoriteCommand}" IsVisible="{Binding IsPlayer}" ToolTip.Tip="{Binding FavoriteTip}">
+            <c:Icon Kind="star" Size="21" Filled="{Binding IsFavorite}" />
+          </Button>
           <Button x:Name="CopyStatsButton" Classes="icon ghost" Width="32" Height="32" VerticalAlignment="Center"
                   Command="{Binding CopyStatsCommand}" IsVisible="{Binding IsPlayer}"
                   ToolTip.Tip="Copy stats: CA, PA, attributes, positions and feet (nothing else)">
