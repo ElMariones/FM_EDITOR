@@ -38,6 +38,25 @@
       <Setter Property="Padding" Value="10,7" />
       <Setter Property="CornerRadius" Value="12" />
     </Style>
+    <!-- Roles tab rows: a coloured left edge and tint, like the game's role highlight. -->
+    <!-- Attribute rows fill their column: no right margin from the generic ItemsControl style. -->
+    <Style Selector="ItemsControl.rolerows > ContentPresenter"><Setter Property="Margin" Value="0,2" /></Style>
+    <Style Selector="Border.rolerow">
+      <Setter Property="Padding" Value="4,1" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Border.rolekey">
+      <Setter Property="Background" Value="#3322A35A" />
+      <Setter Property="BorderBrush" Value="#22A35A" />
+    </Style>
+    <Style Selector="Border.rolepref">
+      <Setter Property="Background" Value="#333B7DDD" />
+      <Setter Property="BorderBrush" Value="#3B7DDD" />
+    </Style>
+    <Style Selector="Button.favorite c|Icon"><Setter Property="TextElement.Foreground" Value="#F5B83D" /></Style>
+    <Style Selector="Border.roleskip"><Setter Property="Opacity" Value="0.5" /></Style>
   </UserControl.Styles>
 
   <UserControl.DataTemplates>
@@ -156,6 +175,70 @@
       </DockPanel>
     </DataTemplate>
 
+    <!-- …or several groups under headings (a player's Overview, Contract…)… -->
+    <DataTemplate DataType="vm:SectionsTabViewModel">
+      <ScrollViewer>
+        <ItemsControl ItemsSource="{Binding Sections}" Margin="8,8,12,8">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:PropertyGroupViewModel">
+              <StackPanel Margin="0,0,0,14">
+                <TextBlock Text="{Binding Name}" Classes="muted" FontSize="12" FontWeight="SemiBold" Margin="2,0,0,6"
+                           IsVisible="{Binding $parent[ItemsControl].((vm:SectionsTabViewModel)DataContext).ShowHeadings}" />
+                <Panel>
+                  <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding IsAttributeGrid}">
+                    <ItemsControl.ItemsPanel>
+                      <ItemsPanelTemplate><WrapPanel ItemWidth="222" /></ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                  </ItemsControl>
+                  <ItemsControl ItemsSource="{Binding Editors}" IsVisible="{Binding !IsAttributeGrid}" />
+                </Panel>
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </ScrollViewer>
+    </DataTemplate>
+
+    <!-- …or the player's attributes, editable, with a role's key ones green and preferable ones blue, like the game. -->
+    <DataTemplate DataType="vm:AttributesTabViewModel">
+      <DockPanel Margin="8,8,12,8">
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10" IsVisible="{Binding HasRoles}">
+          <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
+            <ComboBox ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" HorizontalAlignment="Stretch" MaxDropDownHeight="480" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding PositionRoles}" SelectedItem="{Binding SelectedRole}" HorizontalAlignment="Stretch" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="rolekey" Width="4" Height="14" /><TextBlock Classes="muted" FontSize="12" Text="Key" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="rolepref" Width="4" Height="14" /><TextBlock Classes="muted" FontSize="12" Text="Preferable" /></StackPanel>
+          </StackPanel>
+        </StackPanel>
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Columns}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:RoleAttributeColumn">
+                <StackPanel Width="216" Spacing="2">
+                  <TextBlock Text="{Binding Name}" Classes="muted" FontSize="12" Margin="2,0,0,4" />
+                  <ItemsControl Classes="rolerows" ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate DataType="vm:RoleAttributeRow">
+                        <Border Classes="rolerow" Classes.rolekey="{Binding IsKey}" Classes.rolepref="{Binding IsPreferred}"
+                                Classes.roleskip="{Binding IsUnnecessary}">
+                          <ContentControl Content="{Binding Editor}" />
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
+    </DataTemplate>
+
     <DataTemplate DataType="vm:ReadOnlyEditorViewModel">
       <Grid ColumnDefinitions="Auto,*" ToolTip.Tip="{Binding Tooltip}">
         <TextBlock Classes="label muted" Text="{Binding Label}" Width="{Binding LabelWidth}" />
@@ -207,6 +290,10 @@
         </StackPanel>
         <!-- Actions on this record -->
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Top" Margin="12,0,0,0">
+          <Button x:Name="FavoriteButton" Classes="icon ghost" Classes.favorite="{Binding IsFavorite}" Width="32" Height="32" VerticalAlignment="Center"
+                  Command="{Binding ToggleFavoriteCommand}" IsVisible="{Binding IsPlayer}" ToolTip.Tip="{Binding FavoriteTip}">
+            <c:Icon Kind="star" Size="21" Filled="{Binding IsFavorite}" />
+          </Button>
           <Button x:Name="CopyStatsButton" Classes="icon ghost" Width="32" Height="32" VerticalAlignment="Center"
                   Command="{Binding CopyStatsCommand}" IsVisible="{Binding IsPlayer}"
                   ToolTip.Tip="Copy stats: CA, PA, attributes, positions and feet (nothing else)">

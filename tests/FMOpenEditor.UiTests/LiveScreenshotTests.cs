@@ -102,12 +102,12 @@ public class LiveScreenshotTests
         Theme(night: true);
         var players = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
         Pick(w);
-        Tab(players, "Technical", "Attributes");
+        Tab(players, "Attributes");
         Shot(w, "players");
 
         // A preset staged on the top player: pending edits glow amber until saved (they never are here).
         Theme(night: false);
-        Tab(players, "Mental");
+        Tab(players, "Attributes");
         players.ApplyPresetCommand.Execute(vm.Presets.Presets.Single(p => p.Name == "Make WonderKid"));
         Shot(w, "player-editor");
         vm.DiscardCommand.Execute(null);

@@ -1,0 +1,1572 @@
+{
+ "source": "https://sortitoutsi.net/content/75078/fm26-important-attributes-for-every-role",
+ "note": "Key / Preferred / Unnecessary attributes per role, as FM highlights them. Edit freely.",
+ "roles": [
+  {
+   "name": "Goalkeeper",
+   "position": "GK",
+   "positions": [
+    "GK"
+   ],
+   "inPossession": true,
+   "key": [
+    "AerialReach",
+    "CommandOfArea",
+    "Communication",
+    "Handling",
+    "Reflexes",
+    "Agility",
+    "Concentration",
+    "Positioning"
+   ],
+   "preferred": [
+    "Kicking",
+    "OneOnOnes",
+    "Throwing",
+    "Anticipation",
+    "Decisions"
+   ],
+   "unnecessary": [
+    "Eccentricity"
+   ]
+  },
+  {
+   "name": "Ball-Playing Goalkeeper",
+   "position": "GK",
+   "positions": [
+    "GK"
+   ],
+   "inPossession": true,
+   "key": [
+    "AerialReach",
+    "CommandOfArea",
+    "Communication",
+    "Handling",
+    "Kicking",
+    "Reflexes",
+    "Agility",
+    "Concentration",
+    "Positioning"
+   ],
+   "preferred": [
+    "Eccentricity",
+    "OneOnOnes",
+    "Throwing",
+    "Anticipation",
+    "Composure",
+    "Decisions",
+    "Passing"
+   ]
+  },
+  {
+   "name": "No-Nonsense Goalkeeper",
+   "position": "GK",
+   "positions": [
+    "GK"
+   ],
+   "inPossession": true,
+   "key": [
+    "AerialReach",
+    "CommandOfArea",
+    "Communication",
+    "Handling",
+    "Reflexes",
+    "Agility",
+    "Concentration",
+    "Positioning"
+   ],
+   "preferred": [
+    "OneOnOnes",
+    "Anticipation",
+    "Decisions"
+   ],
+   "unnecessary": [
+    "Eccentricity",
+    "Passing"
+   ]
+  },
+  {
+   "name": "Line-Holding Keeper",
+   "position": "GK",
+   "positions": [
+    "GK"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Concentration"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Sweeper Keeper",
+   "position": "GK",
+   "positions": [
+    "GK"
+   ],
+   "inPossession": false,
+   "key": [
+    "RushingOut",
+    "Anticipation",
+    "Decisions"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Positioning",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "Concentration",
+    "Decisions",
+    "Pace"
+   ],
+   "unnecessary": [
+    "Passing"
+   ]
+  },
+  {
+   "name": "Ball-Playing Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Passing",
+    "Tackling",
+    "Anticipation",
+    "Composure",
+    "Positioning",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Technique",
+    "Aggression",
+    "Bravery",
+    "Concentration",
+    "Decisions",
+    "Vision",
+    "Pace"
+   ]
+  },
+  {
+   "name": "No-Nonsense Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Positioning",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "Aggression",
+    "Bravery",
+    "Concentration",
+    "Pace"
+   ],
+   "unnecessary": [
+    "Passing",
+    "Composure"
+   ]
+  },
+  {
+   "name": "Wide Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Positioning",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "Concentration",
+    "Decisions",
+    "WorkRate",
+    "Acceleration",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ],
+   "unnecessary": [
+    "Passing"
+   ]
+  },
+  {
+   "name": "Advanced Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Passing",
+    "Tackling",
+    "Technique",
+    "Anticipation",
+    "Composure",
+    "Decisions",
+    "Positioning",
+    "Teamwork",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "FirstTouch",
+    "Aggression",
+    "Bravery",
+    "Concentration",
+    "Vision",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Overlapping Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "WorkRate",
+    "JumpingReach",
+    "Pace",
+    "Stamina",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Technique",
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "Concentration",
+    "Decisions",
+    "OffTheBall",
+    "Positioning",
+    "Acceleration",
+    "Agility"
+   ]
+  },
+  {
+   "name": "Covering Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Anticipation",
+    "Pace",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Stopping Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "Tackling",
+    "Strength"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Covering Wide Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Anticipation",
+    "Pace",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Stopping Wide Centre-Back",
+   "position": "D (C)",
+   "positions": [
+    "DC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "Tackling",
+    "Strength"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Full-Back",
+   "position": "D (RL)",
+   "positions": [
+    "DR",
+    "DL"
+   ],
+   "inPossession": true,
+   "key": [
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Concentration",
+    "Positioning",
+    "Teamwork",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Crossing",
+    "Dribbling",
+    "Passing",
+    "Technique",
+    "Decisions",
+    "WorkRate",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Inside Full-Back",
+   "position": "D (RL)",
+   "positions": [
+    "DR",
+    "DL"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Positioning",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "Concentration",
+    "Decisions",
+    "WorkRate",
+    "Acceleration",
+    "Agility",
+    "JumpingReach",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Holding Full-Back",
+   "position": "D (RL)",
+   "positions": [
+    "DR",
+    "DL"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Concentration",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Pressing Full-Back",
+   "position": "D (RL)",
+   "positions": [
+    "DR",
+    "DL"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "WorkRate",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Inside Wing-Back",
+   "position": "D/WB (RL)",
+   "positions": [
+    "DR",
+    "DL",
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": true,
+   "key": [
+    "Passing",
+    "Tackling",
+    "Anticipation",
+    "Composure",
+    "Decisions",
+    "Positioning",
+    "Teamwork",
+    "Acceleration"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Marking",
+    "Technique",
+    "Concentration",
+    "WorkRate",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Playmaking Wing-Back",
+   "position": "D/WB (RL)",
+   "positions": [
+    "DR",
+    "DL",
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Tackling",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "Positioning",
+    "Teamwork",
+    "Vision",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Crossing",
+    "Dribbling",
+    "Marking",
+    "Anticipation",
+    "Concentration",
+    "OffTheBall",
+    "Positioning",
+    "WorkRate",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Wing-Back",
+   "position": "D/WB (RL)",
+   "positions": [
+    "DR",
+    "DL",
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Marking",
+    "Tackling",
+    "Teamwork",
+    "WorkRate",
+    "Acceleration",
+    "Pace",
+    "Stamina"
+   ],
+   "preferred": [
+    "Dribbling",
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Anticipation",
+    "Concentration",
+    "Decisions",
+    "OffTheBall",
+    "Positioning",
+    "Agility",
+    "Balance"
+   ]
+  },
+  {
+   "name": "Advanced Wing-Back",
+   "position": "WB (RL)",
+   "positions": [
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Dribbling",
+    "Technique",
+    "OffTheBall",
+    "Teamwork",
+    "WorkRate",
+    "Acceleration",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Marking",
+    "Passing",
+    "Tackling",
+    "Anticipation",
+    "Decisions",
+    "Flair",
+    "Positioning",
+    "Balance"
+   ]
+  },
+  {
+   "name": "Holding Wing-Back",
+   "position": "WB (RL)",
+   "positions": [
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Concentration",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Pressing Wing-Back",
+   "position": "WB (RL)",
+   "positions": [
+    "WBR",
+    "WBL"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "WorkRate",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Defensive Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": true,
+   "key": [
+    "Tackling",
+    "Anticipation",
+    "Concentration",
+    "Positioning",
+    "Teamwork"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Marking",
+    "Passing",
+    "Aggression",
+    "Composure",
+    "Decisions",
+    "WorkRate",
+    "Stamina",
+    "Strength"
+   ]
+  },
+  {
+   "name": "Box-to-Box Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": true,
+   "key": [
+    "Passing",
+    "Tackling",
+    "OffTheBall",
+    "Teamwork",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Finishing",
+    "FirstTouch",
+    "LongShots",
+    "Technique",
+    "Aggression",
+    "Anticipation",
+    "Composure",
+    "Decisions",
+    "Positioning",
+    "Acceleration",
+    "Balance",
+    "Pace",
+    "Strength"
+   ]
+  },
+  {
+   "name": "Box-to-Box Playmaker",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Positioning",
+    "Acceleration",
+    "Agility",
+    "Balance",
+    "Pace"
+   ]
+  },
+  {
+   "name": "Deep-Lying Playmaker",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision"
+   ],
+   "preferred": [
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Concentration",
+    "OffTheBall",
+    "Positioning",
+    "WorkRate",
+    "Balance",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Half-Back",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": true,
+   "key": [
+    "Heading",
+    "Marking",
+    "Tackling",
+    "Anticipation",
+    "Concentration",
+    "Positioning",
+    "Teamwork",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Passing",
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "Decisions",
+    "WorkRate",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Dropping Defensive Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Decisions",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Pressing Defensive Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "WorkRate",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Screening Defensive Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Concentration",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Covering Defensive Midfielder",
+   "position": "DM",
+   "positions": [
+    "DM"
+   ],
+   "inPossession": false,
+   "key": [
+    "Anticipation",
+    "Pace",
+    "WorkRate"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Central Midfielder",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Tackling",
+    "Decisions",
+    "Teamwork"
+   ],
+   "preferred": [
+    "Technique",
+    "Anticipation",
+    "Composure",
+    "Concentration",
+    "OffTheBall",
+    "Positioning",
+    "Vision",
+    "WorkRate",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Advanced Playmaker",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision"
+   ],
+   "preferred": [
+    "Crossing",
+    "Dribbling",
+    "Anticipation",
+    "Flair",
+    "Acceleration",
+    "Agility"
+   ]
+  },
+  {
+   "name": "Midfield Playmaker",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Tackling",
+    "Anticipation",
+    "Flair",
+    "Positioning",
+    "WorkRate",
+    "Agility",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Wide Central Midfielder",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "Passing",
+    "Tackling",
+    "Decisions",
+    "Teamwork"
+   ],
+   "preferred": [
+    "Crossing",
+    "Dribbling",
+    "Technique",
+    "Anticipation",
+    "Composure",
+    "Concentration",
+    "OffTheBall",
+    "Positioning",
+    "Vision",
+    "WorkRate",
+    "Agility",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Pressing Central Midfielder",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Aggression",
+    "WorkRate",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Screening Central Midfielder",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Positioning",
+    "Concentration",
+    "Marking"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Covering Central Midfielder",
+   "position": "M (C)",
+   "positions": [
+    "MC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Anticipation",
+    "Pace",
+    "WorkRate"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Midfielder",
+   "position": "M (RL)",
+   "positions": [
+    "MR",
+    "ML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Passing",
+    "Technique",
+    "Teamwork",
+    "WorkRate",
+    "Pace",
+    "Stamina"
+   ],
+   "preferred": [
+    "Dribbling",
+    "FirstTouch",
+    "Anticipation",
+    "Composure",
+    "OffTheBall",
+    "Vision",
+    "Acceleration",
+    "Agility"
+   ]
+  },
+  {
+   "name": "Tracking Wide Midfielder",
+   "position": "M (RL)",
+   "positions": [
+    "MR",
+    "ML"
+   ],
+   "inPossession": false,
+   "key": [
+    "Marking",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Outlet Wide Midfielder",
+   "position": "M (RL)",
+   "positions": [
+    "MR",
+    "ML"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Pace",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Inside Winger",
+   "position": "M/AM (RL)",
+   "positions": [
+    "MR",
+    "ML",
+    "AMR",
+    "AML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "FirstTouch",
+    "Technique",
+    "Composure",
+    "Teamwork",
+    "Acceleration",
+    "Agility"
+   ],
+   "preferred": [
+    "Crossing",
+    "LongShots",
+    "Passing",
+    "Anticipation",
+    "Flair",
+    "OffTheBall",
+    "Vision",
+    "WorkRate",
+    "Balance",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Playmaking Winger",
+   "position": "M/AM (RL)",
+   "positions": [
+    "MR",
+    "ML",
+    "AMR",
+    "AML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Dribbling",
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Anticipation",
+    "Flair",
+    "WorkRate",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Winger",
+   "position": "M/AM (RL)",
+   "positions": [
+    "MR",
+    "ML",
+    "AMR",
+    "AML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "Dribbling",
+    "Technique",
+    "Teamwork",
+    "Acceleration",
+    "Agility",
+    "Pace"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Passing",
+    "Anticipation",
+    "Flair",
+    "OffTheBall",
+    "WorkRate",
+    "Balance",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Attacking Midfielder",
+   "position": "M/AM (C)",
+   "positions": [
+    "MC",
+    "AMC"
+   ],
+   "inPossession": true,
+   "key": [
+    "FirstTouch",
+    "LongShots",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Flair",
+    "OffTheBall"
+   ],
+   "preferred": [
+    "Crossing",
+    "Dribbling",
+    "Finishing",
+    "Anticipation",
+    "Decisions",
+    "Vision",
+    "Acceleration",
+    "Agility"
+   ]
+  },
+  {
+   "name": "Channel Midfielder",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Crossing",
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "OffTheBall",
+    "WorkRate",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Dribbling",
+    "LongShots",
+    "Anticipation",
+    "Decisions",
+    "Flair",
+    "Vision",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Free Role",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "FirstTouch",
+    "LongShots",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Flair",
+    "OffTheBall",
+    "Vision"
+   ],
+   "preferred": [
+    "Crossing",
+    "Finishing",
+    "Anticipation",
+    "Decisions",
+    "Acceleration",
+    "Agility"
+   ]
+  },
+  {
+   "name": "Second Striker",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": true,
+   "key": [
+    "Finishing",
+    "FirstTouch",
+    "Anticipation",
+    "Composure",
+    "OffTheBall",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Dribbling",
+    "LongShots",
+    "Passing",
+    "Technique",
+    "Concentration",
+    "Decisions",
+    "WorkRate",
+    "Agility",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Central Outlet Attacking Midfielder",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Decisions",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Splitting Outlet Attacking Midfielder",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Pace",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Tracking Attacking Midfielder",
+   "position": "AM (C)",
+   "positions": [
+    "AMC"
+   ],
+   "inPossession": false,
+   "key": [
+    "Marking",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Forward",
+   "position": "AM (RL)",
+   "positions": [
+    "AMR",
+    "AML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "FirstTouch",
+    "Technique",
+    "Anticipation",
+    "OffTheBall",
+    "Acceleration",
+    "Agility",
+    "Pace"
+   ],
+   "preferred": [
+    "Crossing",
+    "Finishing",
+    "Passing",
+    "Composure",
+    "Flair",
+    "WorkRate",
+    "Balance",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Inside Forward",
+   "position": "AM (RL)",
+   "positions": [
+    "AMR",
+    "AML"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "FirstTouch",
+    "Technique",
+    "Anticipation",
+    "Composure",
+    "OffTheBall",
+    "Acceleration",
+    "Agility"
+   ],
+   "preferred": [
+    "Crossing",
+    "Finishing",
+    "LongShots",
+    "Passing",
+    "Flair",
+    "Vision",
+    "WorkRate",
+    "Balance",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Inside Outlet Winger",
+   "position": "AM (RL)",
+   "positions": [
+    "AMR",
+    "AML"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Decisions",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Tracking Winger",
+   "position": "AM (RL)",
+   "positions": [
+    "AMR",
+    "AML"
+   ],
+   "inPossession": false,
+   "key": [
+    "Marking",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Wide Outlet Winger",
+   "position": "AM (RL)",
+   "positions": [
+    "AMR",
+    "AML"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Pace",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Centre Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Finishing",
+    "FirstTouch",
+    "Heading",
+    "Technique",
+    "Composure",
+    "OffTheBall",
+    "Acceleration",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Passing",
+    "Anticipation",
+    "Decisions",
+    "Agility",
+    "Balance",
+    "JumpingReach",
+    "Pace"
+   ]
+  },
+  {
+   "name": "Channel Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "Finishing",
+    "FirstTouch",
+    "Technique",
+    "Composure",
+    "OffTheBall",
+    "WorkRate",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Crossing",
+    "Heading",
+    "Passing",
+    "Anticipation",
+    "Decisions",
+    "Agility",
+    "Balance",
+    "Pace",
+    "Stamina"
+   ]
+  },
+  {
+   "name": "Deep-Lying Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Finishing",
+    "FirstTouch",
+    "Technique",
+    "Composure",
+    "OffTheBall",
+    "Strength"
+   ],
+   "preferred": [
+    "Dribbling",
+    "Passing",
+    "Anticipation",
+    "Decisions",
+    "Teamwork",
+    "Vision",
+    "Balance"
+   ]
+  },
+  {
+   "name": "False Nine",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Dribbling",
+    "FirstTouch",
+    "Passing",
+    "Technique",
+    "Composure",
+    "Decisions",
+    "OffTheBall",
+    "Teamwork",
+    "Vision",
+    "Acceleration"
+   ],
+   "preferred": [
+    "Finishing",
+    "Anticipation",
+    "Flair",
+    "Agility",
+    "Balance"
+   ]
+  },
+  {
+   "name": "Poacher",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Finishing",
+    "Heading",
+    "Anticipation",
+    "Composure",
+    "Concentration",
+    "OffTheBall",
+    "Acceleration"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Technique",
+    "Decisions",
+    "Balance"
+   ]
+  },
+  {
+   "name": "Target Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": true,
+   "key": [
+    "Finishing",
+    "Heading",
+    "Aggression",
+    "Bravery",
+    "Composure",
+    "OffTheBall",
+    "Balance",
+    "JumpingReach",
+    "Strength"
+   ],
+   "preferred": [
+    "FirstTouch",
+    "Anticipation",
+    "Decisions",
+    "Teamwork"
+   ]
+  },
+  {
+   "name": "Central Outlet Centre Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Decisions",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Splitting Outlet Centre Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": false,
+   "key": [
+    "OffTheBall",
+    "Pace",
+    "Anticipation"
+   ],
+   "preferred": []
+  },
+  {
+   "name": "Tracking Centre Forward",
+   "position": "ST (C)",
+   "positions": [
+    "ST"
+   ],
+   "inPossession": false,
+   "key": [
+    "Marking",
+    "WorkRate",
+    "Stamina"
+   ],
+   "preferred": []
+  }
+ ]
+}

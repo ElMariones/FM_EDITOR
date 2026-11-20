@@ -60,7 +60,7 @@ public sealed record RelationSpec(string Title, EntityKind Kind, string Key, str
 }
 
 /// <summary>A tab of the detail editor: either a group of fields or a list of related entities.</summary>
-public abstract class EditorTabViewModel(string name)
+public abstract class EditorTabViewModel(string name) : CommunityToolkit.Mvvm.ComponentModel.ObservableObject
 {
     public string Name { get; } = name;
 }

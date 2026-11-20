@@ -51,6 +51,7 @@ public sealed class Icon : Control
         ["play"] = "M7 4 L20 12 L7 20 Z",
         ["sparkle"] = "M12 3 L13.8 9.2 L20 11 L13.8 12.8 L12 19 L10.2 12.8 L4 11 L10.2 9.2 Z",
         ["help"] = "M12 3 A9 9 0 1 0 12 21 A9 9 0 0 0 12 3 Z M9.4 9.6 A2.7 2.7 0 1 1 12 12.4 V13.8 M12 16.8 V17",
+        ["star"] = "M12 3.5 L14.6 9 L20.5 9.7 L16.1 13.7 L17.3 19.6 L12 16.7 L6.7 19.6 L7.9 13.7 L3.5 9.7 L9.4 9 Z",
         ["dot"] = "M12 11 A1 1 0 1 0 12 13 A1 1 0 0 0 12 11 Z",
     };
 
@@ -59,10 +60,11 @@ public sealed class Icon : Control
     public static readonly StyledProperty<string?> KindProperty = AvaloniaProperty.Register<Icon, string?>(nameof(Kind));
     public static readonly StyledProperty<double> SizeProperty = AvaloniaProperty.Register<Icon, double>(nameof(Size), 18);
     public static readonly StyledProperty<double> StrokeProperty = AvaloniaProperty.Register<Icon, double>(nameof(Stroke), 1.75);
+    public static readonly StyledProperty<bool> FilledProperty = AvaloniaProperty.Register<Icon, bool>(nameof(Filled));
 
     static Icon()
     {
-        AffectsRender<Icon>(KindProperty, StrokeProperty, TextElement.ForegroundProperty);
+        AffectsRender<Icon>(KindProperty, StrokeProperty, FilledProperty, TextElement.ForegroundProperty);
         AffectsMeasure<Icon>(SizeProperty);
     }
 
@@ -86,6 +88,13 @@ public sealed class Icon : Control
         set => SetValue(StrokeProperty, value);
     }
 
+    /// <summary>Fills the shape as well as drawing its outline (a set favourite star).</summary>
+    public bool Filled
+    {
+        get => GetValue(FilledProperty);
+        set => SetValue(FilledProperty, value);
+    }
+
     protected override Size MeasureOverride(Size availableSize) => new(Size, Size);
 
     public override void Render(DrawingContext context)
@@ -97,6 +106,6 @@ public sealed class Icon : Control
         var pen = new Pen(brush, Stroke, lineCap: PenLineCap.Round, lineJoin: PenLineJoin.Round);
         var scale = Math.Min(Bounds.Width, Bounds.Height) / 24.0;
         using (context.PushTransform(Matrix.CreateScale(scale, scale)))
-            context.DrawGeometry(null, pen, geometry);
+            context.DrawGeometry(Filled ? brush : null, pen, geometry);
     }
 }

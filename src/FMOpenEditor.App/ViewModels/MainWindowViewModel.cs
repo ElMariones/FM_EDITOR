@@ -14,7 +14,8 @@ using FMOpenEditor.Core.Presets;
 namespace FMOpenEditor.App.ViewModels;
 
 /// <param name="Section">Heading shown above this entry when it starts a new group in the sidebar.</param>
-public sealed record NavItem(string Title, string Icon, Func<object> CreatePage, string? Section = null);
+/// <param name="RefreshOnOpen">Re-runs the page's search each time it is opened (Favorites: stars added elsewhere).</param>
+public sealed record NavItem(string Title, string Icon, Func<object> CreatePage, string? Section = null, bool RefreshOnOpen = false);
 
 public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
 {
@@ -200,6 +201,7 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
     {
         if (value is null) return;
         if (!_pages.TryGetValue(value, out var page)) _pages[value] = page = value.CreatePage();
+        else if (value.RefreshOnOpen && page is BrowserViewModel b) b.SearchCommand.Execute(null);
         CurrentPage = page;
         if (!_restoring) Visit(new Spot(value, (page as BrowserViewModel)?.Editor?.Entity));
     }
@@ -341,6 +343,11 @@ public sealed partial class MainWindowViewModel : ObservableObject, IDisposable
                 Nav.Add(new NavItem(PropertyCatalog.Plural(k), KindIcon(k), () => NewBrowser(k), first ? section : null));
                 first = false;
             }
+            // Starred players sit with the people: by game id, read each time the page opens so new stars show up.
+            if (section == "PEOPLE")
+                Nav.Add(new NavItem("Favorites", "star", () => NewBrowser(EntityKind.Player,
+                    () => AppServices.Settings.FavoritePlayers.Select(id => db.Find(EntityKind.Player, id)).OfType<Entity>().ToList(), "Favorites"),
+                    RefreshOnOpen: true));
         }
         Nav.Add(new NavItem("Watch list", "snow", () => new WatchListViewModel(session), "TOOLS"));
         Nav.Add(new NavItem("Research", "flask", () => new ResearchViewModel(_liveMemory, _liveModuleInfo, _liveModuleBase, _liveModuleSize)));

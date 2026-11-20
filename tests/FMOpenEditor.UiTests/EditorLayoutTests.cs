@@ -38,7 +38,7 @@ public class EditorLayoutTests
         var browser = Assert.IsType<BrowserViewModel>(vm.CurrentPage);
         w.GetVisualDescendants().OfType<DataGrid>().Single().SelectedIndex = 0;
         Pump();
-        browser.Editor!.SelectedGroup = browser.Editor.Groups.First();
+        browser.Editor!.SelectedGroup = browser.Editor.Tabs.First();
         Pump();
 
         var panel = w.GetVisualDescendants().OfType<Border>().Single(b => b.Name == "TourEditor");
