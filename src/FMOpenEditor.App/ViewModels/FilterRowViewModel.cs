@@ -33,13 +33,18 @@ public sealed partial class FilterRowViewModel : ObservableObject
     public IReadOnlyList<PropertyDef> Properties { get; }
     public IReadOnlyList<OpOption> Ops => OpOption.All;
 
-    [ObservableProperty] private PropertyDef? _selectedProperty;
+    /// <summary>Position rows need no operator or value: they find players rated 2+ there.</summary>
+    public bool IsPosition => SelectedProperty?.Category == "Positions";
+    public bool HasOp => !IsPosition;
+
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(Hint), nameof(IsPosition), nameof(HasOp), nameof(NeedsValue), nameof(NeedsSecondValue))]
+    private PropertyDef? _selectedProperty;
     [ObservableProperty] [NotifyPropertyChangedFor(nameof(NeedsSecondValue), nameof(NeedsValue))] private OpOption _op;
     [ObservableProperty] private string? _value;
     [ObservableProperty] private string? _value2;
 
-    public bool NeedsValue => Op.Op is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
-    public bool NeedsSecondValue => Op.Op == FilterOp.Between;
+    public bool NeedsValue => !IsPosition && Op.Op is not (FilterOp.IsEmpty or FilterOp.IsNotEmpty);
+    public bool NeedsSecondValue => !IsPosition && Op.Op == FilterOp.Between;
 
     public string Hint => SelectedProperty?.Kind switch
     {
@@ -50,12 +55,11 @@ public sealed partial class FilterRowViewModel : ObservableObject
         _ => "",
     };
 
-    partial void OnSelectedPropertyChanged(PropertyDef? value) => OnPropertyChanged(nameof(Hint));
-
     /// <summary>Null when the row is incomplete. Throws <see cref="FormatException"/> for bad values.</summary>
     public Filter? ToFilter()
     {
         if (SelectedProperty is null) return null;
+        if (IsPosition) return new Filter(SelectedProperty.Key, FilterOp.AtLeast, 2);
         if (!NeedsValue) return new Filter(SelectedProperty.Key, Op.Op);
         if (string.IsNullOrWhiteSpace(Value)) return null;
         object? Parse(string? t) => Op.Op is FilterOp.Contains or FilterOp.OneOf ? t : ValueParser.Parse(_session, SelectedProperty, t);

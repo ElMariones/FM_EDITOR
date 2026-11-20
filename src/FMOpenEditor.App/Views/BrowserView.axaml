@@ -105,7 +105,7 @@
                         </DataTemplate>
                       </ComboBox.ItemTemplate>
                     </ComboBox>
-                    <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" />
+                    <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" IsVisible="{Binding HasOp}" />
                     <TextBox Text="{Binding Value}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsValue}" />
                     <TextBlock Text="and" VerticalAlignment="Center" IsVisible="{Binding NeedsSecondValue}" />
                     <TextBox Text="{Binding Value2}" Watermark="{Binding Hint}" Width="150" IsVisible="{Binding NeedsSecondValue}" />
