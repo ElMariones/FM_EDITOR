@@ -24,7 +24,13 @@
     <DataTemplate DataType="vm:EntityEditorViewModel"><views:EntityEditorView /></DataTemplate>
   </UserControl.DataTemplates>
 
-  <Grid ColumnDefinitions="*,12,500">
+  <Grid>
+    <!-- The editor never gets narrower than two Roles-tab columns (2 × 220 with margins, plus padding). -->
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="12" />
+      <ColumnDefinition Width="500" MinWidth="490" />
+    </Grid.ColumnDefinitions>
     <Border Classes="glass" Padding="18,16,18,10">
       <DockPanel>
         <!-- Header + search -->

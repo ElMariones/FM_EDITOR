@@ -16,6 +16,7 @@ public sealed partial class EntityEditorViewModel : ObservableObject
 {
     private readonly EditorSession _session;
     private readonly Action<Entity>? _transfer;
+    private readonly RolesTabViewModel? _roles;
 
     public Entity Entity { get; }
     /// <summary>The field groups (Profile, Technical, …).</summary>
@@ -72,7 +73,8 @@ public sealed partial class EntityEditorViewModel : ObservableObject
             : RelationSpec.For(entity.Kind)
                 .Where(r => session.IsSupported(r.Kind, r.Key))
                 .Select(r => (EditorTabViewModel)new RelatedListViewModel(session, relations, r, entity.Id, open));
-        Tabs = [.. Groups, .. related];
+        _roles = entity.Kind == EntityKind.Player && RoleDef.All.Value.Count > 0 ? new RolesTabViewModel(session, entity, RoleDef.All.Value) : null;
+        Tabs = [.. Groups, .. (_roles is null ? [] : new EditorTabViewModel[] { _roles }), .. related];
         SelectedGroup = Tabs.FirstOrDefault();
         RefreshHeader();
     }
@@ -129,6 +131,7 @@ public sealed partial class EntityEditorViewModel : ObservableObject
     {
         foreach (var g in Groups)
             foreach (var e in g.Editors) e.Load();
+        _roles?.Refresh();
         RefreshHeader();
     }
 

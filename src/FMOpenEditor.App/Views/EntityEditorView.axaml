@@ -38,6 +38,23 @@
       <Setter Property="Padding" Value="10,7" />
       <Setter Property="CornerRadius" Value="12" />
     </Style>
+    <!-- Roles tab rows: a coloured left edge and tint, like the game's role highlight. -->
+    <Style Selector="Border.rolerow">
+      <Setter Property="Padding" Value="10,5" />
+      <Setter Property="Margin" Value="0,0,10,0" />
+      <Setter Property="BorderThickness" Value="3,0,0,0" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Border.rolekey">
+      <Setter Property="Background" Value="#3322A35A" />
+      <Setter Property="BorderBrush" Value="#22A35A" />
+    </Style>
+    <Style Selector="Border.rolepref">
+      <Setter Property="Background" Value="#333B7DDD" />
+      <Setter Property="BorderBrush" Value="#3B7DDD" />
+    </Style>
+    <Style Selector="Border.roleskip"><Setter Property="Opacity" Value="0.5" /></Style>
   </UserControl.Styles>
 
   <UserControl.DataTemplates>
@@ -153,6 +170,49 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
+      </DockPanel>
+    </DataTemplate>
+
+    <!-- …or the player's attributes against a role: key ones green, preferable ones blue, like the game. -->
+    <DataTemplate DataType="vm:RolesTabViewModel">
+      <DockPanel Margin="8,8,12,8">
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+          <Grid ColumnDefinitions="140,*" ColumnSpacing="8">
+            <ComboBox ItemsSource="{Binding Positions}" SelectedItem="{Binding SelectedPosition}" HorizontalAlignment="Stretch" MaxDropDownHeight="480" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding PositionRoles}" SelectedItem="{Binding SelectedRole}" HorizontalAlignment="Stretch" />
+          </Grid>
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="rolekey" Width="4" Height="14" /><TextBlock Classes="muted" FontSize="12" Text="Key" /></StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="6"><Border Classes="rolepref" Width="4" Height="14" /><TextBlock Classes="muted" FontSize="12" Text="Preferable" /></StackPanel>
+          </StackPanel>
+        </StackPanel>
+        <ScrollViewer>
+          <ItemsControl ItemsSource="{Binding Columns}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:RoleAttributeColumn">
+                <StackPanel Width="210" Spacing="2">
+                  <TextBlock Text="{Binding Name}" Classes="muted" FontSize="12" Margin="2,0,0,4" />
+                  <ItemsControl ItemsSource="{Binding Rows}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate DataType="vm:RoleAttributeRow">
+                        <Border Classes="rolerow" Classes.rolekey="{Binding IsKey}" Classes.rolepref="{Binding IsPreferred}"
+                                Classes.roleskip="{Binding IsUnnecessary}">
+                          <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="{Binding Label}" />
+                            <TextBlock Grid.Column="1" Classes="num" Text="{Binding Value}" FontWeight="SemiBold" />
+                          </Grid>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
       </DockPanel>
     </DataTemplate>
 

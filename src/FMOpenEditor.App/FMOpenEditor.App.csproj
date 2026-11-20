@@ -30,5 +30,6 @@
   <ItemGroup>
     <Content Include="..\..\presets\**\*.json" LinkBase="presets" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\definitions\**\*.json" LinkBase="definitions" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\roles.json" Link="roles.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
