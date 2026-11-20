@@ -98,11 +98,10 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:FilterRowViewModel">
                   <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,2">
-                    <ComboBox ItemsSource="{Binding Properties}" SelectedItem="{Binding SelectedProperty}" Width="230">
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="140" />
+                    <ComboBox ItemsSource="{Binding CategoryProperties}" SelectedItem="{Binding SelectedProperty}" Width="190">
                       <ComboBox.ItemTemplate>
-                        <DataTemplate x:DataType="model:PropertyDef">
-                          <StackPanel Orientation="Horizontal" Spacing="6"><TextBlock Text="{Binding Label}" /><TextBlock Text="{Binding Category}" Foreground="{DynamicResource MutedBrush}" /></StackPanel>
-                        </DataTemplate>
+                        <DataTemplate x:DataType="model:PropertyDef"><TextBlock Text="{Binding Label}" /></DataTemplate>
                       </ComboBox.ItemTemplate>
                     </ComboBox>
                     <ComboBox ItemsSource="{Binding Ops}" SelectedItem="{Binding Op}" Width="140" IsVisible="{Binding HasOp}" />

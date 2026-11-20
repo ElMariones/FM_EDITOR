@@ -28,9 +28,28 @@ public sealed partial class FilterRowViewModel : ObservableObject
         Properties = properties;
         _selectedProperty = properties.FirstOrDefault(p => p.Key == "Age") ?? properties.FirstOrDefault();
         _op = OpOption.All[0];
+        Categories = properties.Select(p => p.Category).Distinct().ToList();
+        _selectedCategory = _selectedProperty?.Category;
     }
 
     public IReadOnlyList<PropertyDef> Properties { get; }
+
+    /// <summary>The first box picks a category ("Profile", "Technical"...), the second a property in it.</summary>
+    public IReadOnlyList<string> Categories { get; }
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(CategoryProperties))] private string? _selectedCategory;
+    public IReadOnlyList<PropertyDef> CategoryProperties => Properties.Where(p => p.Category == SelectedCategory).ToList();
+
+    partial void OnSelectedCategoryChanged(string? value)
+    {
+        OnPropertyChanged(nameof(CategoryProperties));
+        if (SelectedProperty?.Category != value) SelectedProperty = CategoryProperties.FirstOrDefault();
+    }
+
+    // The property box writes null while its list is swapped; keep the category then.
+    partial void OnSelectedPropertyChanged(PropertyDef? value)
+    {
+        if (value is not null) SelectedCategory = value.Category;
+    }
     public IReadOnlyList<OpOption> Ops => OpOption.All;
 
     /// <summary>Position rows need no operator or value: they find players rated 2+ there.</summary>

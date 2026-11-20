@@ -23,4 +23,17 @@ public class FilterRowTests
         Assert.True(row.HasOp);
         Assert.True(row.NeedsValue);
     }
+
+    [Fact]
+    public void Category_box_limits_the_property_box()
+    {
+        using var s = new EditorSession(new DemoDatabase());
+        var row = new FilterRowViewModel(s, PropertyCatalog.For(EntityKind.Player));
+        Assert.Equal("Age", row.SelectedProperty!.Key);
+        Assert.Equal(row.SelectedProperty.Category, row.SelectedCategory);
+
+        row.SelectedCategory = "Technical";
+        Assert.All(row.CategoryProperties, p => Assert.Equal("Technical", p.Category));
+        Assert.Equal(row.CategoryProperties[0], row.SelectedProperty);
+    }
 }
